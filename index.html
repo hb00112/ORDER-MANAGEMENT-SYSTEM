@@ -3,1285 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HC Order Management System</title>
-    <div class="marquee-container">
-        <div class="marquee-content">
-            <span>ORDERS ONCE CREATED CANNOT BE DELETED</span>
-        </div>
-    </div>
+    <title>Order Management System</title>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPA5tLm3H889inLZvh_uWAHOxGNhC0gLc",
+            authDomain: "order-management-system-ea2d3.firebaseapp.com",
+            databaseURL: "https://order-management-system-ea2d3-default-rtdb.firebaseio.com",
+            projectId: "order-management-system-ea2d3",
+            storageBucket: "order-management-system-ea2d3.appspot.com",
+            messagingSenderId: "779242930925",
+            appId: "1:779242930925:web:46d09278bedd87d6aac2e4",
+            measurementId: "G-K0F1E6FY6C"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getDatabase(app);
+
+        // Function to write data to Firebase
+        function writeOrderData(orderId, partyName, item, color, size, quantity) {
+            set(ref(db, 'orders/' + orderId), {
+                partyName: partyName,
+                item: item,
+                color: color,
+                size: size,
+                quantity: quantity,
+                status: "Pending"
+            });
+        }
+
+        // Function to get data from Firebase
+        function getOrderData() {
+            const dbRef = ref(db);
+            get(child(dbRef, `orders`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    console.log(snapshot.val());
+                } else {
+                    console.log("No data available");
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+    </script>
     <style>
-          body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f5f5f5;
-    color: #333;
-}
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-h1, h2 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 20px;
-}
-h1 {
-    font-size: 2.5em;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-}
-h2 {
-    font-size: 1.8em;
-    color: #34495e;
-}
-.main-menu {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
-}
-.main-menu button {
-    font-size: 16px;
-    padding: 12px 24px;
-    margin: 0 10px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.main-menu button:hover {
-    background-color: #2980b9;
-}
-.section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: none;
-}
-form {
-    display: grid;
-    gap: 15px;
-}
-input, select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-button {
-    background-color: #2ecc71;
-    color: white;
-    padding: 12px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-button:hover {
-    background-color: #27ae60;
-}
-.marquee-container {
-    width: 100%;
-    overflow: hidden;
-    background-color: #f8d7da;
-    padding: 10px 0;
-    margin-bottom: 20px;
-}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
 
-.marquee-content {
-    display: inline-block;
-    white-space: nowrap;
-    animation: marquee 20s linear infinite;
-}
+        .section {
+            margin-bottom: 40px;
+        }
 
-.marquee-content span {
-    display: inline-block;
-    font-size: 16px;
-    font-weight: bold;
-    color: #721c24;
-    padding-left: 100%;
-}
+        .section h2 {
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
 
-@keyframes marquee {
-    0% {
-        transform: translate(0, 0);
-    }
-    100% {
-        transform: translate(-100%, 0);
-    }
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: white;
-}
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-th {
-    background-color: #3498db;
-    color: white;
-    font-weight: bold;
-}
-tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-.size-input {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-}
-.size-column {
-    background-color: #ecf0f1;
-    padding: 10px;
-    border-radius: 5px;
-}
-.size-column span {
-    font-weight: bold;
-    margin-bottom: 8px;
-    display: block;
-    color: #2c3e50;
-}
-.radio-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-}
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-}
-.custom-input {
-    width: 60px;
-    padding: 5px;
-    border: 1px solid #bdc3c7;
-    border-radius: 3px;
-}
-#itemList {
-    margin-top: 20px;
-    background-color: #ecf0f1;
-    padding: 15px;
-    border-radius: 5px;
-}
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
-}
-.modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 30px;
-    border: 1px solid #888;
-    border-radius: 8px;
-    max-width: 600px;
-}
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-.close:hover,
-.close:focus {
-    color: #2c3e50;
-    text-decoration: none;
-    cursor: pointer;
-}
-.modal-close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-.modal-close:hover,
-.modal-close:focus {
-    color: #2c3e50;
-    text-decoration: none;
-    cursor: pointer;
-}
-        /* (Keep the existing CSS styles) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="text"], select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>HC Order Management System</h1>
-        <div class="main-menu">
-            <button onclick="showSection('order')">Order</button>
-            <button onclick="showSection('pendingOrders')">Pending Orders</button>
-            <button onclick="showSection('sentOrders')">Sent Orders</button>
-        </div>
 
-        
-        <button onclick="exportData()">Export Data</button>
-<button onclick="importData()">Import Data</button>
+    <!-- Orders Section -->
+    <div class="section" id="orders-section">
+        <h2>Orders</h2>
+        <form id="orderForm">
+            <label for="partyName">Party Name:</label>
+            <input type="text" id="partyName" name="partyName" required>
 
-        <div id="orderSection" class="section">
-            <h2>New Order</h2>
-            <form id="orderForm">
-                
-                    <input type="text" id="partyName" placeholder="Party Name" list="partyNamesList" required>
-                
-                <div id="itemForm">
-                    
-                    <input type="text" id="itemName" placeholder="Item Name" list="itemNamesList">
-                    <input type="text" id="color" placeholder="Color" list="colorsList">
-                    <div class="size-input">
-                        <div class="size-column">
-                            <span>S</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeS" value="1"> 1</label>
-                                <label><input type="radio" name="sizeS" value="2"> 2</label>
-                                <label><input type="radio" name="sizeS" value="3"> 3</label>
-                                <label><input type="radio" name="sizeS" value="4"> 4</label>
-                                <label><input type="radio" name="sizeS" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="sizeS" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>M</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeM" value="1"> 1</label>
-                                <label><input type="radio" name="sizeM" value="2"> 2</label>
-                                <label><input type="radio" name="sizeM" value="3"> 3</label>
-                                <label><input type="radio" name="sizeM" value="4"> 4</label>
-                                <label><input type="radio" name="sizeM" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="sizeM" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>L</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeL" value="1"> 1</label>
-                                <label><input type="radio" name="sizeL" value="2"> 2</label>
-                                <label><input type="radio" name="sizeL" value="3"> 3</label>
-                                <label><input type="radio" name="sizeL" value="4"> 4</label>
-                                <label><input type="radio" name="sizeL" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="sizeL" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeXL" value="1"> 1</label>
-                                <label><input type="radio" name="sizeXL" value="2"> 2</label>
-                                <label><input type="radio" name="sizeXL" value="3"> 3</label>
-                                <label><input type="radio" name="sizeXL" value="4"> 4</label>
-                                <label><input type="radio" name="sizeXL" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="sizeXL" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>2XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size2XL" value="1"> 1</label>
-                                <label><input type="radio" name="size2XL" value="2"> 2</label>
-                                <label><input type="radio" name="size2XL" value="3"> 3</label>
-                                <label><input type="radio" name="size2XL" value="4"> 4</label>
-                                <label><input type="radio" name="size2XL" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="size2XL" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>3XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size3XL" value="1"> 1</label>
-                                <label><input type="radio" name="size3XL" value="2"> 2</label>
-                                <label><input type="radio" name="size3XL" value="3"> 3</label>
-                                <label><input type="radio" name="size3XL" value="4"> 4</label>
-                                <label><input type="radio" name="size3XL" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="size3XL" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>4XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size4XL" value="1"> 1</label>
-                                <label><input type="radio" name="size4XL" value="2"> 2</label>
-                                <label><input type="radio" name="size4XL" value="3"> 3</label>
-                                <label><input type="radio" name="size4XL" value="4"> 4</label>
-                                <label><input type="radio" name="size4XL" value="5"> 5</label>
-                                <label>
-                                    <input type="radio" name="size4XL" value="custom"> 
-                                    <input type="number" class="custom-input" min="0">
-                                </label>
-                            </div>
-                        </div>
-                       
-                        <!-- Repeat the size-column div for M, L, XL, 2XL, 3XL, 4XL -->
-                    </div>
-                </div>
-                <button type="button" id="addItemBtn">Add Item</button>
-                <button type="submit">Save Order</button>
-            </form>
-            <div id="itemList"></div>
-            <button onclick="exportToXLS('orders')">Export to XLS</button>
-        </div>
+            <label for="item">Item:</label>
+            <input type="text" id="item" name="item" required>
 
-        <div id="pendingOrdersSection" class="section">
-            <h2>Pending Orders</h2>
-            <table id="pendingOrdersTable">
-                <thead>
-                    <tr>
-                        
-                        <th>Party Name</th>
-                        <th>Order Date</th>
-                        <th>Items</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <datalist id="partyNamesList"></datalist>
-<datalist id="itemNamesList"></datalist>
-<datalist id="colorsList"></datalist>
-                <tbody></tbody>
-            </table>
-            <button onclick="exportToXLS('pending')">Export to XLS</button>
-        </div>
+            <label for="color">Color:</label>
+            <input type="text" id="color" name="color" required>
 
-        <div id="sentOrdersSection" class="section">
-            <h2>Sent Orders</h2>
-            <table id="sentOrdersTable">
-                <thead>
-                    <tr>
-                        
-                        <th>Party Name</th>
-                        <th>Dispatch Date</th>
-                        <th>Items</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button onclick="exportToXLS('sent')">Export to XLS</button>
-        </div>
+            <label for="size">Size:</label>
+            <input type="text" id="size" name="size" required>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+
+            <button type="button" onclick="submitOrder()">Submit Order</button>
+        </form>
+
+        <h3>Order Summary</h3>
+        <div id="orderSummary"></div>
     </div>
 
-    <div id="dispatchModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Dispatch Order</h2>
-            <table id="dispatchItemsTable">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+    <!-- Pending Orders Section -->
+    <div class="section" id="pending-orders-section">
+        <h2>Pending Orders</h2>
+        <table id="pendingOrdersTable">
+            <tr>
+                <th>Order ID</th>
+                <th>Party Name</th>
+                <th>Item Details</th>
+                <th>Actions</th>
+            </tr>
+            <!-- Sample Row -->
+            <tr>
+                <td>ORD001</td>
+                <td>John Doe</td>
+                <td>Item A - Red - M - 5 pcs</td>
+                <td>
+                    <button onclick="dispatchOrder('ORD001')">Dispatch</button>
+                    <button onclick="revertOrder('ORD001')">Revert</button>
+                    <button onclick="viewDetails('ORD001')">View Details</button>
+                </td>
+            </tr>
+        </table>
     </div>
-    
-    <div id="dispatchDetailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Dispatch Details</h2>
-            <table id="dispatchDetailsTable">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Color</th>
-                        <th>Size - Quantity</th>
-                        <th>Dispatch Quantity</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="saveDispatch">Save Dispatch</button>
-        </div>
+
+    <!-- Billing Section -->
+    <div class="section" id="billing-section">
+        <h2>Billing</h2>
+        <table id="billingTable">
+            <tr>
+                <th>Party Name</th>
+                <th>Item Details</th>
+                <th>Action</th>
+            </tr>
+            <!-- Sample Row -->
+            <tr>
+                <td>John Doe</td>
+                <td>Item A - Red - M - 5 pcs</td>
+                <td><button onclick="markAsBilled('ORD001')">Mark as Billed</button></td>
+            </tr>
+        </table>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- Sent Orders Section -->
+    <div class="section" id="sent-orders-section">
+        <h2>Sent Orders</h2>
+        <ul>
+            <li>ORD001 - John Doe - Item A - Red - M - 5 pcs (Dispatched)</li>
+        </ul>
+    </div>
+
     <script>
-       
-        let currentItems = [];
-        let currentDispatchOrder = null;
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(sectionId + 'Section').style.display = 'block';
-            if (sectionId === 'pendingOrders' || sectionId === 'sentOrders') {
-                updateTables();
-            }
-        }
-        const firebaseConfig = {
-  apiKey: "AIzaSyDPA5tLm3H889inLZvh_uWAHOxGNhC0gLc",
-  authDomain: "order-management-system-ea2d3.firebaseapp.com",
-  databaseURL: "https://order-management-system-ea2d3-default-rtdb.firebaseio.com",
-  projectId: "order-management-system-ea2d3",
-  storageBucket: "order-management-system-ea2d3.appspot.com",
-  messagingSenderId: "779242930925",
-  appId: "1:779242930925:web:46d09278bedd87d6aac2e4",
-  measurementId: "G-K0F1E6FY6C"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-
-        function addItem() {
-    const itemName = document.getElementById('itemName').value;
-    const color = document.getElementById('color').value;
-
-    if (!itemName) {
-        alert('Please enter an Item Name.');
-        return;
-    }
-
-    const item = {
-        itemName: itemName,
-        color: color,
-        sizes: {}
-    };
-
-    ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].forEach(size => {
-        const radioValue = document.querySelector(`input[name="size${size}"]:checked`)?.value;
-        if (radioValue === 'custom') {
-            const customValue = document.querySelector(`input[name="size${size}"]:checked`).nextElementSibling.value;
-            if (customValue && customValue !== '0') {
-                item.sizes[size] = parseInt(customValue);
-            }
-        } else if (radioValue) {
-            item.sizes[size] = parseInt(radioValue);
-        }
-    });
-
-    currentItems.push(item);
-    updateItemList();
-
-    // Clear inputs and selections
-    document.getElementById('itemName').value = '';
-    document.getElementById('color').value = '';
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.checked = false;
-        radio.classList.remove('clicked');
-    });
-    document.querySelectorAll('.custom-input').forEach(input => {
-        input.value = '';
-    });
-
-   
-}
-
-window.onload = function() {
-   
-    updateTables();
-    // Any other initialization code...
-};
-
-window.onclick = function(event) {
-    if (event.target.className === 'modal') {
-        closeModal();
-    }
-}
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('remove-item-btn')) {
-        console.log('Remove button clicked');
-        const index = parseInt(event.target.getAttribute('data-index'));
-        removeItemFromOrder(index);
-    }
-});
-function updateItemList() {
-    const itemList = document.getElementById('itemList');
-    itemList.innerHTML = '<h3>Current Items:</h3>';
-    currentItems.forEach((item, index) => {
-        itemList.innerHTML += `
-            <div>
-                <strong>${item.itemName}</strong> (${item.color})
-                ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-                <button class="remove-item-btn" data-index="${index}">Remove</button>
-            </div>
-        `;
-    });
-}
-
-function removeItemFromOrder(index) {
-    console.log('Removing item at index:', index);
-    currentItems.splice(index, 1);
-    updateItemList();
-}
-let orderCounter = 0;
-
-async function addOrder(event) {
-    event.preventDefault();
-    const partyName = document.getElementById('partyName').value;
-    if (!partyName) {
-        alert('Please enter a Party Name.');
-        return;
-    }
-
-    orderCounter++;
-    const orderNo = `K${orderCounter}`;
-
-    const order = {
-        id: Date.now(),
-        orderNo: orderNo,
-        partyName: partyName,
-        items: currentItems.length > 0 ? [...currentItems] : [],
-        status: 'pending',
-        sentItems: [],
-        orderDate: new Date().toLocaleDateString()
-    };
-
-    try {
-        // Add order to Firebase
-        await db.collection('orders').add(order);
-
-        // Send Telegram message
-        const message = `New Order: ${orderNo}\nParty: ${partyName}\nItems: ${JSON.stringify(order.items)}`;
-        await sendTelegramMessage(message);
-
-        alert('Order saved successfully!');
-        document.getElementById('orderForm').reset();
-        currentItems = [];
-        updateItemList();
-    } catch (error) {
-        console.error("Error adding order: ", error);
-        alert('Error saving order. Please try again.');
-    }
-}
-
-async function sendTelegramMessage(message) {
-    const token = '6489265710:AAFx6-OaL09SpByMPyfiQBmgetvbtx0InyI';
-    const chatId = '-1002170737027';
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
-    try {
-        await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-            }),
-        });
-    } catch (error) {
-        console.error("Error sending Telegram message: ", error);
-    }
-}
-
-
-
-
-
-
-async function updateTables() {
-    const pendingTable = document.getElementById('pendingOrdersTable').getElementsByTagName('tbody')[0];
-    const sentTable = document.getElementById('sentOrdersTable').getElementsByTagName('tbody')[0];
-    pendingTable.innerHTML = '';
-    sentTable.innerHTML = '';
-
-    try {
-        const snapshot = await db.collection('orders').get();
-        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // Rest of the function remains the same, just use the 'orders' array
-        // ...
-    } catch (error) {
-        console.error("Error fetching orders: ", error);
-        alert('Error fetching orders. Please try again.');
-    }
-}
-async function sendPendingOrdersImage() {
-    try {
-        const canvas = await html2canvas(document.getElementById('pendingOrdersTable'));
-        const imageDataUrl = canvas.toDataURL('image/png');
-
-        // Upload image to Firebase Storage
-        const imageRef = storage.ref('pending_orders').child(`${Date.now()}.png`);
-        await imageRef.putString(imageDataUrl, 'data_url');
-
-        // Get download URL
-        const imageUrl = await imageRef.getDownloadURL();
-
-        // Send image URL to Telegram
-        const token = '6489265710:AAFx6-OaL09SpByMPyfiQBmgetvbtx0InyI';
-        const chatId = '-1002170737027';
-        const url = `https://api.telegram.org/bot${token}/sendPhoto`;
-
-        await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                photo: imageUrl,
-                caption: 'Pending Orders',
-            }),
-        });
-    } catch (error) {
-        console.error("Error sending pending orders image: ", error);
-    }
-}
-
-// Schedule the function to run at 11 PM
-function schedulePendingOrdersImage() {
-    const now = new Date();
-    const night = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        23, 0, 0, 0
-    );
-    let delay = night.getTime() - now.getTime();
-    if (delay < 0) delay += 86400000; // if it's past 11 PM, schedule for next day
-
-    setTimeout(function() {
-        sendPendingOrdersImage();
-        schedulePendingOrdersImage(); // Schedule for the next day
-    }, delay);
-}
-
-schedulePendingOrdersImage();
-
-function consolidateItems(items) {
-    const consolidatedItems = {};
-    
-    items.forEach(item => {
-        const key = `${item.itemName}_${item.color}`;
-        if (!consolidatedItems[key]) {
-            consolidatedItems[key] = {...item, sizes: {...item.sizes}};
-        } else {
-            Object.entries(item.sizes).forEach(([size, qty]) => {
-                consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
-            });
-        }
-    });
-    
-    return Object.values(consolidatedItems);
-}
-
-function openDispatchModal(orderId) {
-    currentDispatchOrder = orders.find(o => o.id === orderId);
-    const groupedOrders = orders.filter(o => 
-        o.partyName === currentDispatchOrder.partyName && 
-        o.orderDate === currentDispatchOrder.orderDate &&
-        o.status === 'pending'
-    );
-    
-    const modal = document.getElementById('dispatchModal');
-    const dispatchItemsTable = document.getElementById('dispatchItemsTable');
-    
-    if (!dispatchItemsTable) {
-        console.error('dispatchItemsTable not found');
-        return;
-    }
-    
-    const tbody = dispatchItemsTable.getElementsByTagName('tbody')[0];
-    if (!tbody) {
-        console.error('tbody not found in dispatchItemsTable');
-        return;
-    }
-    
-    tbody.innerHTML = '';
-
-    const allItems = groupedOrders.flatMap(order => order.items);
-    
-    // Consolidate items
-    const consolidatedItems = consolidateItems(allItems);
-    
-    consolidatedItems.forEach(item => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${item.itemName} (${item.color})<br>
-            ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}</td>
-            <td><button onclick="openDispatchDetailsModal('${item.itemName}', '${item.color}')">Select</button></td>
-        `;
-    });
-
-    // Add Save Dispatch button
-    const saveRow = tbody.insertRow();
-    saveRow.innerHTML = `
-        <td colspan="2">
-            <button onclick="saveDispatch()">Save Dispatch</button>
-        </td>
-    `;
-
-    modal.style.display = 'block';
-}
-
-function openDispatchDetailsModal(itemName, color) {
-    const modal = document.getElementById('dispatchDetailsModal');
-    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
-    dispatchDetailsTable.innerHTML = '';
-
-    const groupedOrders = orders.filter(o => 
-        o.partyName === currentDispatchOrder.partyName && 
-        o.orderDate === currentDispatchOrder.orderDate &&
-        o.status === 'pending'
-    );
-
-    const allItems = groupedOrders.flatMap(order => order.items);
-    const consolidatedItems = consolidateItems(allItems);
-    const item = consolidatedItems.find(i => i.itemName === itemName && i.color === color);
-    
-    Object.entries(item.sizes).forEach(([size, qty]) => {
-        const row = dispatchDetailsTable.insertRow();
-        row.innerHTML = `
-            <td>${itemName}</td>
-            <td>${color}</td>
-            <td>${size} - ${qty}</td>
-            <td><input type="number" min="0" max="${qty}" value="0" onchange="validateDispatchQuantity(this, ${qty})"></td>
-        `;
-    });
-
-    // Add a Save button for this item
-    const saveRow = dispatchDetailsTable.insertRow();
-    saveRow.innerHTML = `
-        <td colspan="4">
-            <button onclick="saveItemDispatch('${itemName}', '${color}')">Save Item Dispatch</button>
-        </td>
-    `;
-
-    modal.style.display = 'block';
-}
-function exportData() {
-    const data = {
-        orders: orders,
-      
-    };
-
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'garment_order_data.json';
-    link.click();
-    URL.revokeObjectURL(link.href);
-}
-
-function importData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = function(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                
-                // Merge orders
-               
-                orders = mergeArrays(currentOrders, importedData.orders);
-               
-                
-                // Merge party names
-                
-                const mergedPartyNames = mergeArrays(currentPartyNames, importedData.partyNames);
-               
-                
-                // Merge item names
-                const mergedItemNames = mergeArrays(currentItemNames, importedData.itemNames);
-               
-                
-                // Merge colors
-               
-                const mergedColors = mergeArrays(currentColors, importedData.colors);
-              
-
-                updateTables();
-               
-
-                alert('Data imported and merged successfully!');
-            } catch (error) {
-                alert('Error importing data. Please make sure you selected the correct file.');
-                console.error(error);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function mergeArrays(arr1, arr2) {
-    return [...new Set([...arr1, ...arr2])];
-}
-function saveItemDispatch(itemName, color) {
-    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
-    const rows = dispatchDetailsTable.getElementsByTagName('tr');
-
-    let dispatchedItem = {
-        itemName: itemName,
-        color: color,
-        sizes: {}
-    };
-
-    for (let i = 0; i < rows.length - 1; i++) { // -1 to exclude the save button row
-        const cells = rows[i].getElementsByTagName('td');
-        const [size, qty] = cells[2].textContent.split(' - ');
-        const dispatchQty = parseInt(cells[3].getElementsByTagName('input')[0].value);
-
-        if (dispatchQty > 0) {
-            dispatchedItem.sizes[size] = dispatchQty;
-        }
-    }
-
-    // Update the dispatch modal table
-    updateDispatchModalTable(dispatchedItem);
-
-    // Close the dispatch details modal
-    closeDispatchDetailsModal();
-}
-
-function updateDispatchModalTable(dispatchedItem) {
-    const dispatchItemsTable = document.getElementById('dispatchItemsTable').getElementsByTagName('tbody')[0];
-    const existingRow = Array.from(dispatchItemsTable.rows).find(row => 
-        row.cells[0].textContent.includes(dispatchedItem.itemName) && 
-        row.cells[0].textContent.includes(dispatchedItem.color)
-    );
-
-    if (existingRow) {
-        existingRow.cells[0].innerHTML = `
-            ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
-            ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-        `;
-    } else {
-        const newRow = dispatchItemsTable.insertRow();
-        newRow.innerHTML = `
-            <td>
-                ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
-                ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-            </td>
-            <td><button onclick="openDispatchDetailsModal('${dispatchedItem.itemName}', '${dispatchedItem.color}')">Edit</button></td>
-        `;
-    }
-}
-function validateDispatchQuantity(input, maxQty) {
-    let value = parseInt(input.value);
-    if (isNaN(value) || value < 0) {
-        value = 0;
-    } else if (value > maxQty) {
-        value = maxQty;
-    }
-    input.value = value;
-}
-
-
-
-const order = {
-    id: Date.now(),
-    partyName: partyName,
-    items: currentItems.length > 0 ? [...currentItems] : [],
-    status: 'pending',
-    sentItems: [],
-    orderDate: new Date().toLocaleDateString()
-};
-
-function saveDispatch() {
-    const dispatchItemsTable = document.getElementById('dispatchItemsTable').getElementsByTagName('tbody')[0];
-    const rows = dispatchItemsTable.getElementsByTagName('tr');
-
-    let today = new Date().toLocaleDateString();
-    let anyItemDispatched = false;
-
-    const pendingOrderIndices = orders.reduce((acc, order, index) => {
-        if (order.partyName === currentDispatchOrder.partyName && 
-            order.orderDate === currentDispatchOrder.orderDate &&
-            order.status === 'pending') {
-            acc.push(index);
-        }
-        return acc;
-    }, []);
-
-    for (let i = 0; i < rows.length - 1; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        const itemText = cells[0].innerHTML;
-        const [itemNameColor, sizesText] = itemText.split('<br>');
-        const [itemName, color] = itemNameColor.split(' (');
-
-        if (sizesText) {
-            let sentItem = {
-                itemName: itemName.trim(),
-                color: color.slice(0, -1).trim(),
-                sizes: {},
-                date: today // Include dispatch date
-            };
-
-            let itemDispatched = false;
-
-            sizesText.trim().split(' ').forEach(sizeQty => {
-                const [size, qty] = sizeQty.split('/');
-                const dispatchQty = parseInt(qty);
-
-                if (dispatchQty > 0) {
-                    sentItem.sizes[size] = dispatchQty;
-                    itemDispatched = true;
-                }
-            });
-
-            if (itemDispatched) {
-                anyItemDispatched = true;
-
-                pendingOrderIndices.forEach(orderIndex => {
-                    const order = orders[orderIndex];
-                    const itemIndex = order.items.findIndex(i => i.itemName === sentItem.itemName && i.color === sentItem.color);
-
-                    if (itemIndex !== -1) {
-                        const item = order.items[itemIndex];
-
-                        Object.entries(sentItem.sizes).forEach(([size, qty]) => {
-                            if (item.sizes[size]) {
-                                const actualQty = Math.min(qty, item.sizes[size]);
-                                item.sizes[size] -= actualQty;
-
-                                const sentOrderItem = order.sentItems.find(i => i.itemName === sentItem.itemName && i.color === sentItem.color);
-                                if (sentOrderItem) {
-                                    sentOrderItem.sizes[size] = (sentOrderItem.sizes[size] || 0) + actualQty;
-                                } else {
-                                    order.sentItems.push({
-                                        itemName: sentItem.itemName,
-                                        color: sentItem.color,
-                                        sizes: { [size]: actualQty },
-                                        date: today
-                                    });
-                                }
-
-                                if (item.sizes[size] <= 0) {
-                                    delete item.sizes[size];
-                                }
-                            }
-                        });
-
-                        if (Object.keys(item.sizes).length === 0) {
-                            order.items.splice(itemIndex, 1);
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    if (!anyItemDispatched) {
-        alert("No items were selected for dispatch. Please select at least one item.");
-        return;
-    }
-
-    pendingOrderIndices.forEach(orderIndex => {
-        const order = orders[orderIndex];
-        if (order.items.length === 0) {
-            order.status = 'sent';
-        }
-    });
-
-    saveOrders();
-    updateTables();
-    closeDispatchModal();
-}
-
-
-        function closeDispatchModal() {
-            const modal = document.getElementById('dispatchModal');
-            modal.style.display = 'none';
+        // Example functions to handle order submission and display order summary
+        function submitOrder() {
+            const orderId = "ORD" + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            const partyName = document.getElementById('partyName').value;
+            const item = document.getElementById('item').value;
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
+            const quantity = document.getElementById('quantity').value;
+
+            // Save order to Firebase
+            writeOrderData(orderId, partyName, item, color, size, quantity);
+
+            // Display summary
+            const summary = `
+                <p>Order ID: ${orderId}</p>
+                <p>Party Name: ${partyName}</p>
+                <p>Item: ${item}</p>
+                <p>Color: ${color}</p>
+                <p>Size: ${size}</p>
+                <p>Quantity: ${quantity}</p>
+            `;
+            document.getElementById('orderSummary').innerHTML = summary;
         }
 
-        function closeDispatchDetailsModal() {
-            const modal = document.getElementById('dispatchDetailsModal');
-            modal.style.display = 'none';
+        // Placeholder functions for dispatch, revert, and view details
+        function dispatchOrder(orderId) {
+            alert("Dispatching order " + orderId);
         }
 
-        function deleteOrder(id) {
-            orders = orders.filter(o => o.id !== id);
-            saveOrders();
-            updateTables();
+        function revertOrder(orderId) {
+            alert("Reverting order " + orderId);
         }
 
-       
-
-function showClearDataOptions() {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Clear Data Options</h2>
-            <button id="clearOrderDataBtn">Order Data</button>
-            <button id="showSuggestionDataBtn">Suggestion Data</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.style.display = 'block';
-
-    // Add event listeners
-    modal.querySelector('.modal-close').addEventListener('click', closeModal);
-    modal.querySelector('#clearOrderDataBtn').addEventListener('click', clearOrderData);
-    modal.querySelector('#showSuggestionDataBtn').addEventListener('click', showSuggestionDataOptions);
-}
-
-function clearOrderData() {
-    if (confirm('Are you sure you want to clear all order data? This action cannot be undone.')) {
-        localStorage.removeItem('orders');
-        orders = [];
-        currentItems = [];
-        updateTables();
-        updateItemList();
-        alert('All order data has been cleared.');
-        closeModal();
-    }
-}
-
-function showSuggestionDataOptions() {
-    const modalContent = document.querySelector('.modal .modal-content');
-    modalContent.innerHTML = `
-        <h2>Clear Suggestion Data</h2>
-        <button class="suggestionDataBtn" data-type="partyNames">Party Stored</button>
-        <button class="suggestionDataBtn" data-type="itemNames">Item Stored</button>
-        <button class="suggestionDataBtn" data-type="colors">Color Stored</button>
-    `;
-
-    // Add event listeners to new buttons
-    modalContent.querySelectorAll('.suggestionDataBtn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            showStoredData(this.dataset.type);
-        });
-    });
-}
-function showStoredData(dataType) {
-   
-    const modal = document.querySelector('.modal');
-    if (!modal) {
-        console.error('Modal not found');
-        return;
-    }
-    const modalContent = modal.querySelector('.modal-content');
-    if (!modalContent) {
-        console.error('Modal content not found');
-        return;
-    }
-    let html = `<h2>${dataType} Stored</h2>`;
-    if (items.length === 0) {
-        html += '<p>No items stored.</p>';
-    } else {
-        items.forEach(item => {
-            html += `<div>${item} <button onclick="removeItem('${dataType}', '${item}')">Remove</button></div>`;
-        });
-    }
-    html += `<button onclick="removeAllItems('${dataType}')">Remove All</button>`;
-    html += `<button onclick="showSuggestionDataOptions()">Back</button>`;
-    modalContent.innerHTML = html;
-}
-function removeItem(dataType, item) {
-    
-    items = items.filter(i => i !== item);
-   
-    showStoredData(dataType);
-    
-}
-
-
-
-function closeModal() {
-    const modal = document.querySelector('.modal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.remove();
-    }
-}
-
-async function exportToXLS(type) {
-    const workbook = new ExcelJS.Workbook();
-    let fileName;
-
-    switch (type) {
-        case 'orders':
-            dataToExport = [{ partyName: document.getElementById('partyName').value, items: currentItems, type: 'New Order' }];
-            fileName = 'new_order.xlsx';
-            break;
-        case 'pending':
-            dataToExport = orders.filter(o => o.status === 'pending');
-            fileName = 'pending_orders.xlsx';
-            break;
-        case 'sent':
-            dataToExport = orders.filter(o => o.sentItems && o.sentItems.length > 0);
-            fileName = 'sent_orders.xlsx';
-            break;
-        default:
-            dataToExport = orders;
-            fileName = 'all_orders.xlsx';
-    }
-
-    // Group orders by party name
-    const groupedOrders = dataToExport.reduce((acc, order) => {
-        const key = order.partyName;
-        if (!acc[key]) acc[key] = [];
-        
-        if (type === 'sent') {
-            order.sentItems.forEach(item => {
-                acc[key].push({...item, date: item.date, partyName: order.partyName});
-            });
-        } else {
-            acc[key].push({...order, date: order.orderDate || new Date().toLocaleDateString()});
+        function viewDetails(orderId) {
+            alert("Viewing details for order " + orderId);
         }
-        return acc;
-    }, {});
 
-    for (const [partyName, orders] of Object.entries(groupedOrders)) {
-        const worksheet = workbook.addWorksheet(partyName);
-
-        // Set column widths
-        worksheet.columns = [
-            { width: 15 }, { width: 20 }, { width: 15 }, { width: 8 }, { width: 8 },
-            { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 10 }
-        ];
-
-        let rowIndex = 1;
-
-        // Add party name
-        const partyNameRow = worksheet.addRow([partyName]);
-        partyNameRow.height = 30;
-        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
-        partyNameRow.getCell(1).font = { size: 24, bold: true };
-        partyNameRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-
-        // Add order type
-        rowIndex++;
-        const orderTypeRow = worksheet.addRow([type === 'sent' ? 'SENT ORDER' : 'PENDING ORDER']);
-        orderTypeRow.height = 25;
-        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
-        orderTypeRow.getCell(1).font = { size: 18, bold: true };
-        orderTypeRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-
-        // Add header row
-        rowIndex += 2;
-        const headerRow = worksheet.addRow(['Date', 'Item Name', 'Color', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', 'Total']);
-        headerRow.font = { bold: true };
-
-        // Consolidate items
-        const consolidatedItems = {};
-        orders.forEach((order) => {
-            const items = type === 'sent' ? [order] : order.items;
-            items.forEach(item => {
-                const key = `${order.date}_${item.itemName}_${item.color}`;
-                if (!consolidatedItems[key]) {
-                    consolidatedItems[key] = {...item, date: order.date, sizes: {...item.sizes}};
-                } else {
-                    Object.entries(item.sizes).forEach(([size, qty]) => {
-                        consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
-                    });
-                }
-            });
-        });
-
-        // Add consolidated data rows
-        Object.values(consolidatedItems).forEach(item => {
-            rowIndex++;
-            const row = worksheet.addRow([
-                item.date,
-                item.itemName,
-                item.color,
-                item.sizes.S || '',
-                item.sizes.M || '',
-                item.sizes.L || '',
-                item.sizes.XL || '',
-                item.sizes['2XL'] || '',
-                item.sizes['3XL'] || '',
-                item.sizes['4XL'] || '',
-                Object.values(item.sizes).reduce((a, b) => a + b, 0)
-            ]);
-        });
-
-        // Add borders to all cells
-        for (let i = 1; i <= rowIndex; i++) {
-            worksheet.getRow(i).eachCell({ includeEmpty: true }, cell => {
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-            });
+        function markAsBilled(orderId) {
+            alert("Marking order " + orderId + " as billed");
         }
-    }
+    </script>
 
-    // Generate the Excel file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(link.href);
-}
-
-        document.getElementById('addItemBtn').addEventListener('click', addItem);
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    addOrder(event);
-});
-        document.getElementById('saveDispatch').addEventListener('click', saveDispatch);
-        document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.addEventListener('click', function() {
-                this.closest('.modal').style.display = 'none';
-            });
-        });
-
-        // Allow radio buttons to be unselected
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('click', function() {
-                if (this.classList.contains('clicked')) {
-                    this.checked = false;
-                    this.classList.remove('clicked');
-                } else {
-                    this.classList.add('clicked');
-                }
-            });
-        });
-
-// Initialize the page
-showSection('order');
-updateTables();
-</script>
 </body>
 </html>
