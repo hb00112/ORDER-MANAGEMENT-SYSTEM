@@ -4,224 +4,193 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management System</title>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-database.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Order Management System</h1>
 
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDPA5tLm3H889inLZvh_uWAHOxGNhC0gLc",
-            authDomain: "order-management-system-ea2d3.firebaseapp.com",
-            databaseURL: "https://order-management-system-ea2d3-default-rtdb.firebaseio.com",
-            projectId: "order-management-system-ea2d3",
-            storageBucket: "order-management-system-ea2d3.appspot.com",
-            messagingSenderId: "779242930925",
-            appId: "1:779242930925:web:46d09278bedd87d6aac2e4",
-            measurementId: "G-K0F1E6FY6C"
-        };
+    <section id="order-entry">
+        <h2>Order Entry</h2>
+        <form id="order-form">
+            <label for="party-name">Party Name:</label>
+            <input type="text" id="party-name" name="partyName" required>
+            <br>
+            <label for="item">Item:</label>
+            <input type="text" id="item" name="item" list="item-list" required>
+            <datalist id="item-list"></datalist>
+            <br>
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" min="1" required>
+            <br>
+            <button type="submit">Add Order</button>
+        </form>
+    </section>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getDatabase(app);
+    <section id="pending-orders">
+        <h2>Pending Orders</h2>
+        <table id="pending-orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Party Name</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </section>
 
-        // Function to write data to Firebase
-        function writeOrderData(orderId, partyName, item, color, size, quantity) {
-            set(ref(db, 'orders/' + orderId), {
-                partyName: partyName,
-                item: item,
-                color: color,
-                size: size,
-                quantity: quantity,
-                status: "Pending"
-            });
-        }
+    <section id="billing">
+        <h2>Billing</h2>
+        <button id="billing-button">Process Billing</button>
+    </section>
 
-        // Function to get data from Firebase
-        function getOrderData() {
-            const dbRef = ref(db);
-            get(child(dbRef, `orders`)).then((snapshot) => {
-                if (snapshot.exists()) {
-                    console.log(snapshot.val());
-                } else {
-                    console.log("No data available");
-                }
-            }).catch((error) => {
-                console.error(error);
-            });
-        }
-    </script>
+    <section id="sent-orders">
+        <h2>Sent Orders</h2>
+        <ul id="sent-orders-list"></ul>
+    </section>
+
     <style>
+        /* Your CSS styles here */
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
         }
 
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section h2 {
-            margin-bottom: 10px;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 5px;
+        h1, h2 {
+            text-align: center;
         }
 
         table {
-            width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            width: 100%;
         }
 
-        table, th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
 
-        button {
-            padding: 8px 12px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        input[type="text"], select {
-            padding: 8px;
-            margin: 5px 0;
-            width: 100%;
-            box-sizing: border-box;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
     </style>
-</head>
-<body>
-
-    <!-- Orders Section -->
-    <div class="section" id="orders-section">
-        <h2>Orders</h2>
-        <form id="orderForm">
-            <label for="partyName">Party Name:</label>
-            <input type="text" id="partyName" name="partyName" required>
-
-            <label for="item">Item:</label>
-            <input type="text" id="item" name="item" required>
-
-            <label for="color">Color:</label>
-            <input type="text" id="color" name="color" required>
-
-            <label for="size">Size:</label>
-            <input type="text" id="size" name="size" required>
-
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" required>
-
-            <button type="button" onclick="submitOrder()">Submit Order</button>
-        </form>
-
-        <h3>Order Summary</h3>
-        <div id="orderSummary"></div>
-    </div>
-
-    <!-- Pending Orders Section -->
-    <div class="section" id="pending-orders-section">
-        <h2>Pending Orders</h2>
-        <table id="pendingOrdersTable">
-            <tr>
-                <th>Order ID</th>
-                <th>Party Name</th>
-                <th>Item Details</th>
-                <th>Actions</th>
-            </tr>
-            <!-- Sample Row -->
-            <tr>
-                <td>ORD001</td>
-                <td>John Doe</td>
-                <td>Item A - Red - M - 5 pcs</td>
-                <td>
-                    <button onclick="dispatchOrder('ORD001')">Dispatch</button>
-                    <button onclick="revertOrder('ORD001')">Revert</button>
-                    <button onclick="viewDetails('ORD001')">View Details</button>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Billing Section -->
-    <div class="section" id="billing-section">
-        <h2>Billing</h2>
-        <table id="billingTable">
-            <tr>
-                <th>Party Name</th>
-                <th>Item Details</th>
-                <th>Action</th>
-            </tr>
-            <!-- Sample Row -->
-            <tr>
-                <td>John Doe</td>
-                <td>Item A - Red - M - 5 pcs</td>
-                <td><button onclick="markAsBilled('ORD001')">Mark as Billed</button></td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Sent Orders Section -->
-    <div class="section" id="sent-orders-section">
-        <h2>Sent Orders</h2>
-        <ul>
-            <li>ORD001 - John Doe - Item A - Red - M - 5 pcs (Dispatched)</li>
-        </ul>
-    </div>
 
     <script>
-        // Example functions to handle order submission and display order summary
-        function submitOrder() {
-            const orderId = "ORD" + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            const partyName = document.getElementById('partyName').value;
+        // Firebase configuration
+        const firebaseConfig = {
+            // ... your Firebase configuration
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Order form submission
+        const orderForm = document.getElementById('order-form');
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Get form data
+            const partyName = document.getElementById('party-name').value;
             const item = document.getElementById('item').value;
-            const color = document.getElementById('color').value;
-            const size = document.getElementById('size').value;
             const quantity = document.getElementById('quantity').value;
 
-            // Save order to Firebase
-            writeOrderData(orderId, partyName, item, color, size, quantity);
+            // Create a new order object
+            const newOrder = {
+                partyName,
+                item,
+                quantity,
+                status: 'pending'
+            };
 
-            // Display summary
-            const summary = `
-                <p>Order ID: ${orderId}</p>
-                <p>Party Name: ${partyName}</p>
-                <p>Item: ${item}</p>
-                <p>Color: ${color}</p>
-                <p>Size: ${size}</p>
-                <p>Quantity: ${quantity}</p>
-            `;
-            document.getElementById('orderSummary').innerHTML = summary;
-        }
+            // Push the order to Firebase
+            database.ref('orders').push(newOrder);
 
-        // Placeholder functions for dispatch, revert, and view details
+            // Clear form fields
+            orderForm.reset();
+        });
+
+        // Retrieve pending orders
+        database.ref('orders').on('value', (snapshot) => {
+            const orders = snapshot.val();
+            const pendingOrders = Object.values(orders).filter(order => order.status === 'pending');
+
+            // Populate the pending orders table
+            const pendingOrdersTable = document.getElementById('pending-orders-table').querySelector('tbody');
+            pendingOrdersTable.innerHTML = '';
+            pendingOrders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.partyName}</td>
+                    <td>${order.item}</td>
+                    <td>${order.quantity}</td>
+                    <td>${order.status}</td>
+                    <td><button class="dispatch-button">Dispatch</button> <button class="revert-button">Revert</button></td>
+                `;
+                pendingOrdersTable.appendChild(row);
+            });
+
+            // Add event listeners for dispatch and revert buttons
+            const dispatchButtons = document.querySelectorAll('.dispatch-button');
+            dispatchButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const orderId = event.target.parentElement.parentElement.firstChild.textContent;
+                    dispatchOrder(orderId);
+                });
+            });
+
+            const revertButtons = document.querySelectorAll('.revert-button');
+            revertButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const orderId = event.target.parentElement.parentElement.firstChild.textContent;
+                    revertOrder(orderId);
+                });
+            });
+        });
+
+        // Dispatch order
         function dispatchOrder(orderId) {
-            alert("Dispatching order " + orderId);
+            database.ref('orders/' + orderId).update({
+                status: 'dispatched'
+            });
         }
 
+        // Revert order
         function revertOrder(orderId) {
-            alert("Reverting order " + orderId);
+            database.ref('orders/' + orderId).update({
+                status: 'pending'
+            });
         }
 
-        function viewDetails(orderId) {
-            alert("Viewing details for order " + orderId);
-        }
+        // Process billing
+        document.getElementById('billing-button').addEventListener('click', () => {
+            // Implement your billing logic here
+            // For example, you might update the order status to "billed"
+            // and calculate the total amount due
+        });
 
-        function markAsBilled(orderId) {
-            alert("Marking order " + orderId + " as billed");
-        }
+        // Retrieve sent orders
+        database.ref('orders').on('value', (snapshot) => {
+            const orders = snapshot.val();
+            const sentOrders = Object.values(orders).filter(order => order.status === 'dispatched');
+
+            // Populate the sent orders list
+            const sentOrdersList = document.getElementById('sent-orders-list');
+            sentOrdersList.innerHTML = '';
+            sentOrders.forEach(order => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Order ID: ${order.id}, Party Name: ${order.partyName}, Item: ${order.item}, Quantity: ${order.quantity}`;
+                sentOrdersList.appendChild(listItem);
+            });
+        });
     </script>
-
 </body>
 </html>
