@@ -2,195 +2,417 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management System</title>
-    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-database.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Order Management System</h1>
-
-    <section id="order-entry">
-        <h2>Order Entry</h2>
-        <form id="order-form">
-            <label for="party-name">Party Name:</label>
-            <input type="text" id="party-name" name="partyName" required>
-            <br>
-            <label for="item">Item:</label>
-            <input type="text" id="item" name="item" list="item-list" required>
-            <datalist id="item-list"></datalist>
-            <br>
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" min="1" required>
-            <br>
-            <button type="submit">Add Order</button>
-        </form>
-    </section>
-
-    <section id="pending-orders">
-        <h2>Pending Orders</h2>
-        <table id="pending-orders-table">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Party Name</th>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                </tbody>
-        </table>
-    </section>
-
-    <section id="billing">
-        <h2>Billing</h2>
-        <button id="billing-button">Process Billing</button>
-    </section>
-
-    <section id="sent-orders">
-        <h2>Sent Orders</h2>
-        <ul id="sent-orders-list"></ul>
-    </section>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OMS Mobile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
     <style>
-        /* Your CSS styles here */
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-
-        h1, h2 {
-            text-align: center;
+        .section {
+            display: none;
+            padding: 10px;
         }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
+        .active {
+            display: block;
         }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+        .nav-link.active {
+            font-weight: bold;
         }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+        #orderSummary {
+            margin-top: 15px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .navbar {
+            padding: 5px;
+        }
+        .navbar-brand {
+            font-size: 1.2rem;
+        }
+        .nav-link {
+            font-size: 0.9rem;
+            padding: 5px !important;
+        }
+        .btn {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+        .table {
+            font-size: 0.8rem;
+        }
+        .table td, .table th {
+            padding: 5px;
+        }
+        @media (min-width: 768px) {
+            body::before {
+                content: "This application is designed for mobile devices only. Please access it on a mobile device or use a mobile device emulator.";
+                display: block;
+                padding: 20px;
+                text-align: center;
+                font-size: 18px;
+            }
+            .container {
+                display: none;
+            }
         }
     </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">OMS</a>
+            <div class="navbar-nav">
+                <a class="nav-link active" href="#" data-section="orders">Orders</a>
+                <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
+                <a class="nav-link" href="#" data-section="billing">Billing</a>
+                <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-2">
+        <!-- Orders Section -->
+        <div id="orders" class="section active">
+            <h4>New Order</h4>
+            <form id="orderForm">
+                <div class="form-group">
+                    <select class="form-select form-select-sm" id="partyName" required>
+                        <option value="">Select Party</option>
+                        <option value="PARTY A">PARTY A</option>
+                        <option value="PARTY B">PARTY B</option>
+                        <option value="XYLO">XYLO</option>
+                        <option value="HC">HC</option>
+                        <option value="KAMBESHWAR">KAMBESHWAR</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select class="form-select form-select-sm" id="item" required>
+                        <option value="">Select Item</option>
+                        <option value="REPLY">REPLY</option>
+                        <option value="CLAZE">CLAZE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select class="form-select form-select-sm" id="color" required>
+                        <option value="">Select Color</option>
+                        <option value="BLK">BLK</option>
+                        <option value="WHT">WHT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select class="form-select form-select-sm" id="size" required>
+                        <option value="">Select Size</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control form-control-sm" id="quantity" min="1" placeholder="Quantity" required>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" id="addItem">Add Item</button>
+                <button type="submit" class="btn btn-success btn-sm">Submit Order</button>
+            </form>
+            <div id="orderSummary">
+                <h5>Order Summary</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Color</th>
+                            <th>Size</th>
+                            <th>Qty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderSummaryBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pending Orders Section -->
+        <div id="pendingOrders" class="section">
+            <h4>Pending Orders</h4>
+            <input type="text" class="form-control form-control-sm mb-2" id="pendingOrderSearch" placeholder="Search orders...">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Party</th>
+                        <th>Items</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingOrdersBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Billing Section -->
+        <div id="billing" class="section">
+            <h4>Billing</h4>
+            <div id="billingParties"></div>
+        </div>
+
+        <!-- Sent Orders Section -->
+        <div id="sentOrders" class="section">
+            <h4>Sent Orders</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Party</th>
+                        <th>Items</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="sentOrdersBody"></tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-        // Firebase configuration
+        // Firebase configuration (same as before)
         const firebaseConfig = {
-            // ... your Firebase configuration
+            apiKey: "AIzaSyDPA5tLm3H889inLZvh_uWAHOxGNhC0gLc",
+            authDomain: "order-management-system-ea2d3.firebaseapp.com",
+            databaseURL: "https://order-management-system-ea2d3-default-rtdb.firebaseio.com",
+            projectId: "order-management-system-ea2d3",
+            storageBucket: "order-management-system-ea2d3.appspot.com",
+            messagingSenderId: "779242930925",
+            appId: "1:779242930925:web:46d09278bedd87d6aac2e4",
+            measurementId: "G-K0F1E6FY6C"
         };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const analytics = firebase.analytics();
 
-        // Order form submission
-        const orderForm = document.getElementById('order-form');
-        orderForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                this.classList.add('active');
+            });
+        });
 
-            // Get form data
-            const partyName = document.getElementById('party-name').value;
+        // Orders Section
+        const orderForm = document.getElementById('orderForm');
+        const orderSummaryBody = document.getElementById('orderSummaryBody');
+        let orderItems = [];
+
+        document.getElementById('addItem').addEventListener('click', function() {
             const item = document.getElementById('item').value;
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
             const quantity = document.getElementById('quantity').value;
 
-            // Create a new order object
-            const newOrder = {
-                partyName,
-                item,
-                quantity,
-                status: 'pending'
-            };
-
-            // Push the order to Firebase
-            database.ref('orders').push(newOrder);
-
-            // Clear form fields
-            orderForm.reset();
+            if (item && color && size && quantity) {
+                orderItems.push({ item, color, size, quantity });
+                updateOrderSummary();
+                clearFormFields();
+            } else {
+                alert('Please fill all fields');
+            }
         });
 
-        // Retrieve pending orders
-        database.ref('orders').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const pendingOrders = Object.values(orders).filter(order => order.status === 'pending');
-
-            // Populate the pending orders table
-            const pendingOrdersTable = document.getElementById('pending-orders-table').querySelector('tbody');
-            pendingOrdersTable.innerHTML = '';
-            pendingOrders.forEach(order => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.partyName}</td>
-                    <td>${order.item}</td>
-                    <td>${order.quantity}</td>
-                    <td>${order.status}</td>
-                    <td><button class="dispatch-button">Dispatch</button> <button class="revert-button">Revert</button></td>
+        function updateOrderSummary() {
+            orderSummaryBody.innerHTML = '';
+            orderItems.forEach((item, index) => {
+                const row = `
+                    <tr>
+                        <td>${item.item}</td>
+                        <td>${item.color}</td>
+                        <td>${item.size}</td>
+                        <td>${item.quantity}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">Remove</button>
+                        </td>
+                    </tr>
                 `;
-                pendingOrdersTable.appendChild(row);
+                orderSummaryBody.innerHTML += row;
             });
+        }
 
-            // Add event listeners for dispatch and revert buttons
-            const dispatchButtons = document.querySelectorAll('.dispatch-button');
-            dispatchButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const orderId = event.target.parentElement.parentElement.firstChild.textContent;
-                    dispatchOrder(orderId);
-                });
-            });
+        function clearFormFields() {
+            document.getElementById('item').value = '';
+            document.getElementById('color').value = '';
+            document.getElementById('size').value = '';
+            document.getElementById('quantity').value = '';
+        }
 
-            const revertButtons = document.querySelectorAll('.revert-button');
-            revertButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const orderId = event.target.parentElement.parentElement.firstChild.textContent;
-                    revertOrder(orderId);
-                });
-            });
+        function removeItem(index) {
+            orderItems.splice(index, 1);
+            updateOrderSummary();
+        }
+
+        orderForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const partyName = document.getElementById('partyName').value;
+            if (partyName && orderItems.length > 0) {
+                const order = {
+                    partyName,
+                    items: orderItems,
+                    status: 'Pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                db.collection('orders').add(order)
+                    .then(() => {
+                        alert('Order submitted successfully');
+                        orderItems = [];
+                        updateOrderSummary();
+                        orderForm.reset();
+                    })
+                    .catch(error => {
+                        console.error('Error adding order: ', error);
+                        alert('Error submitting order');
+                    });
+            } else {
+                alert('Please add items to the order and select a party');
+            }
         });
 
-        // Dispatch order
+        // Pending Orders Section
+        function loadPendingOrders() {
+            const pendingOrdersBody = document.getElementById('pendingOrdersBody');
+            db.collection('orders').where('status', '==', 'Pending')
+                .onSnapshot(snapshot => {
+                    pendingOrdersBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const row = `
+                            <tr>
+                                <td>${doc.id.slice(-4)}</td>
+                                <td>${order.partyName}</td>
+                                <td>${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}</td>
+                                <td>${order.status}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="dispatchOrder('${doc.id}')">Dispatch</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="revertOrder('${doc.id}')">Revert</button>
+                                </td>
+                            </tr>
+                        `;
+                        pendingOrdersBody.innerHTML += row;
+                    });
+                });
+        }
+
         function dispatchOrder(orderId) {
-            database.ref('orders/' + orderId).update({
-                status: 'dispatched'
-            });
+            console.log('Dispatching order:', orderId);
         }
 
-        // Revert order
         function revertOrder(orderId) {
-            database.ref('orders/' + orderId).update({
-                status: 'pending'
-            });
+            console.log('Reverting order:', orderId);
         }
 
-        // Process billing
-        document.getElementById('billing-button').addEventListener('click', () => {
-            // Implement your billing logic here
-            // For example, you might update the order status to "billed"
-            // and calculate the total amount due
-        });
+        // Billing Section
+        function loadBillingSection() {
+            const billingParties = document.getElementById('billingParties');
+            db.collection('orders').where('status', '==', 'Dispatched')
+                .onSnapshot(snapshot => {
+                    const parties = {};
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        if (!parties[order.partyName]) {
+                            parties[order.partyName] = [];
+                        }
+                        parties[order.partyName].push({ id: doc.id, ...order });
+                    });
 
-        // Retrieve sent orders
-        database.ref('orders').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const sentOrders = Object.values(orders).filter(order => order.status === 'dispatched');
+                    billingParties.innerHTML = '';
+                    for (const [party, orders] of Object.entries(parties)) {
+                        const partyDiv = document.createElement('div');
+                        partyDiv.innerHTML = `
+                            <h5>${party}</h5>
+                            <ul class="list-group">
+                                ${orders.map(order => `
+                                    <li class="list-group-item">
+                                        Order ${order.id.slice(-4)}: 
+                                        ${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}
+                                        <button class="btn btn-success btn-sm float-end" onclick="billOrder('${order.id}')">Bill</button>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                        billingParties.appendChild(partyDiv);
+                    }
+                });
+        }
 
-            // Populate the sent orders list
-            const sentOrdersList = document.getElementById('sent-orders-list');
-            sentOrdersList.innerHTML = '';
-            sentOrders.forEach(order => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `Order ID: ${order.id}, Party Name: ${order.partyName}, Item: ${order.item}, Quantity: ${order.quantity}`;
-                sentOrdersList.appendChild(listItem);
+        function billOrder(orderId) {
+            console.log('Billing order:', orderId);
+        }
+
+        // Sent Orders Section
+        function loadSentOrders() {
+            const sentOrdersBody = document.getElementById('sentOrdersBody');
+            db.collection('orders').where('status', '==', 'Billed')
+                .onSnapshot(snapshot => {
+                    sentOrdersBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const row = `
+                            <tr>
+                                <td>${doc.id.slice(-4)}</td>
+                                <td>${order.partyName}</td>
+                                <td>${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="archiveOrder('${doc.id}')">Archive</button>
+                                </td>
+                            </tr>
+                        `;
+                        sentOrdersBody.innerHTML += row;
+                    });
+                });
+        }
+
+        function archiveOrder(orderId) {
+            console.log('Archiving order:', orderId);
+        }
+
+        // Load data for all sections
+        loadPendingOrders();
+        loadBillingSection();
+        loadSentOrders();
+
+        // Search functionality for pending orders
+        document.getElementById('pendingOrderSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#pendingOrdersBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+
+        // Responsive design adjustments
+        function adjustForMobileView() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.table').forEach(table => {
+                    table.classList.add('table-responsive');
+                });
+            } else {
+                document.querySelectorAll('.table').forEach(table => {
+                    table.classList.remove('table-responsive');
+                });
+            }
+        }
+
+        window.addEventListener('resize', adjustForMobileView);
+        adjustForMobileView();
     </script>
 </body>
 </html>
