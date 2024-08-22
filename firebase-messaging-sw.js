@@ -23,3 +23,16 @@ messaging.onBackgroundMessage((payload) => {
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+self.addEventListener('push', function(event) {
+  const payload = event.data.json();
+  const options = {
+    body: payload.notification.body,
+    icon: payload.notification.icon,
+    // other options...
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(payload.notification.title, options)
+  );
+});
