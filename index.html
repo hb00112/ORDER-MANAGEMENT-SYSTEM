@@ -487,7 +487,6 @@ window.onclick = function(event) {
     
     saveToFirebase('partyNames', partyName);
 
-    // Save item names and colors
     currentItems.forEach(item => {
         saveToFirebase('itemNames', item.itemName);
         if (item.color) {
@@ -495,7 +494,6 @@ window.onclick = function(event) {
         }
     });
 
-    // Update datalists
     updateDatalist('partyNames');
     updateDatalist('itemNames');
     updateDatalist('colors');
@@ -505,18 +503,30 @@ function saveToFirebase(key, value) {
         let items = snapshot.val() || [];
         if (!items.includes(value)) {
             items.push(value);
-            database.ref(key).set(items);
+            database.ref(key).set(items)
+                .then(() => console.log(`${key} updated successfully`))
+                .catch((error) => console.error(`Error updating ${key}:`, error));
         }
         updateDatalist(key);
+    }).catch((error) => {
+        console.error(`Error fetching ${key}:`, error);
     });
 }
 
 function saveOrders() {
     console.log("Saving orders:", orders);
-    localStorage.setItem('orders', JSON.stringify(orders));
+    database.ref('orders').set(orders)
+        .then(() => {
+            console.log("Orders saved successfully to Firebase");
+            localStorage.setItem('orders', JSON.stringify(orders)); // Backup to localStorage
+        })
+        .catch((error) => {
+            console.error("Error saving orders to Firebase:", error);
+            alert("Failed to save orders to the server. Please check your internet connection.");
+        });
 }
 
-function saveToLocalStorage(key, value) {
+/*function saveToLocalStorage(key, value) {
     let items = JSON.parse(localStorage.getItem(key)) || [];
     if (!items.includes(value)) {
         items.push(value);
@@ -524,7 +534,7 @@ function saveToLocalStorage(key, value) {
     }
     updateDatalist(key);
 }
-
+*/
 function updateDatalist(key) {
     database.ref(key).once('value').then((snapshot) => {
         let items = snapshot.val() || [];
@@ -532,13 +542,16 @@ function updateDatalist(key) {
         if (datalist) {
             datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
         }
+    }).catch((error) => {
+        console.error(`Error fetching ${key} for datalist:`, error);
     });
 }
 
 function updateTables() {
     database.ref('orders').once('value').then((snapshot) => {
         orders = snapshot.val() || [];
-        console.log("Updating tables with orders:", orders);
+        console.log("Retrieved orders from Firebase:", orders);
+        
         const pendingTable = document.getElementById('pendingOrdersTable').getElementsByTagName('tbody')[0];
         const sentTable = document.getElementById('sentOrdersTable').getElementsByTagName('tbody')[0];
         pendingTable.innerHTML = '';
@@ -573,6 +586,7 @@ function updateTables() {
             }
         });
 
+        // Populate pending orders table
         Object.entries(groupedPendingOrders).forEach(([key, groupedOrders]) => {
             const [partyName, orderDate] = key.split('_');
             const row = pendingTable.insertRow();
@@ -591,6 +605,7 @@ function updateTables() {
             `;
         });
 
+        // Populate sent orders table
         Object.entries(groupedSentOrders).forEach(([key, groupedItems]) => {
             const [partyName, sentDate] = key.split('_');
             const row = sentTable.insertRow();
@@ -607,7 +622,7 @@ function updateTables() {
         });
     }).catch((error) => {
         console.error("Error fetching orders:", error);
-        alert("An error occurred while fetching orders. Please try again.");
+        alert("An error occurred while fetching orders. Please check your internet connection and try again.");
     });
 }
 
@@ -740,31 +755,24 @@ function importData() {
                 const importedData = JSON.parse(e.target.result);
                 
                 // Merge orders
-                const currentOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-                orders = mergeArrays(currentOrders, importedData.orders);
-                localStorage.setItem('orders', JSON.stringify(orders));
-                
-                // Merge party names
-                const currentPartyNames = JSON.parse(localStorage.getItem('partyNames') || '[]');
-                const mergedPartyNames = mergeArrays(currentPartyNames, importedData.partyNames);
-                localStorage.setItem('partyNames', JSON.stringify(mergedPartyNames));
-                
-                // Merge item names
-                const currentItemNames = JSON.parse(localStorage.getItem('itemNames') || '[]');
-                const mergedItemNames = mergeArrays(currentItemNames, importedData.itemNames);
-                localStorage.setItem('itemNames', JSON.stringify(mergedItemNames));
-                
-                // Merge colors
-                const currentColors = JSON.parse(localStorage.getItem('colors') || '[]');
-                const mergedColors = mergeArrays(currentColors, importedData.colors);
-                localStorage.setItem('colors', JSON.stringify(mergedColors));
+                database.ref('orders').once('value').then((snapshot) => {
+                    const currentOrders = snapshot.val() || [];
+                    orders = mergeArrays(currentOrders, importedData.orders);
+                    saveOrders();
+                    
+                    // Merge other data
+                    ['partyNames', 'itemNames', 'colors'].forEach(key => {
+                        database.ref(key).once('value').then((snapshot) => {
+                            const currentData = snapshot.val() || [];
+                            const mergedData = mergeArrays(currentData, importedData[key] || []);
+                            database.ref(key).set(mergedData);
+                            updateDatalist(key);
+                        });
+                    });
 
-                updateTables();
-                updateDatalist('partyNames');
-                updateDatalist('itemNames');
-                updateDatalist('colors');
-
-                alert('Data imported and merged successfully!');
+                    updateTables();
+                    alert('Data imported and merged successfully!');
+                });
             } catch (error) {
                 alert('Error importing data. Please make sure you selected the correct file.');
                 console.error(error);
@@ -773,6 +781,10 @@ function importData() {
         reader.readAsText(file);
     };
     input.click();
+}
+
+function mergeArrays(arr1, arr2) {
+    return [...new Set([...arr1, ...arr2])];
 }
 
 function mergeArrays(arr1, arr2) {
