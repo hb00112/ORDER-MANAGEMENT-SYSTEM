@@ -349,12 +349,11 @@
     <datalist id="colorsList"></datalist>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script>
-// Initialize Firebase
+        // Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB8fDn9EduVJsx8unmUHo74TsT3fgWGMAM",
   authDomain: "lovable-order-database.firebaseapp.com",
@@ -368,6 +367,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let currentItems = [];
         let currentDispatchOrder = null;
@@ -386,38 +386,6 @@ const database = firebase.database();
     console.log("Saving orders:", orders);
     database.ref('orders').set(orders);
 }
-function requestNotificationPermission() {
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted.');
-      getMessagingToken();
-    } else {
-      console.log('Unable to get permission to notify.');
-    }
-  });
-}
-function getMessagingToken() {
-  const messaging = firebase.messaging();
-  messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY' }).then((currentToken) => {
-    if (currentToken) {
-      console.log('FCM token:', currentToken);
-      // Send this token to your server
-    } else {
-      console.log('No registration token available. Request permission to generate one.');
-    }
-  }).catch((err) => {
-    console.log('An error occurred while retrieving token. ', err);
-  });
-}
-
-// Call this function when your app initializes
-requestNotificationPermission();
-
-const messaging = firebase.messaging();
-messaging.onMessage((payload) => {
-  console.log('Message received. ', payload);
-  // Handle the received message
-});
 
         function addItem() {
     const itemName = document.getElementById('itemName').value;
@@ -490,6 +458,10 @@ window.onclick = function(event) {
             });
         }
 
+        function removeItem(index) {
+            currentItems.splice(index, 1);
+            updateItemList();
+        }
         function addOrder(event) {
     event.preventDefault();
     const partyName = document.getElementById('partyName').value;
@@ -525,32 +497,6 @@ window.onclick = function(event) {
     updateDatalist('partyNames');
     updateDatalist('itemNames');
     updateDatalist('colors');
-
-    // Send notification for new order
-    sendNotification('New Order', `New order added for ${partyName}`);
-}
-function sendNotification(title, body) {
-    if ('Notification' in window) {
-        Notification.requestPermission().then(function (permission) {
-            if (permission === 'granted') {
-                navigator.serviceWorker.ready.then(function(registration) {
-                    registration.showNotification(title, {
-                        body: body,
-                        icon: '/path/to/icon.png' // Replace with path to your icon
-                    });
-                });
-            }
-        });
-    }
-
-
-    /*firebase.messaging().send(message)
-        .then((response) => {
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });*/
 }
 function saveToFirebase(key, value) {
     database.ref(key).once('value').then((snapshot) => {
@@ -1007,8 +953,6 @@ function saveDispatch() {
 
         if (order.items.length === 0) {
             order.status = 'sent';
-            // Send notification for dispatched order
-            sendNotification('Order Dispatched', `Order dispatched for ${order.partyName}`);
         }
     });
 
@@ -1297,18 +1241,6 @@ async function exportToXLS(type) {
 // Initialize the page
 showSection('order');
 updateTables();
-
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-      .then(function(registration) {
-        console.log('Service Worker registered with scope:', registration.scope);
-      }).catch(function(error) {
-        console.log('Service Worker registration failed:', error);
-      });
-  }
-
 </script>
-
 </body>
 </html>
