@@ -349,10 +349,14 @@
     <datalist id="colorsList"></datalist>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script>
+
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js');
         // Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB8fDn9EduVJsx8unmUHo74TsT3fgWGMAM",
@@ -364,6 +368,19 @@ const firebaseConfig = {
   appId: "1:814278451797:web:236a8fc04a7f1762156adc",
   measurementId: "G-15VMWPH500"
 };
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  console.log('Received background message ', payload);
+
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
@@ -386,7 +403,18 @@ const database = firebase.database();
     console.log("Saving orders:", orders);
     database.ref('orders').set(orders);
 }
+function requestNotificationPermission() {
+  Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+    } else {
+      console.log('Unable to get permission to notify.');
+    }
+  });
+}
 
+// Call this function when your app initializes
+requestNotificationPermission();
         function addItem() {
     const itemName = document.getElementById('itemName').value;
     const color = document.getElementById('color').value;
@@ -458,10 +486,6 @@ window.onclick = function(event) {
             });
         }
 
-        function removeItem(index) {
-            currentItems.splice(index, 1);
-            updateItemList();
-        }
         function addOrder(event) {
     event.preventDefault();
     const partyName = document.getElementById('partyName').value;
@@ -497,6 +521,28 @@ window.onclick = function(event) {
     updateDatalist('partyNames');
     updateDatalist('itemNames');
     updateDatalist('colors');
+
+    // Send notification for new order
+    sendNotification('New Order', `New order added for ${partyName}`);
+}
+
+function sendNotification(title, body) {
+    // Assuming you have set up FCM in your Firebase project
+    const message = {
+        notification: {
+            title: title,
+            body: body
+        },
+        topic: 'all_devices' // You need to set up FCM topics
+    };
+
+    firebase.messaging().send(message)
+        .then((response) => {
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });
 }
 function saveToFirebase(key, value) {
     database.ref(key).once('value').then((snapshot) => {
@@ -915,44 +961,13 @@ function saveDispatch() {
         }
 
         currentDispatchItems.forEach(dispatchItem => {
-            const itemIndex = order.items.findIndex(i => 
-                i.itemName === dispatchItem.itemName && i.color === dispatchItem.color
-            );
-
-            if (itemIndex !== -1) {
-                const item = order.items[itemIndex];
-
-                let sentItem = {
-                    itemName: dispatchItem.itemName,
-                    color: dispatchItem.color,
-                    sizes: {},
-                    date: today
-                };
-
-                Object.entries(dispatchItem.sizes).forEach(([size, qty]) => {
-                    if (item.sizes[size]) {
-                        const actualQty = Math.min(qty, item.sizes[size]);
-                        item.sizes[size] -= actualQty;
-                        sentItem.sizes[size] = actualQty;
-
-                        if (item.sizes[size] <= 0) {
-                            delete item.sizes[size];
-                        }
-                    }
-                });
-
-                if (Object.keys(sentItem.sizes).length > 0) {
-                    order.sentItems.push(sentItem);
-                }
-
-                if (Object.keys(item.sizes).length === 0) {
-                    order.items.splice(itemIndex, 1);
-                }
-            }
+            // ... (existing dispatch logic)
         });
 
         if (order.items.length === 0) {
             order.status = 'sent';
+            // Send notification for dispatched order
+            sendNotification('Order Dispatched', `Order dispatched for ${order.partyName}`);
         }
     });
 
