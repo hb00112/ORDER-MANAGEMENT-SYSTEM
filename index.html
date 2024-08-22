@@ -390,14 +390,35 @@ function requestNotificationPermission() {
   Notification.requestPermission().then((permission) => {
     if (permission === 'granted') {
       console.log('Notification permission granted.');
+      getMessagingToken();
     } else {
       console.log('Unable to get permission to notify.');
     }
   });
 }
+function getMessagingToken() {
+  const messaging = firebase.messaging();
+  messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY' }).then((currentToken) => {
+    if (currentToken) {
+      console.log('FCM token:', currentToken);
+      // Send this token to your server
+    } else {
+      console.log('No registration token available. Request permission to generate one.');
+    }
+  }).catch((err) => {
+    console.log('An error occurred while retrieving token. ', err);
+  });
+}
 
 // Call this function when your app initializes
 requestNotificationPermission();
+
+const messaging = firebase.messaging();
+messaging.onMessage((payload) => {
+  console.log('Message received. ', payload);
+  // Handle the received message
+});
+
         function addItem() {
     const itemName = document.getElementById('itemName').value;
     const color = document.getElementById('color').value;
