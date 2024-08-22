@@ -2,417 +2,1233 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OMS Mobile</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HC Order Management System</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 100%;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        h1 {
+            font-size: 1.8em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.4em;
+            color: #34495e;
+        }
+        .main-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .main-menu button, button {
+            font-size: 14px;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
         .section {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: none;
-            padding: 10px;
         }
-        .active {
-            display: block;
+        form {
+            display: grid;
+            gap: 10px;
         }
-        .nav-link.active {
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            background-color: #f8d7da;
+            padding: 8px 0;
+            margin-bottom: 15px;
+        }
+        .marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 20s linear infinite;
+        }
+        .marquee-content span {
+            display: inline-block;
+            font-size: 14px;
             font-weight: bold;
+            color: #721c24;
+            padding-left: 100%;
         }
-        #orderSummary {
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 15px;
+            font-size: 12px;
         }
-        .form-group {
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        .size-input {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
             margin-bottom: 10px;
         }
-        .navbar {
-            padding: 5px;
+        .size-column {
+            text-align: center;
         }
-        .navbar-brand {
-            font-size: 1.2rem;
+        .size-column span {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
         }
-        .nav-link {
-            font-size: 0.9rem;
-            padding: 5px !important;
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .btn {
-            font-size: 0.9rem;
-            padding: 5px 10px;
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
         }
-        .table {
-            font-size: 0.8rem;
+        .custom-input {
+            width: 40px;
+            padding: 3px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            font-size: 12px;
         }
-        .table td, .table th {
-            padding: 5px;
+        .modal {
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
         }
-        @media (min-width: 768px) {
-            body::before {
-                content: "This application is designed for mobile devices only. Please access it on a mobile device or use a mobile device emulator.";
-                display: block;
-                padding: 20px;
-                text-align: center;
-                font-size: 18px;
-            }
-            .container {
-                display: none;
-            }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">OMS</a>
-            <div class="navbar-nav">
-                <a class="nav-link active" href="#" data-section="orders">Orders</a>
-                <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
-                <a class="nav-link" href="#" data-section="billing">Billing</a>
-                <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
+    <div class="container">
+        <h1>HC Order Management System</h1>
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span>ORDERS ONCE CREATED CANNOT BE DELETED .CREATE CAREFULLY!</span>
             </div>
         </div>
-    </nav>
+        <div class="main-menu">
+            <button onclick="showSection('order')">Order</button>
+            <button onclick="showSection('pendingOrders')">Pending Orders</button>
+            <button onclick="showSection('sentOrders')">Sent Orders</button>
+        </div>
 
-    <div class="container mt-2">
-        <!-- Orders Section -->
-        <div id="orders" class="section active">
-            <h4>New Order</h4>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <button onclick="exportData()">Export Data</button>
+        <button onclick="importData()">Import Data</button>
+
+        <div id="orderSection" class="section">
+            <h2>New Order</h2>
             <form id="orderForm">
-                <div class="form-group">
-                    <select class="form-select form-select-sm" id="partyName" required>
-                        <option value="">Select Party</option>
-                        <option value="PARTY A">PARTY A</option>
-                        <option value="PARTY B">PARTY B</option>
-                        <option value="XYLO">XYLO</option>
-                        <option value="HC">HC</option>
-                        <option value="KAMBESHWAR">KAMBESHWAR</option>
-                    </select>
+                <input type="text" id="partyName" placeholder="Party Name" list="partyNamesList" required>
+                <div id="itemForm">
+                    <input type="text" id="itemName" placeholder="Item Name" list="itemNamesList">
+                    <input type="text" id="color" placeholder="Color" list="colorsList">
+                    <div class="size-input">
+                        <div class="size-column">
+                            <span>S</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="sizeS" value="1">1</label>
+                                <label><input type="radio" name="sizeS" value="2">2</label>
+                                <label><input type="radio" name="sizeS" value="3">3</label>
+                                <label><input type="radio" name="sizeS" value="4">4</label>
+                                <label><input type="radio" name="sizeS" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                        <div class="size-column">
+                            <span>M</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="sizeM" value="1">1</label>
+                                <label><input type="radio" name="sizeM" value="2">2</label>
+                                <label><input type="radio" name="sizeM" value="3">3</label>
+                                <label><input type="radio" name="sizeM" value="4">4</label>
+                                <label><input type="radio" name="sizeM" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                        <div class="size-column">
+                            <span>L</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="sizeL" value="1">1</label>
+                                <label><input type="radio" name="sizeL" value="2">2</label>
+                                <label><input type="radio" name="sizeL" value="3">3</label>
+                                <label><input type="radio" name="sizeL" value="4">4</label>
+                                <label><input type="radio" name="sizeL" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                        <div class="size-column">
+                            <span>XL</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="sizeXL" value="1">1</label>
+                                <label><input type="radio" name="sizeXL" value="2">2</label>
+                                <label><input type="radio" name="sizeXL" value="3">3</label>
+                                <label><input type="radio" name="sizeXL" value="4">4</label>
+                                <label><input type="radio" name="sizeXL" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                        <div class="size-column">
+                            <span>2XL</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="size2XL" value="1">1</label>
+                                <label><input type="radio" name="size2XL" value="2">2</label>
+                                <label><input type="radio" name="size2XL" value="3">3</label>
+                                <label><input type="radio" name="size2XL" value="4">4</label>
+                                <label><input type="radio" name="size2XL" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="size-input">
+                        <div class="size-column">
+                            <span>3XL</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="size3XL" value="1">1</label>
+                                <label><input type="radio" name="size3XL" value="2">2</label>
+                                <label><input type="radio" name="size3XL" value="3">3</label>
+                                <label><input type="radio" name="size3XL" value="4">4</label>
+                                <label><input type="radio" name="size3XL" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                        <div class="size-column">
+                            <span>4XL</span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="size4XL" value="1">1</label>
+                                <label><input type="radio" name="size4XL" value="2">2</label>
+                                <label><input type="radio" name="size4XL" value="3">3</label>
+                                <label><input type="radio" name="size4XL" value="4">4</label>
+                                <label><input type="radio" name="size4XL" value="5">5</label>
+                                <input type="number" class="custom-input" min="0">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <select class="form-select form-select-sm" id="item" required>
-                        <option value="">Select Item</option>
-                        <option value="REPLY">REPLY</option>
-                        <option value="CLAZE">CLAZE</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <select class="form-select form-select-sm" id="color" required>
-                        <option value="">Select Color</option>
-                        <option value="BLK">BLK</option>
-                        <option value="WHT">WHT</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <select class="form-select form-select-sm" id="size" required>
-                        <option value="">Select Size</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control form-control-sm" id="quantity" min="1" placeholder="Quantity" required>
-                </div>
-                <button type="button" class="btn btn-primary btn-sm" id="addItem">Add Item</button>
-                <button type="submit" class="btn btn-success btn-sm">Submit Order</button>
+                <button type="button" id="addItemBtn">Add Item</button>
+                <button type="submit">Save Order</button>
             </form>
-            <div id="orderSummary">
-                <h5>Order Summary</h5>
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Color</th>
-                            <th>Size</th>
-                            <th>Qty</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orderSummaryBody"></tbody>
-                </table>
-            </div>
+            <div id="itemList"></div>
+            <button onclick="exportToXLS('orders')">Export to XLS</button>
         </div>
 
-        <!-- Pending Orders Section -->
-        <div id="pendingOrders" class="section">
-            <h4>Pending Orders</h4>
-            <input type="text" class="form-control form-control-sm mb-2" id="pendingOrderSearch" placeholder="Search orders...">
-            <table class="table table-sm">
+        <div id="pendingOrdersSection" class="section">
+            <h2>Pending Orders</h2>
+            <table id="pendingOrdersTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Party</th>
+                        <th>Party Name</th>
+                        <th>Order Date</th>
                         <th>Items</th>
-                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="pendingOrdersBody"></tbody>
+                <tbody></tbody>
             </table>
+            <button onclick="exportToXLS('pending')">Export to XLS</button>
         </div>
 
-        <!-- Billing Section -->
-        <div id="billing" class="section">
-            <h4>Billing</h4>
-            <div id="billingParties"></div>
-        </div>
-
-        <!-- Sent Orders Section -->
-        <div id="sentOrders" class="section">
-            <h4>Sent Orders</h4>
-            <table class="table table-sm">
+        <div id="sentOrdersSection" class="section">
+            <h2>Sent Orders</h2>
+            <table id="sentOrdersTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Party</th>
+                        <th>Party Name</th>
+                        <th>Dispatch Date</th>
                         <th>Items</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
-                <tbody id="sentOrdersBody"></tbody>
+                <tbody></tbody>
             </table>
+            <button onclick="exportToXLS('sent')">Export to XLS</button>
         </div>
     </div>
 
-    <script>
-        // Firebase configuration (same as before)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDPA5tLm3H889inLZvh_uWAHOxGNhC0gLc",
-            authDomain: "order-management-system-ea2d3.firebaseapp.com",
-            databaseURL: "https://order-management-system-ea2d3-default-rtdb.firebaseio.com",
-            projectId: "order-management-system-ea2d3",
-            storageBucket: "order-management-system-ea2d3.appspot.com",
-            messagingSenderId: "779242930925",
-            appId: "1:779242930925:web:46d09278bedd87d6aac2e4",
-            measurementId: "G-K0F1E6FY6C"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const analytics = firebase.analytics();
-
-        // Navigation
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-                document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
-                const sectionId = this.getAttribute('data-section');
-                document.getElementById(sectionId).classList.add('active');
-                this.classList.add('active');
-            });
-        });
-
-        // Orders Section
-        const orderForm = document.getElementById('orderForm');
-        const orderSummaryBody = document.getElementById('orderSummaryBody');
-        let orderItems = [];
-
-        document.getElementById('addItem').addEventListener('click', function() {
-            const item = document.getElementById('item').value;
-            const color = document.getElementById('color').value;
-            const size = document.getElementById('size').value;
-            const quantity = document.getElementById('quantity').value;
-
-            if (item && color && size && quantity) {
-                orderItems.push({ item, color, size, quantity });
-                updateOrderSummary();
-                clearFormFields();
-            } else {
-                alert('Please fill all fields');
-            }
-        });
-
-        function updateOrderSummary() {
-            orderSummaryBody.innerHTML = '';
-            orderItems.forEach((item, index) => {
-                const row = `
+    <div id="dispatchModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Dispatch Order</h2>
+            <table id="dispatchItemsTable">
+                <thead>
                     <tr>
-                        <td>${item.item}</td>
-                        <td>${item.color}</td>
-                        <td>${item.size}</td>
-                        <td>${item.quantity}</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">Remove</button>
-                        </td>
+                        <th>Item Name</th>
+                        <th>Action</th>
                     </tr>
-                `;
-                orderSummaryBody.innerHTML += row;
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="dispatchDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Dispatch Details</h2>
+            <table id="dispatchDetailsTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Color</th>
+                        <th>Size - Quantity</th>
+                        <th>Dispatch Quantity</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button id="saveDispatch">Save Dispatch</button>
+        </div>
+    </div>
+
+    <datalist id="partyNamesList"></datalist>
+    <datalist id="itemNamesList"></datalist>
+    <datalist id="colorsList"></datalist>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script>
+        // Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyB8fDn9EduVJsx8unmUHo74TsT3fgWGMAM",
+  authDomain: "lovable-order-database.firebaseapp.com",
+  databaseURL: "https://lovable-order-database-default-rtdb.firebaseio.com",
+  projectId: "lovable-order-database",
+  storageBucket: "lovable-order-database.appspot.com",
+  messagingSenderId: "814278451797",
+  appId: "1:814278451797:web:236a8fc04a7f1762156adc",
+  measurementId: "G-15VMWPH500"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        let currentItems = [];
+        let currentDispatchOrder = null;
+        let currentDispatchItems = [];
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
             });
+            document.getElementById(sectionId + 'Section').style.display = 'block';
+            if (sectionId === 'pendingOrders' || sectionId === 'sentOrders') {
+                updateTables();
+            }
         }
 
-        function clearFormFields() {
-            document.getElementById('item').value = '';
-            document.getElementById('color').value = '';
-            document.getElementById('size').value = '';
-            document.getElementById('quantity').value = '';
+        function saveOrders() {
+    console.log("Saving orders:", orders);
+    database.ref('orders').set(orders);
+}
+
+        function addItem() {
+    const itemName = document.getElementById('itemName').value;
+    const color = document.getElementById('color').value;
+
+    if (!itemName) {
+        alert('Please enter an Item Name.');
+        return;
+    }
+
+    const item = {
+        itemName: itemName,
+        color: color,
+        sizes: {}
+    };
+
+    ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].forEach(size => {
+        const radioValue = document.querySelector(`input[name="size${size}"]:checked`)?.value;
+        if (radioValue === 'custom') {
+            const customValue = document.querySelector(`input[name="size${size}"]:checked`).nextElementSibling.value;
+            if (customValue && customValue !== '0') {
+                item.sizes[size] = parseInt(customValue);
+            }
+        } else if (radioValue) {
+            item.sizes[size] = parseInt(radioValue);
+        }
+    });
+
+    currentItems.push(item);
+    updateItemList();
+
+    // Clear inputs and selections
+    document.getElementById('itemName').value = '';
+    document.getElementById('color').value = '';
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false;
+        radio.classList.remove('clicked');
+    });
+    document.querySelectorAll('.custom-input').forEach(input => {
+        input.value = '';
+    });
+
+    saveToLocalStorage('itemNames', itemName);
+    saveToLocalStorage('colors', color);
+}
+
+window.onload = function() {
+    initializeDataLists();
+    updateTables();
+    // Any other initialization code...
+};
+
+window.onclick = function(event) {
+    if (event.target.className === 'modal') {
+        closeModal();
+    }
+}
+
+        function updateItemList() {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '<h3>Current Items:</h3>';
+            currentItems.forEach((item, index) => {
+                itemList.innerHTML += `
+                    <div>
+                        <strong>${item.itemName}</strong> (${item.color})
+                        ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
+                        <button onclick="removeItem(${index})">Remove</button>
+                    </div>
+                `;
+            });
         }
 
         function removeItem(index) {
-            orderItems.splice(index, 1);
-            updateOrderSummary();
+            currentItems.splice(index, 1);
+            updateItemList();
+        }
+        function addOrder(event) {
+    event.preventDefault();
+    const partyName = document.getElementById('partyName').value;
+    if (!partyName) {
+        alert('Please enter a Party Name.');
+        return;
+    }
+    const order = {
+        id: Date.now(),
+        partyName: partyName,
+        items: currentItems.length > 0 ? [...currentItems] : [],
+        status: 'pending',
+        sentItems: [],
+        orderDate: new Date().toLocaleDateString()
+    };
+    orders.push(order);
+    saveOrders();
+    updateTables();
+    currentItems = [];
+    updateItemList();
+    document.getElementById('orderForm').reset();
+    alert('Order saved successfully!');
+    
+    saveToFirebase('partyNames', partyName);
+
+    // Save item names and colors
+    currentItems.forEach(item => {
+        saveToFirebase('itemNames', item.itemName);
+        if (item.color) {
+            saveToFirebase('colors', item.color);
+        }
+    });
+
+    // Update datalists
+    updateDatalist('partyNames');
+    updateDatalist('itemNames');
+    updateDatalist('colors');
+}
+function saveToFirebase(key, value) {
+    database.ref(key).once('value').then((snapshot) => {
+        let items = snapshot.val() || [];
+        if (!items.includes(value)) {
+            items.push(value);
+            database.ref(key).set(items);
+        }
+        updateDatalist(key);
+    });
+}
+
+function saveOrders() {
+    console.log("Saving orders:", orders);
+    localStorage.setItem('orders', JSON.stringify(orders));
+}
+
+function saveToLocalStorage(key, value) {
+    let items = JSON.parse(localStorage.getItem(key)) || [];
+    if (!items.includes(value)) {
+        items.push(value);
+        localStorage.setItem(key, JSON.stringify(items));
+    }
+    updateDatalist(key);
+}
+
+function updateDatalist(key) {
+    database.ref(key).once('value').then((snapshot) => {
+        let items = snapshot.val() || [];
+        let datalist = document.getElementById(`${key}List`);
+        if (datalist) {
+            datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
+        }
+    });
+}
+
+function updateTables() {
+    database.ref('orders').once('value').then((snapshot) => {
+        orders = snapshot.val() || [];
+        console.log("Updating tables with orders:", orders);
+        const pendingTable = document.getElementById('pendingOrdersTable').getElementsByTagName('tbody')[0];
+        const sentTable = document.getElementById('sentOrdersTable').getElementsByTagName('tbody')[0];
+        pendingTable.innerHTML = '';
+        sentTable.innerHTML = '';
+
+        if (orders.length === 0) {
+            pendingTable.innerHTML = '<tr><td colspan="4">No pending orders</td></tr>';
+            sentTable.innerHTML = '<tr><td colspan="3">No sent orders</td></tr>';
+            return;
         }
 
-        orderForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const partyName = document.getElementById('partyName').value;
-            if (partyName && orderItems.length > 0) {
-                const order = {
-                    partyName,
-                    items: orderItems,
-                    status: 'Pending',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                db.collection('orders').add(order)
-                    .then(() => {
-                        alert('Order submitted successfully');
-                        orderItems = [];
-                        updateOrderSummary();
-                        orderForm.reset();
-                    })
-                    .catch(error => {
-                        console.error('Error adding order: ', error);
-                        alert('Error submitting order');
-                    });
-            } else {
-                alert('Please add items to the order and select a party');
+        const groupedPendingOrders = {};
+        const groupedSentOrders = {};
+
+        orders.forEach(order => {
+            if (order.status === 'pending' && order.items && order.items.length > 0) {
+                const key = `${order.partyName}_${order.orderDate}`;
+                if (!groupedPendingOrders[key]) {
+                    groupedPendingOrders[key] = [];
+                }
+                groupedPendingOrders[key].push(order);
+            }
+
+            if (order.sentItems && order.sentItems.length > 0) {
+                order.sentItems.forEach(sentItem => {
+                    const key = `${order.partyName}_${sentItem.date}`;
+                    if (!groupedSentOrders[key]) {
+                        groupedSentOrders[key] = [];
+                    }
+                    groupedSentOrders[key].push({...sentItem, partyName: order.partyName});
+                });
             }
         });
 
-        // Pending Orders Section
-        function loadPendingOrders() {
-            const pendingOrdersBody = document.getElementById('pendingOrdersBody');
-            db.collection('orders').where('status', '==', 'Pending')
-                .onSnapshot(snapshot => {
-                    pendingOrdersBody.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        const order = doc.data();
-                        const row = `
-                            <tr>
-                                <td>${doc.id.slice(-4)}</td>
-                                <td>${order.partyName}</td>
-                                <td>${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}</td>
-                                <td>${order.status}</td>
-                                <td>
-                                    <button class="btn btn-primary btn-sm" onclick="dispatchOrder('${doc.id}')">Dispatch</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="revertOrder('${doc.id}')">Revert</button>
-                                </td>
-                            </tr>
-                        `;
-                        pendingOrdersBody.innerHTML += row;
-                    });
-                });
+        Object.entries(groupedPendingOrders).forEach(([key, groupedOrders]) => {
+            const [partyName, orderDate] = key.split('_');
+            const row = pendingTable.insertRow();
+            const consolidatedItems = consolidateItems(groupedOrders.flatMap(order => order.items));
+
+            row.innerHTML = `
+                <td>${partyName}</td>
+                <td>${orderDate}</td>
+                <td>${consolidatedItems.map(item => `
+                    ${item.itemName} (${item.color}):
+                    ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
+                `).join('<br>')}</td>
+                <td>
+                    <button onclick="openDispatchModal(${groupedOrders[0].id})">Dispatch Order</button>
+                </td>
+            `;
+        });
+
+        Object.entries(groupedSentOrders).forEach(([key, groupedItems]) => {
+            const [partyName, sentDate] = key.split('_');
+            const row = sentTable.insertRow();
+            const consolidatedItems = consolidateItems(groupedItems);
+
+            row.innerHTML = `
+                <td>${partyName}</td>
+                <td>${sentDate}</td>
+                <td>${consolidatedItems.map(item => `
+                    ${item.itemName} (${item.color}):
+                    ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
+                `).join('<br>')}</td>
+            `;
+        });
+    }).catch((error) => {
+        console.error("Error fetching orders:", error);
+        alert("An error occurred while fetching orders. Please try again.");
+    });
+}
+
+function consolidateItems(items) {
+    const consolidatedItems = {};
+    
+    items.forEach(item => {
+        const key = `${item.itemName}_${item.color}`;
+        if (!consolidatedItems[key]) {
+            consolidatedItems[key] = {...item, sizes: {...item.sizes}};
+        } else {
+            Object.entries(item.sizes).forEach(([size, qty]) => {
+                consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
+            });
+        }
+    });
+    
+    return Object.values(consolidatedItems);
+}
+
+function openDispatchModal(orderId) {
+    currentDispatchOrder = orders.find(o => o.id === orderId);
+    currentDispatchItems = []; // Reset the currentDispatchItems array
+    const groupedOrders = orders.filter(o => 
+        o.partyName === currentDispatchOrder.partyName && 
+        o.orderDate === currentDispatchOrder.orderDate &&
+        o.status === 'pending'
+    );
+    
+    const modal = document.getElementById('dispatchModal');
+    const dispatchItemsTable = document.getElementById('dispatchItemsTable');
+    
+    if (!dispatchItemsTable) {
+        console.error('dispatchItemsTable not found');
+        return;
+    }
+    
+    const tbody = dispatchItemsTable.getElementsByTagName('tbody')[0];
+    if (!tbody) {
+        console.error('tbody not found in dispatchItemsTable');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+
+    const allItems = groupedOrders.flatMap(order => order.items);
+    
+    // Consolidate items
+    const consolidatedItems = consolidateItems(allItems);
+    
+    consolidatedItems.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${item.itemName} (${item.color})<br>
+            ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}</td>
+            <td><button onclick="openDispatchDetailsModal('${item.itemName}', '${item.color}')">Select</button></td>
+        `;
+    });
+
+    // Add Save Dispatch button
+    const saveRow = tbody.insertRow();
+    saveRow.innerHTML = `
+        <td colspan="2">
+            <button onclick="saveDispatch()">Save Dispatch</button>
+        </td>
+    `;
+
+    modal.style.display = 'block';
+}
+function openDispatchDetailsModal(itemName, color) {
+    const modal = document.getElementById('dispatchDetailsModal');
+    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
+    dispatchDetailsTable.innerHTML = '';
+
+    const groupedOrders = orders.filter(o => 
+        o.partyName === currentDispatchOrder.partyName && 
+        o.orderDate === currentDispatchOrder.orderDate &&
+        o.status === 'pending'
+    );
+
+    const allItems = groupedOrders.flatMap(order => order.items);
+    const consolidatedItems = consolidateItems(allItems);
+    const item = consolidatedItems.find(i => i.itemName === itemName && i.color === color);
+    
+    Object.entries(item.sizes).forEach(([size, qty]) => {
+        const row = dispatchDetailsTable.insertRow();
+        row.innerHTML = `
+            <td>${itemName}</td>
+            <td>${color}</td>
+            <td>${size} - ${qty}</td>
+            <td><input type="number" min="0" max="${qty}" value="0" onchange="validateDispatchQuantity(this, ${qty})"></td>
+        `;
+    });
+
+    // Add a Save button for this item
+    const saveRow = dispatchDetailsTable.insertRow();
+    saveRow.innerHTML = `
+        <td colspan="4">
+            <button onclick="saveItemDispatch('${itemName}', '${color}')">Save Item Dispatch</button>
+        </td>
+    `;
+
+    modal.style.display = 'block';
+}
+function exportData() {
+    const data = {
+        orders: orders,
+        partyNames: JSON.parse(localStorage.getItem('partyNames') || '[]'),
+        itemNames: JSON.parse(localStorage.getItem('itemNames') || '[]'),
+        colors: JSON.parse(localStorage.getItem('colors') || '[]')
+    };
+
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'garment_order_data.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // Merge orders
+                const currentOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+                orders = mergeArrays(currentOrders, importedData.orders);
+                localStorage.setItem('orders', JSON.stringify(orders));
+                
+                // Merge party names
+                const currentPartyNames = JSON.parse(localStorage.getItem('partyNames') || '[]');
+                const mergedPartyNames = mergeArrays(currentPartyNames, importedData.partyNames);
+                localStorage.setItem('partyNames', JSON.stringify(mergedPartyNames));
+                
+                // Merge item names
+                const currentItemNames = JSON.parse(localStorage.getItem('itemNames') || '[]');
+                const mergedItemNames = mergeArrays(currentItemNames, importedData.itemNames);
+                localStorage.setItem('itemNames', JSON.stringify(mergedItemNames));
+                
+                // Merge colors
+                const currentColors = JSON.parse(localStorage.getItem('colors') || '[]');
+                const mergedColors = mergeArrays(currentColors, importedData.colors);
+                localStorage.setItem('colors', JSON.stringify(mergedColors));
+
+                updateTables();
+                updateDatalist('partyNames');
+                updateDatalist('itemNames');
+                updateDatalist('colors');
+
+                alert('Data imported and merged successfully!');
+            } catch (error) {
+                alert('Error importing data. Please make sure you selected the correct file.');
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function mergeArrays(arr1, arr2) {
+    return [...new Set([...arr1, ...arr2])];
+}
+function saveItemDispatch(itemName, color) {
+    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
+    const rows = dispatchDetailsTable.getElementsByTagName('tr');
+
+    let dispatchedItem = {
+        itemName: itemName,
+        color: color,
+        sizes: {}
+    };
+
+    for (let i = 0; i < rows.length - 1; i++) { // -1 to exclude the save button row
+        const cells = rows[i].getElementsByTagName('td');
+        const size = cells[2].textContent.split(' - ')[0];
+        const dispatchQty = parseInt(cells[3].getElementsByTagName('input')[0].value);
+
+        if (dispatchQty > 0) {
+            dispatchedItem.sizes[size] = dispatchQty;
+        }
+    }
+
+    // Update the currentDispatchItems array
+    const existingItemIndex = currentDispatchItems.findIndex(item => 
+        item.itemName === itemName && item.color === color
+    );
+
+    if (existingItemIndex !== -1) {
+        currentDispatchItems[existingItemIndex] = dispatchedItem;
+    } else {
+        currentDispatchItems.push(dispatchedItem);
+    }
+
+    // Update the dispatch modal table
+    updateDispatchModalTable(dispatchedItem);
+
+    // Close the dispatch details modal
+    closeDispatchDetailsModal();
+}
+function updateDispatchModalTable(dispatchedItem) {
+    const dispatchItemsTable = document.getElementById('dispatchItemsTable').getElementsByTagName('tbody')[0];
+    const existingRow = Array.from(dispatchItemsTable.rows).find(row => 
+        row.cells[0].textContent.includes(dispatchedItem.itemName) && 
+        row.cells[0].textContent.includes(dispatchedItem.color)
+    );
+
+    if (existingRow) {
+        existingRow.cells[0].innerHTML = `
+            ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
+            ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
+        `;
+    } else {
+        const newRow = dispatchItemsTable.insertRow();
+        newRow.innerHTML = `
+            <td>
+                ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
+                ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
+            </td>
+            <td><button onclick="openDispatchDetailsModal('${dispatchedItem.itemName}', '${dispatchedItem.color}')">Edit</button></td>
+        `;
+    }
+}
+function validateDispatchQuantity(input, maxQty) {
+    let value = parseInt(input.value);
+    if (isNaN(value) || value < 0) {
+        value = 0;
+    } else if (value > maxQty) {
+        value = maxQty;
+    }
+    input.value = value;
+}
+
+function saveToLocalStorage(key, value) {
+    let items = JSON.parse(localStorage.getItem(key)) || [];
+    if (!items.includes(value)) {
+        items.push(value);
+        localStorage.setItem(key, JSON.stringify(items));
+        updateDatalist(key);
+    }
+}
+
+function updateDatalist(key) {
+    let items = JSON.parse(localStorage.getItem(key)) || [];
+    let datalist = document.getElementById(`${key}List`);
+    if (datalist) {
+        datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
+    }
+}
+function initializeDataLists() {
+    updateDatalist('partyNames');
+    updateDatalist('itemNames');
+    updateDatalist('colors');
+}
+
+const order = {
+    id: Date.now(),
+    partyName: partyName,
+    items: currentItems.length > 0 ? [...currentItems] : [],
+    status: 'pending',
+    sentItems: [],
+    orderDate: new Date().toLocaleDateString()
+};
+
+function saveDispatch() {
+    let today = new Date().toLocaleDateString();
+
+    if (currentDispatchItems.length === 0) {
+        alert("No items were selected for dispatch. Please select at least one item.");
+        return;
+    }
+
+    const pendingOrderIndices = orders.reduce((acc, order, index) => {
+        if (order.partyName === currentDispatchOrder.partyName && 
+            order.orderDate === currentDispatchOrder.orderDate &&
+            order.status === 'pending') {
+            acc.push(index);
+        }
+        return acc;
+    }, []);
+
+    pendingOrderIndices.forEach(orderIndex => {
+        const order = orders[orderIndex];
+        if (!order.sentItems) {
+            order.sentItems = [];
         }
 
-        function dispatchOrder(orderId) {
-            console.log('Dispatching order:', orderId);
-        }
+        currentDispatchItems.forEach(dispatchItem => {
+            const itemIndex = order.items.findIndex(i => 
+                i.itemName === dispatchItem.itemName && i.color === dispatchItem.color
+            );
 
-        function revertOrder(orderId) {
-            console.log('Reverting order:', orderId);
-        }
+            if (itemIndex !== -1) {
+                const item = order.items[itemIndex];
 
-        // Billing Section
-        function loadBillingSection() {
-            const billingParties = document.getElementById('billingParties');
-            db.collection('orders').where('status', '==', 'Dispatched')
-                .onSnapshot(snapshot => {
-                    const parties = {};
-                    snapshot.forEach(doc => {
-                        const order = doc.data();
-                        if (!parties[order.partyName]) {
-                            parties[order.partyName] = [];
+                let sentItem = {
+                    itemName: dispatchItem.itemName,
+                    color: dispatchItem.color,
+                    sizes: {},
+                    date: today
+                };
+
+                Object.entries(dispatchItem.sizes).forEach(([size, qty]) => {
+                    if (item.sizes[size]) {
+                        const actualQty = Math.min(qty, item.sizes[size]);
+                        item.sizes[size] -= actualQty;
+                        sentItem.sizes[size] = actualQty;
+
+                        if (item.sizes[size] <= 0) {
+                            delete item.sizes[size];
                         }
-                        parties[order.partyName].push({ id: doc.id, ...order });
-                    });
-
-                    billingParties.innerHTML = '';
-                    for (const [party, orders] of Object.entries(parties)) {
-                        const partyDiv = document.createElement('div');
-                        partyDiv.innerHTML = `
-                            <h5>${party}</h5>
-                            <ul class="list-group">
-                                ${orders.map(order => `
-                                    <li class="list-group-item">
-                                        Order ${order.id.slice(-4)}: 
-                                        ${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}
-                                        <button class="btn btn-success btn-sm float-end" onclick="billOrder('${order.id}')">Bill</button>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        `;
-                        billingParties.appendChild(partyDiv);
                     }
                 });
+
+                if (Object.keys(sentItem.sizes).length > 0) {
+                    order.sentItems.push(sentItem);
+                }
+
+                if (Object.keys(item.sizes).length === 0) {
+                    order.items.splice(itemIndex, 1);
+                }
+            }
+        });
+
+        if (order.items.length === 0) {
+            order.status = 'sent';
+        }
+    });
+
+    saveOrders();
+    updateTables();
+    closeDispatchModal();
+
+    // Clear the currentDispatchItems array after saving
+    currentDispatchItems = [];
+}
+
+
+        function closeDispatchModal() {
+            const modal = document.getElementById('dispatchModal');
+            modal.style.display = 'none';
         }
 
-        function billOrder(orderId) {
-            console.log('Billing order:', orderId);
+        function closeDispatchDetailsModal() {
+            const modal = document.getElementById('dispatchDetailsModal');
+            modal.style.display = 'none';
         }
 
-        // Sent Orders Section
-        function loadSentOrders() {
-            const sentOrdersBody = document.getElementById('sentOrdersBody');
-            db.collection('orders').where('status', '==', 'Billed')
-                .onSnapshot(snapshot => {
-                    sentOrdersBody.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        const order = doc.data();
-                        const row = `
-                            <tr>
-                                <td>${doc.id.slice(-4)}</td>
-                                <td>${order.partyName}</td>
-                                <td>${order.items.map(item => `${item.item} (${item.quantity})`).join(', ')}</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm" onclick="archiveOrder('${doc.id}')">Archive</button>
-                                </td>
-                            </tr>
-                        `;
-                        sentOrdersBody.innerHTML += row;
+        function deleteOrder(id) {
+            orders = orders.filter(o => o.id !== id);
+            saveOrders();
+            updateTables();
+        }
+
+        function clearAllData() {
+    const password = prompt("Please enter the password to clear data:");
+    if (password !== null) {
+        const correctPassword = "9284494154";
+        
+        if (password === correctPassword) {
+            showClearDataOptions();
+        } else {
+            alert('Incorrect password. Data was not cleared.');
+        }
+    }
+}
+
+
+function showClearDataOptions() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Clear Data Options</h2>
+            <button id="clearOrderDataBtn">Order Data</button>
+            <button id="showSuggestionDataBtn">Suggestion Data</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+
+    // Add event listeners
+    modal.querySelector('.modal-close').addEventListener('click', closeModal);
+    modal.querySelector('#clearOrderDataBtn').addEventListener('click', clearOrderData);
+    modal.querySelector('#showSuggestionDataBtn').addEventListener('click', showSuggestionDataOptions);
+}
+
+function clearOrderData() {
+    if (confirm('Are you sure you want to clear all order data? This action cannot be undone.')) {
+        database.ref('orders').remove();
+        orders = [];
+        currentItems = [];
+        updateTables();
+        updateItemList();
+        alert('All order data has been cleared.');
+        closeModal();
+    }
+}
+
+function showSuggestionDataOptions() {
+    const modalContent = document.querySelector('.modal .modal-content');
+    modalContent.innerHTML = `
+        <h2>Clear Suggestion Data</h2>
+        <button class="suggestionDataBtn" data-type="partyNames">Party Stored</button>
+        <button class="suggestionDataBtn" data-type="itemNames">Item Stored</button>
+        <button class="suggestionDataBtn" data-type="colors">Color Stored</button>
+    `;
+
+    // Add event listeners to new buttons
+    modalContent.querySelectorAll('.suggestionDataBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            showStoredData(this.dataset.type);
+        });
+    });
+}
+function showStoredData(dataType) {
+    const items = JSON.parse(localStorage.getItem(dataType)) || [];
+    const modal = document.querySelector('.modal .modal-content');
+    let html = `<h2>${dataType} Stored</h2>`;
+    if (items.length === 0) {
+        html += '<p>No items stored.</p>';
+    } else {
+        items.forEach(item => {
+            html += `<div>${item} <button onclick="removeItem('${dataType}', '${item}')">Remove</button></div>`;
+        });
+    }
+    html += `<button onclick="removeAllItems('${dataType}')">Remove All</button>`;
+    html += `<button onclick="showSuggestionDataOptions()">Back</button>`;
+    modal.innerHTML = html;
+}
+function removeItem(dataType, item) {
+    database.ref(dataType).once('value').then((snapshot) => {
+        let items = snapshot.val() || [];
+        items = items.filter(i => i !== item);
+        database.ref(dataType).set(items);
+        showStoredData(dataType);
+        updateDatalist(dataType);
+    });
+}
+
+function removeAllItems(dataType) {
+    if (confirm(`Are you sure you want to remove all ${dataType}? This action cannot be undone.`)) {
+        database.ref(dataType).remove();
+        showStoredData(dataType);
+        updateDatalist(dataType);
+    }
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.remove();
+    }
+}
+window.onload = function() {
+    updateDatalist('partyNames');
+    updateDatalist('itemNames');
+    updateDatalist('colors');
+    updateTables();
+}
+async function exportToXLS(type) {
+    const workbook = new ExcelJS.Workbook();
+    let fileName;
+
+    switch (type) {
+        case 'orders':
+            dataToExport = [{ partyName: document.getElementById('partyName').value, items: currentItems, type: 'New Order' }];
+            fileName = 'new_order.xlsx';
+            break;
+        case 'pending':
+            dataToExport = orders.filter(o => o.status === 'pending');
+            fileName = 'pending_orders.xlsx';
+            break;
+        case 'sent':
+            dataToExport = orders.filter(o => o.sentItems && o.sentItems.length > 0);
+            fileName = 'sent_orders.xlsx';
+            break;
+        default:
+            dataToExport = orders;
+            fileName = 'all_orders.xlsx';
+    }
+
+    // Group orders by party name
+    const groupedOrders = dataToExport.reduce((acc, order) => {
+        const key = order.partyName;
+        if (!acc[key]) acc[key] = [];
+        
+        if (type === 'sent') {
+            order.sentItems.forEach(item => {
+                acc[key].push({...item, date: item.date, partyName: order.partyName});
+            });
+        } else {
+            acc[key].push({...order, date: order.orderDate || new Date().toLocaleDateString()});
+        }
+        return acc;
+    }, {});
+
+    for (const [partyName, orders] of Object.entries(groupedOrders)) {
+        const worksheet = workbook.addWorksheet(partyName);
+
+        // Set column widths
+        worksheet.columns = [
+            { width: 15 }, { width: 20 }, { width: 15 }, { width: 8 }, { width: 8 },
+            { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 10 }
+        ];
+
+        let rowIndex = 1;
+
+        // Add party name
+        const partyNameRow = worksheet.addRow([partyName]);
+        partyNameRow.height = 30;
+        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
+        partyNameRow.getCell(1).font = { size: 24, bold: true };
+        partyNameRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // Add order type
+        rowIndex++;
+        const orderTypeRow = worksheet.addRow([type === 'sent' ? 'SENT ORDER' : 'PENDING ORDER']);
+        orderTypeRow.height = 25;
+        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
+        orderTypeRow.getCell(1).font = { size: 18, bold: true };
+        orderTypeRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // Add header row
+        rowIndex += 2;
+        const headerRow = worksheet.addRow(['Date', 'Item Name', 'Color', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', 'Total']);
+        headerRow.font = { bold: true };
+
+        // Consolidate items
+        const consolidatedItems = {};
+        orders.forEach((order) => {
+            const items = type === 'sent' ? [order] : order.items;
+            items.forEach(item => {
+                const key = `${order.date}_${item.itemName}_${item.color}`;
+                if (!consolidatedItems[key]) {
+                    consolidatedItems[key] = {...item, date: order.date, sizes: {...item.sizes}};
+                } else {
+                    Object.entries(item.sizes).forEach(([size, qty]) => {
+                        consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
                     });
-                });
-        }
-
-        function archiveOrder(orderId) {
-            console.log('Archiving order:', orderId);
-        }
-
-        // Load data for all sections
-        loadPendingOrders();
-        loadBillingSection();
-        loadSentOrders();
-
-        // Search functionality for pending orders
-        document.getElementById('pendingOrderSearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#pendingOrdersBody tr');
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                }
             });
         });
 
-        // Responsive design adjustments
-        function adjustForMobileView() {
-            if (window.innerWidth <= 768) {
-                document.querySelectorAll('.table').forEach(table => {
-                    table.classList.add('table-responsive');
-                });
-            } else {
-                document.querySelectorAll('.table').forEach(table => {
-                    table.classList.remove('table-responsive');
-                });
-            }
-        }
+        // Add consolidated data rows
+        Object.values(consolidatedItems).forEach(item => {
+            rowIndex++;
+            const row = worksheet.addRow([
+                item.date,
+                item.itemName,
+                item.color,
+                item.sizes.S || '',
+                item.sizes.M || '',
+                item.sizes.L || '',
+                item.sizes.XL || '',
+                item.sizes['2XL'] || '',
+                item.sizes['3XL'] || '',
+                item.sizes['4XL'] || '',
+                Object.values(item.sizes).reduce((a, b) => a + b, 0)
+            ]);
+        });
 
-        window.addEventListener('resize', adjustForMobileView);
-        adjustForMobileView();
-    </script>
+        // Add borders to all cells
+        for (let i = 1; i <= rowIndex; i++) {
+            worksheet.getRow(i).eachCell({ includeEmpty: true }, cell => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+        }
+    }
+
+    // Generate the Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+        document.getElementById('addItemBtn').addEventListener('click', addItem);
+        document.getElementById('orderForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    addOrder(event);
+});
+        document.getElementById('saveDispatch').addEventListener('click', saveDispatch);
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        // Allow radio buttons to be unselected
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('click', function() {
+                if (this.classList.contains('clicked')) {
+                    this.checked = false;
+                    this.classList.remove('clicked');
+                } else {
+                    this.classList.add('clicked');
+                }
+            });
+        });
+
+// Initialize the page
+showSection('order');
+updateTables();
+</script>
 </body>
 </html>
