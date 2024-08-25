@@ -93,7 +93,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 12px;
+            font-size: 15px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -299,7 +299,7 @@
                 <thead>
                     <tr>
                         <th>Party Name</th>
-                        <th>Billing Date</th>
+                        <th>Dispatch Date</th>
                         <th>Items</th>
                     </tr>
                 </thead>
@@ -349,11 +349,12 @@
     <datalist id="colorsList"></datalist>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script>
-        // Initialize Firebase
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB8fDn9EduVJsx8unmUHo74TsT3fgWGMAM",
   authDomain: "lovable-order-database.firebaseapp.com",
@@ -367,7 +368,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let currentItems = [];
         let currentDispatchOrder = null;
@@ -382,10 +382,38 @@ const database = firebase.database();
             }
         }
 
-        function saveOrders() {
-    console.log("Saving orders:", orders);
-    database.ref('orders').set(orders);
+      
+function requestNotificationPermission() {
+  Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+      getMessagingToken();
+    } else {
+      console.log('Unable to get permission to notify.');
+    }
+  });
 }
+function getMessagingToken() {
+  const messaging = firebase.messaging();
+  messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY' }).then((currentToken) => {
+    if (currentToken) {
+      console.log('FCM token:', currentToken);
+      // Send this token to your server
+    } else {
+      console.log('No registration token available. Request permission to generate one.');
+    }
+  }).catch((err) => {
+    console.log('An error occurred while retrieving token. ', err);
+  });
+}
+// Call this function when your app initializes
+requestNotificationPermission();
+
+const messaging = firebase.messaging();
+messaging.onMessage((payload) => {
+  console.log('Message received. ', payload);
+  // Handle the received message
+});
 
         function addItem() {
     const itemName = document.getElementById('itemName').value;
@@ -458,10 +486,6 @@ window.onclick = function(event) {
             });
         }
 
-        function removeItem(index) {
-            currentItems.splice(index, 1);
-            updateItemList();
-        }
         function addOrder(event) {
     event.preventDefault();
     const partyName = document.getElementById('partyName').value;
@@ -497,6 +521,32 @@ window.onclick = function(event) {
     updateDatalist('partyNames');
     updateDatalist('itemNames');
     updateDatalist('colors');
+
+    // Send notification for new order
+    sendNotification('New Order', `New order added for ${partyName}`);
+}
+function sendNotification(title, body) {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(function (permission) {
+            if (permission === 'granted') {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: '/path/to/icon.png' // Replace with path to your icon
+                    });
+                });
+            }
+        });
+    }
+
+
+    /*firebase.messaging().send(message)
+        .then((response) => {
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });*/
 }
 function saveToFirebase(key, value) {
     database.ref(key).once('value').then((snapshot) => {
@@ -513,18 +563,7 @@ function saveToFirebase(key, value) {
     });
 }
 
-function saveOrders() {
-    console.log("Saving orders:", orders);
-    database.ref('orders').set(orders)
-        .then(() => {
-            console.log("Orders saved successfully to Firebase");
-            localStorage.setItem('orders', JSON.stringify(orders)); // Backup to localStorage
-        })
-        .catch((error) => {
-            console.error("Error saving orders to Firebase:", error);
-            alert("Failed to save orders to the server. Please check your internet connection.");
-        });
-}
+
 
 /*function saveToLocalStorage(key, value) {
     let items = JSON.parse(localStorage.getItem(key)) || [];
@@ -743,7 +782,7 @@ function exportData() {
     URL.revokeObjectURL(link.href);
 }
 
-function importData() {
+/*function importData() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -754,24 +793,37 @@ function importData() {
             try {
                 const importedData = JSON.parse(e.target.result);
                 
-                // Merge orders
-                database.ref('orders').once('value').then((snapshot) => {
-                    const currentOrders = snapshot.val() || [];
-                    orders = mergeArrays(currentOrders, importedData.orders);
-                    saveOrders();
+                // Clear all existing data first
+                clearAllDataBeforeImport().then(() => {
+                    // Set new orders
+                    orders = importedData.orders || [];
                     
-                    // Merge other data
+                    // Set other data
+                    const dataToSet = {
+                        orders: orders,
+                        partyNames: importedData.partyNames || [],
+                        itemNames: importedData.itemNames || [],
+                        colors: importedData.colors || []
+                    };
+
+                    // Use a single set operation to update all data in Firebase
+                    return firebase.database().ref().set(dataToSet);
+                })
+                .then(() => {
+                    // Update local storage
+                    localStorage.setItem('orders', JSON.stringify(orders));
                     ['partyNames', 'itemNames', 'colors'].forEach(key => {
-                        database.ref(key).once('value').then((snapshot) => {
-                            const currentData = snapshot.val() || [];
-                            const mergedData = mergeArrays(currentData, importedData[key] || []);
-                            database.ref(key).set(mergedData);
-                            updateDatalist(key);
-                        });
+                        localStorage.setItem(key, JSON.stringify(importedData[key] || []));
                     });
 
+                    // Update UI
+                    updateDataLists();
                     updateTables();
-                    alert('Data imported and merged successfully!');
+                    alert('Data imported successfully!');
+                })
+                .catch((error) => {
+                    console.error("Error during import:", error);
+                    alert("An error occurred during import. Please try again.");
                 });
             } catch (error) {
                 alert('Error importing data. Please make sure you selected the correct file.');
@@ -783,12 +835,34 @@ function importData() {
     input.click();
 }
 
-function mergeArrays(arr1, arr2) {
-    return [...new Set([...arr1, ...arr2])];
+function clearAllDataBeforeImport() {
+    // Clear all data in Firebase
+    return firebase.database().ref().remove()
+        .then(() => {
+            // Clear local storage
+            localStorage.clear();
+            // Reset local variables
+            orders = [];
+            currentItems = [];
+            console.log("All data cleared before import");
+        })
+        .catch((error) => {
+            console.error("Error clearing data:", error);
+            throw error;
+        });
 }
-
-function mergeArrays(arr1, arr2) {
-    return [...new Set([...arr1, ...arr2])];
+*/
+function saveOrders() {
+    console.log("Saving orders:", orders);
+    database.ref('orders').set(orders)
+        .then(() => {
+            console.log("Orders saved successfully to Firebase");
+            localStorage.setItem('orders', JSON.stringify(orders)); // Backup to localStorage
+        })
+        .catch((error) => {
+            console.error("Error saving orders to Firebase:", error);
+            alert("Failed to save orders to the server. Please check your internet connection.");
+        });
 }
 function saveItemDispatch(itemName, color) {
     const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
@@ -867,6 +941,10 @@ function saveToLocalStorage(key, value) {
         localStorage.setItem(key, JSON.stringify(items));
         updateDatalist(key);
     }
+}
+
+function updateDataLists() {
+    ['partyNames', 'itemNames', 'colors'].forEach(updateDatalist);
 }
 
 function updateDatalist(key) {
@@ -953,6 +1031,8 @@ function saveDispatch() {
 
         if (order.items.length === 0) {
             order.status = 'sent';
+            // Send notification for dispatched order
+            sendNotification('Order Dispatched', `Order dispatched for ${order.partyName}`);
         }
     });
 
@@ -987,12 +1067,42 @@ function saveDispatch() {
         const correctPassword = "9284494154";
         
         if (password === correctPassword) {
-            showClearDataOptions();
+            if (confirm("WARNING: This action will permanently delete all data from the database. This cannot be undone. Are you sure you want to proceed?")) {
+                permanentlyDeleteAllData();
+            }
         } else {
             alert('Incorrect password. Data was not cleared.');
         }
     }
 }
+
+function permanentlyDeleteAllData() {
+    // Delete all data from Firebase
+    firebase.database().ref().remove()
+        .then(() => {
+            // Clear local storage
+            localStorage.clear();
+            
+            // Reset local variables
+            orders = [];
+            currentItems = [];
+            currentDispatchOrder = null;
+            currentDispatchItems = [];
+
+            // Update UI
+            updateTables();
+            updateItemList();
+            updateDataLists();
+
+            console.log("All data permanently deleted from the database");
+            alert("All data has been permanently deleted from the database.");
+        })
+        .catch((error) => {
+            console.error("Error deleting data:", error);
+            alert("An error occurred while trying to delete the data. Please try again.");
+        });
+}
+
 
 
 function showClearDataOptions() {
@@ -1241,6 +1351,18 @@ async function exportToXLS(type) {
 // Initialize the page
 showSection('order');
 updateTables();
+
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then(function(registration) {
+        console.log('Service Worker registered with scope:', registration.scope);
+      }).catch(function(error) {
+        console.log('Service Worker registration failed:', error);
+      });
+  }
+
 </script>
+
 </body>
 </html>
