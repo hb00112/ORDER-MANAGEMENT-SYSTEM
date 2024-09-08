@@ -1,0 +1,21 @@
+{
+    "name": "PWA Test App",
+    "short_name": "PWA Test",
+    "description": "A simple PWA test application",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4285f4",
+    "icons": [
+        {
+            "src": "https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://github.com/username/repo-name/raw/main/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
