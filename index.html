@@ -1,1368 +1,2200 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HC Order Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HC ORDER MANAGEMENT SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhyZWVua2FyIENyZWF0aW9uIiwKICAic2hvcnRfbmFtZSI6ICJIQyIsCiAgInN0YXJ0X3VybCI6ICIvaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2ZmZmZmZiIsCiAgInRoZW1lX2NvbG9yIjogIiMwMDAwMDAiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJpY29uLTE5MngxOTIucG5nIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9LAogICAgewogICAgICAic3JjIjogImljb24tNTEyeDUxMi5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <style>
+    
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 10px;
-            background-color: #f5f5f5;
-            color: #333;
+            padding: 0;
+            background-color: #f8f9fa;
         }
-        .container {
-            max-width: 100%;
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1, h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        h1 {
-            font-size: 1.8em;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        h2 {
-            font-size: 1.4em;
-            color: #34495e;
-        }
-        .main-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .main-menu button, button {
-            font-size: 14px;
-            padding: 10px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+
         .section {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: none;
+            margin-top: -20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        form {
-            display: grid;
-            gap: 10px;
+
+        .active {
+            display: block;
         }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+
+        .nav-link.active {
+            font-weight: bold;
+            color: #007bff;
         }
-        .marquee-container {
-            width: 100%;
-            overflow: hidden;
-            background-color: #f8d7da;
-            padding: 8px 0;
+
+        .nav-link {
+            float: left;
+            margin-right: -6px;
+            margin-bottom: -10px;
+        }
+
+        .nav-link:last-child {
+            margin-right: 0PX;
+        }
+
+        .nav-link:hover {
+            color: #0056b3;
+        }
+
+        #orderSummary {
+            margin-top: 15px;
+            border-top: 2px solid #007bff;
+            padding-top: 15px;
+        }
+
+        .form-group {
             margin-bottom: 15px;
         }
-        .marquee-content {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 20s linear infinite;
+
+        .navbar {
+            padding: 10px;
+            background-color: #007bff;
+            color: rgb(0, 0, 0);
         }
-        .marquee-content span {
-            display: inline-block;
-            font-size: 14px;
-            font-weight: bold;
-            color: #721c24;
-            padding-left: 100%;
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            color: rgb(0, 0, 0);
         }
-        @keyframes marquee {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
+
+        .nav-link {
+            font-size: 1.3rem;
+            color: rgb(0, 0, 0);
         }
-        table {
+
+        .btn {
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .table {
+            font-size: 0.9rem;
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 15px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+
+        .table th,
+        .table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
         }
-        th {
-            background-color: #3498db;
+
+        .table th {
+            background-color: #007bff;
             color: white;
         }
-        .size-input {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin-bottom: 10px;
+
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
         }
-        .size-column {
-            text-align: center;
+
+        @media (min-width: 768px) {
+            body::before {
+                content: "This application is designed for mobile devices only. Please access it on a mobile device or use a mobile device emulator.";
+                display: block;
+                padding: 20px;
+                text-align: center;
+                font-size: 18px;
+                color: #dc3545;
+            }
+
+            .container {
+                display: none;
+            }
         }
-        .size-column span {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
+
+        .navbar-brand img {
+            border-radius: 50%;
+            overflow: hidden;
         }
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 3px;
-        }
-        .custom-input {
-            width: 40px;
-            padding: 3px;
-            border: 1px solid #bdc3c7;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-        .modal {
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
+
+        .slide-menu {
             height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
+            width: 0;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .slide-menu a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .slide-menu a:hover {
+            color: #f1f1f1;
+        }
+
+        .slide-menu .close-btn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #menuToggle {
+            font-size: 24px;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: #000;
+            padding: 0;
+            margin-right: 15px;
+        }
+
+        .section {
+            display: none;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        #partySearch {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #partyList {
+            position: absolute;
+            width: calc(100% - 30px);
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 1000;
             display: none;
         }
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            border-radius: 8px;
-            width: 90%;
+
+        #partyList a {
+            padding: 10px;
+            text-decoration: none;
+            display: block;
+            color: #333;
         }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+
+        #partyList a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .section h4 {
+            text-align: center;
+            font-weight: 900;
+        }
+
+        #homeScreen {
+            text-align: center;
+            padding: 100px 0px;
+            width: 100%;
+            /* Adjust container width if needed */
+            max-width: 800px;
+        }
+
+        #homeScreen h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
             font-weight: bold;
+            /* Make text bold */
+        }
+
+        .text-effect-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 200px;
+        }
+
+        .text-effect-wrapper::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            right: -100%;
+            bottom: -100%;
+            background:
+                radial-gradient(circle, white, transparent 25%) 0 0/25% 25%,
+                radial-gradient(circle, white, transparent 25%) 50% 50%/12.5% 12.5%;
+            mix-blend-mode: color-dodge;
+            animation: shimmer 5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                transform: translate(50%, 50%);
+            }
+        }
+
+        .hc-text {
+            font-size: 8rem;
+            font-weight: bold;
+            font-style: italic;
+            font-family: 'Dancing Script', cursive;
+            background-image: linear-gradient(to right, #8B0000, #0000FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            overflow: hidden;
+            /* Added line */
+        }
+
+        #master {
+            text-align: center;
+            /* Center the buttons horizontally */
+        }
+
+        #homeScreen h4 {
+            font-size: 1.8rem;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .password-input {
+            -webkit-text-security: disc;
+            -moz-text-security: disc;
+            -text-security: disc;
+        }
+
+        #backup-details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #backup-details-table th,
+        #backup-details-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #backup-details-table th {
+            background-color: #f2f2f2;
+        }
+
+        .category-container {
+            margin-bottom: 15px;
+            margin-top: 10px;
+            font-size: 18px;
+            /* Increased font size for category container */
+        }
+
+        .category-container label {
+            margin-right: 10px;
+            font-size: 18px;
+            /* Increased font size for labels */
+        }
+
+        .size-quantity-grid {
+            display: table;
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .size-quantity-row {
+            display: table-row;
+        }
+
+        .size-cell,
+        .quantity-cell {
+            display: table-cell;
+            padding: 6px;
+            border: 1px solid #000000;
+            font-size: 18px;
+            /* Increased font size for size and quantity cells */
+            vertical-align: middle;
+        }
+
+        .size-cell {
+            font-weight: bold;
+            width: 30px;
+        }
+
+        .quantity-cell {
+            text-align: left;
+        }
+
+        .qty-label {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 18px;
+            /* Increased font size for quantity label */
+        }
+
+        .custom-qty {
+            width: 35px;
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 18px;
+            /* Increased font size for custom quantity input */
+        }
+
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .approval-content {
+            text-align: center;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .approval-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .approval-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .loading-animation {
+            display: flex;
+            justify-content: center;
+        }
+
+        .circle {
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            margin: 0 10px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+
+        .circle:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .circle:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        #pwaPopup {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        #pwaPopup button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
             cursor: pointer;
+        }
+
+        #installPwa {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #dismissPwa {
+            background-color: #6c757d;
+            color: white;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>HC Order Management System</h1>
-        <div class="marquee-container">
-            <div class="marquee-content">
-                <span>ORDERS ONCE CREATED CANNOT BE DELETED .CREATE CAREFULLY!</span>
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Welcome!</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter your username:</p>
+                    <input type="text" id="usernameInput" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="saveUsername">Save</button>
+                </div>
             </div>
         </div>
-        <div class="main-menu">
-            <button onclick="showSection('order')">Order</button>
-            <button onclick="showSection('pendingOrders')">Pending Orders</button>
-            <button onclick="showSection('sentOrders')">Sent Orders</button>
+    </div>
+
+    <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
+        You are currently offline. Some features may be limited.
+    </div>
+    <nav class="navbar navbar-expand navbar-light bg-light">
+        <div class="container-fluid">
+            <button id="menuToggle" class="btn btn-link">☰</button>
+            <div class="navbar-nav">
+                <a class="nav-link active" href="#" data-section="orders">Orders</a>
+                <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
+                <a class="nav-link" href="#" data-section="billing">Billing</a>
+                <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
+            </div>
         </div>
+    </nav>
+    <div id="homeScreen" class="section active">
+        <h3>Hello <span id="userNameDisplay"></span></h3>
+        <div class="text-effect-wrapper">
+            <h1 class="hc-text">HC</h1>
+        </div>
+        <h4>Hreenkar Creation</h4>
+    </div>
+    <div id="pwaPopup">
+        <p>Install our app for a better experience!</p>
+        <button id="installPwa">Install</button>
+        <button id="dismissPwa">Not Now</button>
+    </div>
+    <div id="slideMenu" class="slide-menu">
+        <a href="#" class="close-btn">&times;</a>
+        <a href="#" data-section="backupdetails">Backup Details</a>
+        <a href="#" data-section="backupRestore">Backup & Restore</a>
+        <a href="#" data-section="xlsExport">XLS Export</a>
+        <a href="#" data-section="deletedOrders">Deleted Orders</a>
+        <a href="#" data-section="activityLogs">Activity Logs</a>
+        <a href="#" data-section="master">Master</a>
+        <a href="#" data-section="userManagement">User Management</a>
+    </div>
+    <div id="backupdetails" class="section">
+        <h4>Backup Details</h4>
+        <table id="backup-details-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Backup details will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <div id="backupRestore" class="section">
+        <h4>Backup & Restore</h4>
+        <button id="backupBtn" class="btn btn-primary" data-bs-toggle="modal"
+            data-bs-target="#backupModal">Backup</button>
+        <button id="restoreBtn" class="btn btn-primary" data-bs-toggle="modal"
+            data-bs-target="#restoreModal">Restore</button>
 
-        <button onclick="clearAllData()">Clear All Data</button>
-        <button onclick="exportData()">Export Data</button>
-        <button onclick="importData()">Import Data</button>
+    </div>
 
-        <div id="orderSection" class="section">
-            <h2>New Order</h2>
-            <form id="orderForm">
-                <input type="text" id="partyName" placeholder="Party Name" list="partyNamesList" required>
-                <div id="itemForm">
-                    <input type="text" id="itemName" placeholder="Item Name" list="itemNamesList">
-                    <input type="text" id="color" placeholder="Color" list="colorsList">
-                    <div class="size-input">
-                        <div class="size-column">
-                            <span>S</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeS" value="1">1</label>
-                                <label><input type="radio" name="sizeS" value="2">2</label>
-                                <label><input type="radio" name="sizeS" value="3">3</label>
-                                <label><input type="radio" name="sizeS" value="4">4</label>
-                                <label><input type="radio" name="sizeS" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>M</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeM" value="1">1</label>
-                                <label><input type="radio" name="sizeM" value="2">2</label>
-                                <label><input type="radio" name="sizeM" value="3">3</label>
-                                <label><input type="radio" name="sizeM" value="4">4</label>
-                                <label><input type="radio" name="sizeM" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>L</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeL" value="1">1</label>
-                                <label><input type="radio" name="sizeL" value="2">2</label>
-                                <label><input type="radio" name="sizeL" value="3">3</label>
-                                <label><input type="radio" name="sizeL" value="4">4</label>
-                                <label><input type="radio" name="sizeL" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="sizeXL" value="1">1</label>
-                                <label><input type="radio" name="sizeXL" value="2">2</label>
-                                <label><input type="radio" name="sizeXL" value="3">3</label>
-                                <label><input type="radio" name="sizeXL" value="4">4</label>
-                                <label><input type="radio" name="sizeXL" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>2XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size2XL" value="1">1</label>
-                                <label><input type="radio" name="size2XL" value="2">2</label>
-                                <label><input type="radio" name="size2XL" value="3">3</label>
-                                <label><input type="radio" name="size2XL" value="4">4</label>
-                                <label><input type="radio" name="size2XL" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="size-input">
-                        <div class="size-column">
-                            <span>3XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size3XL" value="1">1</label>
-                                <label><input type="radio" name="size3XL" value="2">2</label>
-                                <label><input type="radio" name="size3XL" value="3">3</label>
-                                <label><input type="radio" name="size3XL" value="4">4</label>
-                                <label><input type="radio" name="size3XL" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                        <div class="size-column">
-                            <span>4XL</span>
-                            <div class="radio-group">
-                                <label><input type="radio" name="size4XL" value="1">1</label>
-                                <label><input type="radio" name="size4XL" value="2">2</label>
-                                <label><input type="radio" name="size4XL" value="3">3</label>
-                                <label><input type="radio" name="size4XL" value="4">4</label>
-                                <label><input type="radio" name="size4XL" value="5">5</label>
-                                <input type="number" class="custom-input" min="0">
-                            </div>
-                        </div>
-                    </div>
+    <!-- Backup Modal -->
+    <div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backupModalLabel">BACKUP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <button type="button" id="addItemBtn">Add Item</button>
-                <button type="submit">Save Order</button>
-            </form>
-            <div id="itemList"></div>
-            <button onclick="exportToXLS('orders')">Export to XLS</button>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Backup Data</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Party Master Data</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary download-btn"
+                                        data-type="party_master">Download</button>
+                                    <button class="btn btn-sm btn-success send-btn"
+                                        data-type="party_master">Send</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Item Master Data</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary download-btn"
+                                        data-type="item">Download</button>
+                                    <button class="btn btn-sm btn-success send-btn" data-type="item">Send</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div id="pendingOrdersSection" class="section">
-            <h2>Pending Orders</h2>
-            <table id="pendingOrdersTable">
+    <!-- Restore Modal -->
+    <div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="restoreModalLabel">Restore Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="restoreFile" class="form-label">Upload JSON File</label>
+                        <input class="form-control" type="file" id="restoreFile" accept=".json">
+                    </div>
+                    <button id="uploadRestoreFile" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Selection Modal -->
+    <div class="modal fade" id="dataSelectionModal" tabindex="-1" aria-labelledby="dataSelectionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dataSelectionModalLabel">Select Data to Restore</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAllCheckbox">
+                                </th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataSelectionBody">
+                            <!-- Data entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="restoreSelectedData">Restore Selected</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="xlsExport" class="section">
+        <h4>XLS Export</h4>
+        <p>XLS export functionality will be implemented here.</p>
+    </div>
+
+    <div id="deletedOrders" class="section">
+        <h4>Deleted Orders</h4>
+        <p>Deleted orders will be displayed here.</p>
+    </div>
+
+    <div id="activityLogs" class="section">
+        <h4>Activity Logs</h4>
+        <div id="logsList"></div>
+    </div>
+    <div id="master" class="section">
+        <h4>Master</h4>
+        <button class="btn btn-primary" id="partyMasterBtn">Party Master</button>
+        <button class="btn btn-primary" id="itemMasterBtn">Item Master</button>
+    </div>
+    <div id="userManagement" class="section">
+        <h4>User Management</h4>
+        <button class="btn btn-primary" id="usersBtn">Users</button>
+        <button class="btn btn-primary" id="approvalRequestsBtn">Approval Requests</button>
+    </div>
+
+    <div id="users" class="section">
+        <h4>Users</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+        </table>
+    </div>
+
+    <div id="approvalRequests" class="section">
+        <h4>Approval Requests</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="approvalRequestsBody"></tbody>
+        </table>
+    </div>
+
+    <div id="partyMaster" class="section">
+        <h4>Party Master</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Party Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="partyMasterBody"></tbody>
+        </table>
+    </div>
+    <div id="itemMaster" class="section">
+        <h2>Item Master</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Sizes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="itemMasterBody"></tbody>
+        </table>
+    </div>
+    <div id="orders" class="section">
+        <h2>Orders</h2>
+        <form id="orderForm">
+            <div class="mb-3">
+
+                <input type="text" class="form-control" id="partySearch" placeholder="Search or add party">
+                <div id="partyList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <div class="mb-3">
+
+                <input type="text" class="form-control" id="itemSearch" placeholder="Search or add item">
+                <div id="itemList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <!-- Add other form fields as needed -->
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+    </div>
+    <div class="container mt-2">
+        <!-- Pending Orders Section -->
+        <div id="pendingOrders" class="section">
+            <h4>Pending Orders</h4>
+            <input type="text" class="form-control form-control-sm mb-2" id="pendingOrderSearch"
+                placeholder="Search orders...">
+            <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>Party Name</th>
-                        <th>Order Date</th>
+                        <th>ID</th>
+                        <th>Party</th>
                         <th>Items</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="pendingOrdersBody"></tbody>
             </table>
-            <button onclick="exportToXLS('pending')">Export to XLS</button>
         </div>
 
-        <div id="sentOrdersSection" class="section">
-            <h2>Sent Orders</h2>
-            <table id="sentOrdersTable">
+        <!-- Billing Section -->
+        <div id="billing" class="section">
+            <h4>Billing</h4>
+            <div id="billingParties"></div>
+        </div>
+
+        <!-- Sent Orders Section -->
+        <div id="sentOrders" class="section">
+            <h4>Sent Orders</h4>
+            <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>Party Name</th>
-                        <th>Dispatch Date</th>
+                        <th>ID</th>
+                        <th>Party</th>
                         <th>Items</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button onclick="exportToXLS('sent')">Export to XLS</button>
-        </div>
-    </div>
-
-    <div id="dispatchModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Dispatch Order</h2>
-            <table id="dispatchItemsTable">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="sentOrdersBody"></tbody>
             </table>
         </div>
     </div>
-    
-    <div id="dispatchDetailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Dispatch Details</h2>
-            <table id="dispatchDetailsTable">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Color</th>
-                        <th>Size - Quantity</th>
-                        <th>Dispatch Quantity</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="saveDispatch">Save Dispatch</button>
+    <div id="pendingApprovalScreen" class="fullscreen-overlay" style="display: none;">
+        <div class="approval-content">
+            <h1>Registration Pending</h1>
+            <p>Please wait for your registration to be approved.</p>
+            <div class="loading-animation">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+            </div>
         </div>
     </div>
-
-    <datalist id="partyNamesList"></datalist>
-    <datalist id="itemNamesList"></datalist>
-    <datalist id="colorsList"></datalist>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script>
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyB8fDn9EduVJsx8unmUHo74TsT3fgWGMAM",
-  authDomain: "lovable-order-database.firebaseapp.com",
-  databaseURL: "https://lovable-order-database-default-rtdb.firebaseio.com",
-  projectId: "lovable-order-database",
-  storageBucket: "lovable-order-database.appspot.com",
-  messagingSenderId: "814278451797",
-  appId: "1:814278451797:web:236a8fc04a7f1762156adc",
-  measurementId: "G-15VMWPH500"
-};
+    //home screen
+    let username = null;  
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
-        let currentItems = [];
-        let currentDispatchOrder = null;
-        let currentDispatchItems = [];
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(sectionId + 'Section').style.display = 'block';
-            if (sectionId === 'pendingOrders' || sectionId === 'sentOrders') {
-                updateTables();
-            }
+    //activity log
+    function logActivity(action, username) {
+            const now = new Date();
+            const activityLog = {
+                action: action,
+                username: username,
+                timestamp: now.toISOString(),
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString()
+            };
+            firebase.database().ref('activityLogs').push(activityLog);
         }
 
-      
-function requestNotificationPermission() {
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted.');
-      getMessagingToken();
-    } else {
-      console.log('Unable to get permission to notify.');
-    }
-  });
-}
-function getMessagingToken() {
-  const messaging = firebase.messaging();
-  messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY' }).then((currentToken) => {
-    if (currentToken) {
-      console.log('FCM token:', currentToken);
-      // Send this token to your server
-    } else {
-      console.log('No registration token available. Request permission to generate one.');
-    }
-  }).catch((err) => {
-    console.log('An error occurred while retrieving token. ', err);
-  });
-}
-// Call this function when your app initializes
-requestNotificationPermission();
-
-const messaging = firebase.messaging();
-messaging.onMessage((payload) => {
-  console.log('Message received. ', payload);
-  // Handle the received message
-});
-
-        function addItem() {
-    const itemName = document.getElementById('itemName').value;
-    const color = document.getElementById('color').value;
-
-    if (!itemName) {
-        alert('Please enter an Item Name.');
-        return;
-    }
-
-    const item = {
-        itemName: itemName,
-        color: color,
-        sizes: {}
-    };
-
-    ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].forEach(size => {
-        const radioValue = document.querySelector(`input[name="size${size}"]:checked`)?.value;
-        if (radioValue === 'custom') {
-            const customValue = document.querySelector(`input[name="size${size}"]:checked`).nextElementSibling.value;
-            if (customValue && customValue !== '0') {
-                item.sizes[size] = parseInt(customValue);
-            }
-        } else if (radioValue) {
-            item.sizes[size] = parseInt(radioValue);
-        }
-    });
-
-    currentItems.push(item);
-    updateItemList();
-
-    // Clear inputs and selections
-    document.getElementById('itemName').value = '';
-    document.getElementById('color').value = '';
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.checked = false;
-        radio.classList.remove('clicked');
-    });
-    document.querySelectorAll('.custom-input').forEach(input => {
-        input.value = '';
-    });
-
-    saveToLocalStorage('itemNames', itemName);
-    saveToLocalStorage('colors', color);
-}
-
-window.onload = function() {
-    initializeDataLists();
-    updateTables();
-    // Any other initialization code...
-};
-
-window.onclick = function(event) {
-    if (event.target.className === 'modal') {
-        closeModal();
-    }
-}
-
-        function updateItemList() {
-            const itemList = document.getElementById('itemList');
-            itemList.innerHTML = '<h3>Current Items:</h3>';
-            currentItems.forEach((item, index) => {
-                itemList.innerHTML += `
-                    <div>
-                        <strong>${item.itemName}</strong> (${item.color})
-                        ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-                        <button onclick="removeItem(${index})">Remove</button>
-                    </div>
-                `;
-            });
-        }
-
-        function addOrder(event) {
-    event.preventDefault();
-    const partyName = document.getElementById('partyName').value;
-    if (!partyName) {
-        alert('Please enter a Party Name.');
-        return;
-    }
-    const order = {
-        id: Date.now(),
-        partyName: partyName,
-        items: currentItems.length > 0 ? [...currentItems] : [],
-        status: 'pending',
-        sentItems: [],
-        orderDate: new Date().toLocaleDateString()
-    };
-    orders.push(order);
-    saveOrders();
-    updateTables();
-    currentItems = [];
-    updateItemList();
-    document.getElementById('orderForm').reset();
-    alert('Order saved successfully!');
-    
-    saveToFirebase('partyNames', partyName);
-
-    currentItems.forEach(item => {
-        saveToFirebase('itemNames', item.itemName);
-        if (item.color) {
-            saveToFirebase('colors', item.color);
-        }
-    });
-
-    updateDatalist('partyNames');
-    updateDatalist('itemNames');
-    updateDatalist('colors');
-
-    // Send notification for new order
-    sendNotification('New Order', `New order added for ${partyName}`);
-}
-function sendNotification(title, body) {
-    if ('Notification' in window) {
-        Notification.requestPermission().then(function (permission) {
-            if (permission === 'granted') {
-                navigator.serviceWorker.ready.then(function(registration) {
-                    registration.showNotification(title, {
-                        body: body,
-                        icon: '/path/to/icon.png' // Replace with path to your icon
-                    });
-                });
-            }
-        });
-    }
-
-
-    /*firebase.messaging().send(message)
-        .then((response) => {
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });*/
-}
-function saveToFirebase(key, value) {
-    database.ref(key).once('value').then((snapshot) => {
-        let items = snapshot.val() || [];
-        if (!items.includes(value)) {
-            items.push(value);
-            database.ref(key).set(items)
-                .then(() => console.log(`${key} updated successfully`))
-                .catch((error) => console.error(`Error updating ${key}:`, error));
-        }
-        updateDatalist(key);
-    }).catch((error) => {
-        console.error(`Error fetching ${key}:`, error);
-    });
-}
-
-
-
-/*function saveToLocalStorage(key, value) {
-    let items = JSON.parse(localStorage.getItem(key)) || [];
-    if (!items.includes(value)) {
-        items.push(value);
-        localStorage.setItem(key, JSON.stringify(items));
-    }
-    updateDatalist(key);
-}
-*/
-function updateDatalist(key) {
-    database.ref(key).once('value').then((snapshot) => {
-        let items = snapshot.val() || [];
-        let datalist = document.getElementById(`${key}List`);
-        if (datalist) {
-            datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
-        }
-    }).catch((error) => {
-        console.error(`Error fetching ${key} for datalist:`, error);
-    });
-}
-
-function updateTables() {
-    database.ref('orders').once('value').then((snapshot) => {
-        orders = snapshot.val() || [];
-        console.log("Retrieved orders from Firebase:", orders);
-        
-        const pendingTable = document.getElementById('pendingOrdersTable').getElementsByTagName('tbody')[0];
-        const sentTable = document.getElementById('sentOrdersTable').getElementsByTagName('tbody')[0];
-        pendingTable.innerHTML = '';
-        sentTable.innerHTML = '';
-
-        if (orders.length === 0) {
-            pendingTable.innerHTML = '<tr><td colspan="4">No pending orders</td></tr>';
-            sentTable.innerHTML = '<tr><td colspan="3">No sent orders</td></tr>';
-            return;
-        }
-
-        const groupedPendingOrders = {};
-        const groupedSentOrders = {};
-
-        orders.forEach(order => {
-            if (order.status === 'pending' && order.items && order.items.length > 0) {
-                const key = `${order.partyName}_${order.orderDate}`;
-                if (!groupedPendingOrders[key]) {
-                    groupedPendingOrders[key] = [];
-                }
-                groupedPendingOrders[key].push(order);
-            }
-
-            if (order.sentItems && order.sentItems.length > 0) {
-                order.sentItems.forEach(sentItem => {
-                    const key = `${order.partyName}_${sentItem.date}`;
-                    if (!groupedSentOrders[key]) {
-                        groupedSentOrders[key] = [];
-                    }
-                    groupedSentOrders[key].push({...sentItem, partyName: order.partyName});
-                });
-            }
-        });
-
-        // Populate pending orders table
-        Object.entries(groupedPendingOrders).forEach(([key, groupedOrders]) => {
-            const [partyName, orderDate] = key.split('_');
-            const row = pendingTable.insertRow();
-            const consolidatedItems = consolidateItems(groupedOrders.flatMap(order => order.items));
-
-            row.innerHTML = `
-                <td>${partyName}</td>
-                <td>${orderDate}</td>
-                <td>${consolidatedItems.map(item => `
-                    ${item.itemName} (${item.color}):
-                    ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-                `).join('<br>')}</td>
-                <td>
-                    <button onclick="openDispatchModal(${groupedOrders[0].id})">Dispatch Order</button>
-                </td>
-            `;
-        });
-
-        // Populate sent orders table
-        Object.entries(groupedSentOrders).forEach(([key, groupedItems]) => {
-            const [partyName, sentDate] = key.split('_');
-            const row = sentTable.insertRow();
-            const consolidatedItems = consolidateItems(groupedItems);
-
-            row.innerHTML = `
-                <td>${partyName}</td>
-                <td>${sentDate}</td>
-                <td>${consolidatedItems.map(item => `
-                    ${item.itemName} (${item.color}):
-                    ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-                `).join('<br>')}</td>
-            `;
-        });
-    }).catch((error) => {
-        console.error("Error fetching orders:", error);
-        alert("An error occurred while fetching orders. Please check your internet connection and try again.");
-    });
-}
-
-function consolidateItems(items) {
-    const consolidatedItems = {};
-    
-    items.forEach(item => {
-        const key = `${item.itemName}_${item.color}`;
-        if (!consolidatedItems[key]) {
-            consolidatedItems[key] = {...item, sizes: {...item.sizes}};
-        } else {
-            Object.entries(item.sizes).forEach(([size, qty]) => {
-                consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
-            });
-        }
-    });
-    
-    return Object.values(consolidatedItems);
-}
-
-function openDispatchModal(orderId) {
-    currentDispatchOrder = orders.find(o => o.id === orderId);
-    currentDispatchItems = []; // Reset the currentDispatchItems array
-    const groupedOrders = orders.filter(o => 
-        o.partyName === currentDispatchOrder.partyName && 
-        o.orderDate === currentDispatchOrder.orderDate &&
-        o.status === 'pending'
-    );
-    
-    const modal = document.getElementById('dispatchModal');
-    const dispatchItemsTable = document.getElementById('dispatchItemsTable');
-    
-    if (!dispatchItemsTable) {
-        console.error('dispatchItemsTable not found');
-        return;
-    }
-    
-    const tbody = dispatchItemsTable.getElementsByTagName('tbody')[0];
-    if (!tbody) {
-        console.error('tbody not found in dispatchItemsTable');
-        return;
-    }
-    
-    tbody.innerHTML = '';
-
-    const allItems = groupedOrders.flatMap(order => order.items);
-    
-    // Consolidate items
-    const consolidatedItems = consolidateItems(allItems);
-    
-    consolidatedItems.forEach(item => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${item.itemName} (${item.color})<br>
-            ${Object.entries(item.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}</td>
-            <td><button onclick="openDispatchDetailsModal('${item.itemName}', '${item.color}')">Select</button></td>
-        `;
-    });
-
-    // Add Save Dispatch button
-    const saveRow = tbody.insertRow();
-    saveRow.innerHTML = `
-        <td colspan="2">
-            <button onclick="saveDispatch()">Save Dispatch</button>
-        </td>
-    `;
-
-    modal.style.display = 'block';
-}
-function openDispatchDetailsModal(itemName, color) {
-    const modal = document.getElementById('dispatchDetailsModal');
-    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
-    dispatchDetailsTable.innerHTML = '';
-
-    const groupedOrders = orders.filter(o => 
-        o.partyName === currentDispatchOrder.partyName && 
-        o.orderDate === currentDispatchOrder.orderDate &&
-        o.status === 'pending'
-    );
-
-    const allItems = groupedOrders.flatMap(order => order.items);
-    const consolidatedItems = consolidateItems(allItems);
-    const item = consolidatedItems.find(i => i.itemName === itemName && i.color === color);
-    
-    Object.entries(item.sizes).forEach(([size, qty]) => {
-        const row = dispatchDetailsTable.insertRow();
-        row.innerHTML = `
-            <td>${itemName}</td>
-            <td>${color}</td>
-            <td>${size} - ${qty}</td>
-            <td><input type="number" min="0" max="${qty}" value="0" onchange="validateDispatchQuantity(this, ${qty})"></td>
-        `;
-    });
-
-    // Add a Save button for this item
-    const saveRow = dispatchDetailsTable.insertRow();
-    saveRow.innerHTML = `
-        <td colspan="4">
-            <button onclick="saveItemDispatch('${itemName}', '${color}')">Save Item Dispatch</button>
-        </td>
-    `;
-
-    modal.style.display = 'block';
-}
-function exportData() {
-    const data = {
-        orders: orders,
-        partyNames: JSON.parse(localStorage.getItem('partyNames') || '[]'),
-        itemNames: JSON.parse(localStorage.getItem('itemNames') || '[]'),
-        colors: JSON.parse(localStorage.getItem('colors') || '[]')
-    };
-
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'garment_order_data.json';
-    link.click();
-    URL.revokeObjectURL(link.href);
-}
-
-/*function importData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = function(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                
-                // Clear all existing data first
-                clearAllDataBeforeImport().then(() => {
-                    // Set new orders
-                    orders = importedData.orders || [];
-                    
-                    // Set other data
-                    const dataToSet = {
-                        orders: orders,
-                        partyNames: importedData.partyNames || [],
-                        itemNames: importedData.itemNames || [],
-                        colors: importedData.colors || []
-                    };
-
-                    // Use a single set operation to update all data in Firebase
-                    return firebase.database().ref().set(dataToSet);
-                })
-                .then(() => {
-                    // Update local storage
-                    localStorage.setItem('orders', JSON.stringify(orders));
-                    ['partyNames', 'itemNames', 'colors'].forEach(key => {
-                        localStorage.setItem(key, JSON.stringify(importedData[key] || []));
-                    });
-
-                    // Update UI
-                    updateDataLists();
-                    updateTables();
-                    alert('Data imported successfully!');
-                })
-                .catch((error) => {
-                    console.error("Error during import:", error);
-                    alert("An error occurred during import. Please try again.");
-                });
-            } catch (error) {
-                alert('Error importing data. Please make sure you selected the correct file.');
-                console.error(error);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function clearAllDataBeforeImport() {
-    // Clear all data in Firebase
-    return firebase.database().ref().remove()
-        .then(() => {
-            // Clear local storage
-            localStorage.clear();
-            // Reset local variables
-            orders = [];
-            currentItems = [];
-            console.log("All data cleared before import");
-        })
-        .catch((error) => {
-            console.error("Error clearing data:", error);
-            throw error;
-        });
-}
-*/
-function saveOrders() {
-    console.log("Saving orders:", orders);
-    database.ref('orders').set(orders)
-        .then(() => {
-            console.log("Orders saved successfully to Firebase");
-            localStorage.setItem('orders', JSON.stringify(orders)); // Backup to localStorage
-        })
-        .catch((error) => {
-            console.error("Error saving orders to Firebase:", error);
-            alert("Failed to save orders to the server. Please check your internet connection.");
-        });
-}
-function saveItemDispatch(itemName, color) {
-    const dispatchDetailsTable = document.getElementById('dispatchDetailsTable').getElementsByTagName('tbody')[0];
-    const rows = dispatchDetailsTable.getElementsByTagName('tr');
-
-    let dispatchedItem = {
-        itemName: itemName,
-        color: color,
-        sizes: {}
-    };
-
-    for (let i = 0; i < rows.length - 1; i++) { // -1 to exclude the save button row
-        const cells = rows[i].getElementsByTagName('td');
-        const size = cells[2].textContent.split(' - ')[0];
-        const dispatchQty = parseInt(cells[3].getElementsByTagName('input')[0].value);
-
-        if (dispatchQty > 0) {
-            dispatchedItem.sizes[size] = dispatchQty;
-        }
-    }
-
-    // Update the currentDispatchItems array
-    const existingItemIndex = currentDispatchItems.findIndex(item => 
-        item.itemName === itemName && item.color === color
-    );
-
-    if (existingItemIndex !== -1) {
-        currentDispatchItems[existingItemIndex] = dispatchedItem;
-    } else {
-        currentDispatchItems.push(dispatchedItem);
-    }
-
-    // Update the dispatch modal table
-    updateDispatchModalTable(dispatchedItem);
-
-    // Close the dispatch details modal
-    closeDispatchDetailsModal();
-}
-function updateDispatchModalTable(dispatchedItem) {
-    const dispatchItemsTable = document.getElementById('dispatchItemsTable').getElementsByTagName('tbody')[0];
-    const existingRow = Array.from(dispatchItemsTable.rows).find(row => 
-        row.cells[0].textContent.includes(dispatchedItem.itemName) && 
-        row.cells[0].textContent.includes(dispatchedItem.color)
-    );
-
-    if (existingRow) {
-        existingRow.cells[0].innerHTML = `
-            ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
-            ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-        `;
-    } else {
-        const newRow = dispatchItemsTable.insertRow();
-        newRow.innerHTML = `
-            <td>
-                ${dispatchedItem.itemName} (${dispatchedItem.color})<br>
-                ${Object.entries(dispatchedItem.sizes).map(([size, qty]) => `${size}/${qty}`).join(' ')}
-            </td>
-            <td><button onclick="openDispatchDetailsModal('${dispatchedItem.itemName}', '${dispatchedItem.color}')">Edit</button></td>
-        `;
-    }
-}
-function validateDispatchQuantity(input, maxQty) {
-    let value = parseInt(input.value);
-    if (isNaN(value) || value < 0) {
-        value = 0;
-    } else if (value > maxQty) {
-        value = maxQty;
-    }
-    input.value = value;
-}
-
-function saveToLocalStorage(key, value) {
-    let items = JSON.parse(localStorage.getItem(key)) || [];
-    if (!items.includes(value)) {
-        items.push(value);
-        localStorage.setItem(key, JSON.stringify(items));
-        updateDatalist(key);
-    }
-}
-
-function updateDataLists() {
-    ['partyNames', 'itemNames', 'colors'].forEach(updateDatalist);
-}
-
-function updateDatalist(key) {
-    let items = JSON.parse(localStorage.getItem(key)) || [];
-    let datalist = document.getElementById(`${key}List`);
-    if (datalist) {
-        datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
-    }
-}
-function initializeDataLists() {
-    updateDatalist('partyNames');
-    updateDatalist('itemNames');
-    updateDatalist('colors');
-}
-
-const order = {
-    id: Date.now(),
-    partyName: partyName,
-    items: currentItems.length > 0 ? [...currentItems] : [],
-    status: 'pending',
-    sentItems: [],
-    orderDate: new Date().toLocaleDateString()
-};
-
-function saveDispatch() {
-    let today = new Date().toLocaleDateString();
-
-    if (currentDispatchItems.length === 0) {
-        alert("No items were selected for dispatch. Please select at least one item.");
-        return;
-    }
-
-    const pendingOrderIndices = orders.reduce((acc, order, index) => {
-        if (order.partyName === currentDispatchOrder.partyName && 
-            order.orderDate === currentDispatchOrder.orderDate &&
-            order.status === 'pending') {
-            acc.push(index);
-        }
-        return acc;
-    }, []);
-
-    pendingOrderIndices.forEach(orderIndex => {
-        const order = orders[orderIndex];
-        if (!order.sentItems) {
-            order.sentItems = [];
-        }
-
-        currentDispatchItems.forEach(dispatchItem => {
-            const itemIndex = order.items.findIndex(i => 
-                i.itemName === dispatchItem.itemName && i.color === dispatchItem.color
-            );
-
-            if (itemIndex !== -1) {
-                const item = order.items[itemIndex];
-
-                let sentItem = {
-                    itemName: dispatchItem.itemName,
-                    color: dispatchItem.color,
-                    sizes: {},
-                    date: today
-                };
-
-                Object.entries(dispatchItem.sizes).forEach(([size, qty]) => {
-                    if (item.sizes[size]) {
-                        const actualQty = Math.min(qty, item.sizes[size]);
-                        item.sizes[size] -= actualQty;
-                        sentItem.sizes[size] = actualQty;
-
-                        if (item.sizes[size] <= 0) {
-                            delete item.sizes[size];
-                        }
-                    }
-                });
-
-                if (Object.keys(sentItem.sizes).length > 0) {
-                    order.sentItems.push(sentItem);
-                }
-
-                if (Object.keys(item.sizes).length === 0) {
-                    order.items.splice(itemIndex, 1);
-                }
-            }
-        });
-
-        if (order.items.length === 0) {
-            order.status = 'sent';
-            // Send notification for dispatched order
-            sendNotification('Order Dispatched', `Order dispatched for ${order.partyName}`);
-        }
-    });
-
-    saveOrders();
-    updateTables();
-    closeDispatchModal();
-
-    // Clear the currentDispatchItems array after saving
-    currentDispatchItems = [];
-}
-
-
-        function closeDispatchModal() {
-            const modal = document.getElementById('dispatchModal');
-            modal.style.display = 'none';
-        }
-
-        function closeDispatchDetailsModal() {
-            const modal = document.getElementById('dispatchDetailsModal');
-            modal.style.display = 'none';
-        }
-
-        function deleteOrder(id) {
-            orders = orders.filter(o => o.id !== id);
-            saveOrders();
-            updateTables();
-        }
-
-        function clearAllData() {
-    const password = prompt("Please enter the password to clear data:");
-    if (password !== null) {
-        const correctPassword = "9284494154";
-        
-        if (password === correctPassword) {
-            if (confirm("WARNING: This action will permanently delete all data from the database. This cannot be undone. Are you sure you want to proceed?")) {
-                permanentlyDeleteAllData();
-            }
-        } else {
-            alert('Incorrect password. Data was not cleared.');
-        }
-    }
-}
-
-function permanentlyDeleteAllData() {
-    // Delete all data from Firebase
-    firebase.database().ref().remove()
-        .then(() => {
-            // Clear local storage
-            localStorage.clear();
-            
-            // Reset local variables
-            orders = [];
-            currentItems = [];
-            currentDispatchOrder = null;
-            currentDispatchItems = [];
-
-            // Update UI
-            updateTables();
-            updateItemList();
-            updateDataLists();
-
-            console.log("All data permanently deleted from the database");
-            alert("All data has been permanently deleted from the database.");
-        })
-        .catch((error) => {
-            console.error("Error deleting data:", error);
-            alert("An error occurred while trying to delete the data. Please try again.");
-        });
-}
-
-
-
-function showClearDataOptions() {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Clear Data Options</h2>
-            <button id="clearOrderDataBtn">Order Data</button>
-            <button id="showSuggestionDataBtn">Suggestion Data</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.style.display = 'block';
-
-    // Add event listeners
-    modal.querySelector('.modal-close').addEventListener('click', closeModal);
-    modal.querySelector('#clearOrderDataBtn').addEventListener('click', clearOrderData);
-    modal.querySelector('#showSuggestionDataBtn').addEventListener('click', showSuggestionDataOptions);
-}
-
-function clearOrderData() {
-    if (confirm('Are you sure you want to clear all order data? This action cannot be undone.')) {
-        database.ref('orders').remove();
-        orders = [];
-        currentItems = [];
-        updateTables();
-        updateItemList();
-        alert('All order data has been cleared.');
-        closeModal();
-    }
-}
-
-function showSuggestionDataOptions() {
-    const modalContent = document.querySelector('.modal .modal-content');
-    modalContent.innerHTML = `
-        <h2>Clear Suggestion Data</h2>
-        <button class="suggestionDataBtn" data-type="partyNames">Party Stored</button>
-        <button class="suggestionDataBtn" data-type="itemNames">Item Stored</button>
-        <button class="suggestionDataBtn" data-type="colors">Color Stored</button>
-    `;
-
-    // Add event listeners to new buttons
-    modalContent.querySelectorAll('.suggestionDataBtn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            showStoredData(this.dataset.type);
-        });
-    });
-}
-function showStoredData(dataType) {
-    const items = JSON.parse(localStorage.getItem(dataType)) || [];
-    const modal = document.querySelector('.modal .modal-content');
-    let html = `<h2>${dataType} Stored</h2>`;
-    if (items.length === 0) {
-        html += '<p>No items stored.</p>';
-    } else {
-        items.forEach(item => {
-            html += `<div>${item} <button onclick="removeItem('${dataType}', '${item}')">Remove</button></div>`;
-        });
-    }
-    html += `<button onclick="removeAllItems('${dataType}')">Remove All</button>`;
-    html += `<button onclick="showSuggestionDataOptions()">Back</button>`;
-    modal.innerHTML = html;
-}
-function removeItem(dataType, item) {
-    database.ref(dataType).once('value').then((snapshot) => {
-        let items = snapshot.val() || [];
-        items = items.filter(i => i !== item);
-        database.ref(dataType).set(items);
-        showStoredData(dataType);
-        updateDatalist(dataType);
-    });
-}
-
-function removeAllItems(dataType) {
-    if (confirm(`Are you sure you want to remove all ${dataType}? This action cannot be undone.`)) {
-        database.ref(dataType).remove();
-        showStoredData(dataType);
-        updateDatalist(dataType);
-    }
-}
-
-function closeModal() {
-    const modal = document.querySelector('.modal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.remove();
-    }
-}
-window.onload = function() {
-    updateDatalist('partyNames');
-    updateDatalist('itemNames');
-    updateDatalist('colors');
-    updateTables();
-}
-async function exportToXLS(type) {
-    const workbook = new ExcelJS.Workbook();
-    let fileName;
-
-    switch (type) {
-        case 'orders':
-            dataToExport = [{ partyName: document.getElementById('partyName').value, items: currentItems, type: 'New Order' }];
-            fileName = 'new_order.xlsx';
-            break;
-        case 'pending':
-            dataToExport = orders.filter(o => o.status === 'pending');
-            fileName = 'pending_orders.xlsx';
-            break;
-        case 'sent':
-            dataToExport = orders.filter(o => o.sentItems && o.sentItems.length > 0);
-            fileName = 'sent_orders.xlsx';
-            break;
-        default:
-            dataToExport = orders;
-            fileName = 'all_orders.xlsx';
-    }
-
-    // Group orders by party name
-    const groupedOrders = dataToExport.reduce((acc, order) => {
-        const key = order.partyName;
-        if (!acc[key]) acc[key] = [];
-        
-        if (type === 'sent') {
-            order.sentItems.forEach(item => {
-                acc[key].push({...item, date: item.date, partyName: order.partyName});
-            });
-        } else {
-            acc[key].push({...order, date: order.orderDate || new Date().toLocaleDateString()});
-        }
-        return acc;
-    }, {});
-
-    for (const [partyName, orders] of Object.entries(groupedOrders)) {
-        const worksheet = workbook.addWorksheet(partyName);
-
-        // Set column widths
-        worksheet.columns = [
-            { width: 15 }, { width: 20 }, { width: 15 }, { width: 8 }, { width: 8 },
-            { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 10 }
+//order
+let items = [
+            { name: "o.e 2pccs", category: ["mix", "1pcs", "2pcs"], sizes: ["s", "m", "l", "xl", "2xl"] },
+            { name: "reply", sizes: ["s", "m", "l", "xl", "2xl"] },
+            { name: "clasz", sizes: ["45", "50", "55", "60", "65", "70", "75"] },
+            { name: "salsa", sizes: ["45", "50", "55", "60", "65", "70", "75"] }
         ];
 
-        let rowIndex = 1;
+        function addNewItem(itemName) {
+            if (!items.some(item => item && item.name === itemName)) {
+                // Create a modal dynamically
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'newItemModal';
+                modal.setAttribute('tabindex', '-1');
+                modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Item: ${itemName}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="itemCategory" class="form-label">Category (optional, separate multiple with space)</label>
+                            <input type="text" class="form-control" id="itemCategory">
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemSizes" class="form-label">Sizes (mandatory, separate with space)</label>
+                            <input type="text" class="form-control" id="itemSizes" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveNewItem">Save Item</button>
+                    </div>
+                </div>
+            </div>
+        `;
+                document.body.appendChild(modal);
 
-        // Add party name
-        const partyNameRow = worksheet.addRow([partyName]);
-        partyNameRow.height = 30;
-        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
-        partyNameRow.getCell(1).font = { size: 24, bold: true };
-        partyNameRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+                const newItemModal = new bootstrap.Modal(document.getElementById('newItemModal'));
+                newItemModal.show();
 
-        // Add order type
-        rowIndex++;
-        const orderTypeRow = worksheet.addRow([type === 'sent' ? 'SENT ORDER' : 'PENDING ORDER']);
-        orderTypeRow.height = 25;
-        worksheet.mergeCells(`A${rowIndex}:K${rowIndex}`);
-        orderTypeRow.getCell(1).font = { size: 18, bold: true };
-        orderTypeRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+                document.getElementById('saveNewItem').addEventListener('click', function () {
+                    const category = document.getElementById('itemCategory').value.split(' ').filter(Boolean);
+                    const sizes = document.getElementById('itemSizes').value.split(' ').filter(Boolean);
 
-        // Add header row
-        rowIndex += 2;
-        const headerRow = worksheet.addRow(['Date', 'Item Name', 'Color', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', 'Total']);
-        headerRow.font = { bold: true };
+                    if (sizes.length === 0) {
+                        alert('Please enter at least one size.');
+                        return;
+                    }
 
-        // Consolidate items
-        const consolidatedItems = {};
-        orders.forEach((order) => {
-            const items = type === 'sent' ? [order] : order.items;
-            items.forEach(item => {
-                const key = `${order.date}_${item.itemName}_${item.color}`;
-                if (!consolidatedItems[key]) {
-                    consolidatedItems[key] = {...item, date: order.date, sizes: {...item.sizes}};
-                } else {
-                    Object.entries(item.sizes).forEach(([size, qty]) => {
-                        consolidatedItems[key].sizes[size] = (consolidatedItems[key].sizes[size] || 0) + qty;
+                    const newItem = { name: itemName, category: category, sizes: sizes };
+                    items.push(newItem);
+                    items.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+                    // Save to Firebase
+                    firebase.database().ref('items').set(items).then(() => {
+                        console.log(`Added new item: ${itemName}`);
+                        logActivity(`created new item "${itemName}"`, username);
+                        alert(`New item "${itemName}" has been added successfully.`);
+                        newItemModal.hide();
+                        document.body.removeChild(modal);
+                    }).catch(error => {
+                        console.error("Error adding new item:", error);
+                        alert("An error occurred while adding the new item. Please try again.");
+                    });
+
+                    document.getElementById('itemSearch').value = itemName;
+                    document.getElementById('itemList').style.display = 'none';
+                    showItemDetails(newItem);
+                });
+            } else {
+                console.log(`Item "${itemName}" already exists.`);
+                alert(`Item "${itemName}" already exists in the list.`);
+            }
+        }
+       
+        
+           
+            function addNewParty(partyName) {
+                if (!parties.includes(partyName)) {
+                    parties.push(partyName);
+                    sortParties(); // Sort the list after adding new party
+                    // Save to Firebase
+                    firebase.database().ref('parties').set(parties);
+                    console.log(`Added new party: ${partyName}`);
+
+                    // Log the activity
+                    const now = new Date();
+                    const activityLog = {
+                        action: 'Created new party',
+                        partyName: partyName,
+                        timestamp: now.toISOString(),
+                        date: now.toLocaleDateString(),
+                        time: now.toLocaleTimeString(),
+                        username: username
+                    };
+                    firebase.database().ref('activityLogs').push(activityLog);
+
+                    // Send Telegram message
+                    const chatId = '-4527298165';
+                    const botToken = '7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs';
+                    const message = `${username}: created new party ${partyName}`;
+                    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => console.log('Telegram message sent:', data))
+                        .catch(error => console.error('Error sending Telegram message:', error));
+                }
+                partySearch.value = partyName;
+                partyList.style.display = 'none';
+            }
+            
+//loading
+function loadItemsFromFirebase() {
+            firebase.database().ref('items').once('value', (snapshot) => {
+                const firebaseItems = snapshot.val();
+                if (firebaseItems) {
+                    // Merge Firebase items with the initial items
+                    items = [...items, ...Object.values(firebaseItems)];
+                    // Remove duplicates and undefined items
+                    items = Array.from(new Set(items.filter(item => item && item.name).map(item => JSON.stringify(item))))
+                        .map(item => JSON.parse(item));
+                    // Sort items by name, handling potential undefined names
+                    items.sort((a, b) => {
+                        if (!a.name) return 1;
+                        if (!b.name) return -1;
+                        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
                     });
                 }
             });
-        });
-
-        // Add consolidated data rows
-        Object.values(consolidatedItems).forEach(item => {
-            rowIndex++;
-            const row = worksheet.addRow([
-                item.date,
-                item.itemName,
-                item.color,
-                item.sizes.S || '',
-                item.sizes.M || '',
-                item.sizes.L || '',
-                item.sizes.XL || '',
-                item.sizes['2XL'] || '',
-                item.sizes['3XL'] || '',
-                item.sizes['4XL'] || '',
-                Object.values(item.sizes).reduce((a, b) => a + b, 0)
-            ]);
-        });
-
-        // Add borders to all cells
-        for (let i = 1; i <= rowIndex; i++) {
-            worksheet.getRow(i).eachCell({ includeEmpty: true }, cell => {
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-            });
         }
-    }
 
-    // Generate the Excel file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(link.href);
-}
+        document.addEventListener('DOMContentLoaded', function () {
+         //backend
+         const firebaseConfig = {
+                apiKey: "AIzaSyBRV-i_70Xdk86bNuQQ43jiYkRNCXGvvyo",
+                authDomain: "hcoms-221aa.firebaseapp.com",
+                databaseURL: "https://hcoms-221aa-default-rtdb.firebaseio.com",
+                projectId: "hcoms-221aa",
+                storageBucket: "hcoms-221aa.appspot.com",
+                messagingSenderId: "817694176734",
+                appId: "1:817694176734:web:176bf69333bd7119d3194f",
+                measurementId: "G-JB143EY71N"
+            };
+            firebase.initializeApp(firebaseConfig);
+            function showSection(sectionId) {
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
 
-        document.getElementById('addItemBtn').addEventListener('click', addItem);
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    addOrder(event);
-});
-        document.getElementById('saveDispatch').addEventListener('click', saveDispatch);
-        document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.addEventListener('click', function() {
-                this.closest('.modal').style.display = 'none';
-            });
-        });
+                // Hide home screen when other sections are clicked
+                if (sectionId !== 'homeScreen') {
+                    document.getElementById('homeScreen').classList.remove('active');
+                }
+            }
 
-        // Allow radio buttons to be unselected
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('click', function() {
-                if (this.classList.contains('clicked')) {
-                    this.checked = false;
-                    this.classList.remove('clicked');
-                } else {
-                    this.classList.add('clicked');
+            // Show home screen by default and display username
+            showSection('homeScreen');
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            userNameDisplay.textContent = username || 'User';
+
+            function checkUserStatus() {
+                return new Promise((resolve, reject) => {
+                    const storedUsername = localStorage.getItem('hcUsername');
+                    if (storedUsername) {
+                        firebase.database().ref('users').once('value', (snapshot) => {
+                            const users = snapshot.val();
+                            if (users && Object.values(users).includes(storedUsername)) {
+                                username = storedUsername;
+                                document.getElementById('userNameDisplay').textContent = username;
+                                console.log('Welcome back, ' + username);
+                                resolve('active');
+                            } else {
+                                firebase.database().ref('approvalRequests').once('value', (snapshot) => {
+                                    const requests = snapshot.val();
+                                    if (requests && Object.values(requests).includes(storedUsername)) {
+                                        resolve('pending');
+                                    } else {
+                                        localStorage.removeItem('hcUsername');
+                                        resolve('new');
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        resolve('new');
+                    }
+                });
+                showPWAPopup();
+            }
+
+            function registerUser() {
+                let usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                usernameModal.show();
+
+                document.getElementById('saveUsername').addEventListener('click', function () {
+                    let inputUsername = document.getElementById('usernameInput').value.trim();
+                    if (inputUsername) {
+                        // Show loading animation
+                        usernameModal.hide();
+                        document.body.innerHTML += '<div class="fullscreen-overlay" id="loadingOverlay"><div class="approval-content"><h1>Submitting Request</h1><div class="loading-animation"><div class="circle"></div><div class="circle"></div><div class="circle"></div></div></div></div>';
+
+                        firebase.database().ref('approvalRequests').push(inputUsername).then(() => {
+                            localStorage.setItem('hcUsername', inputUsername);
+                            logActivity('New user registration request', inputUsername);
+
+                            // Remove loading overlay and show pending approval screen
+                            document.getElementById('loadingOverlay').remove();
+                            document.getElementById('pendingApprovalScreen').style.display = 'flex';
+                        });
+                    } else {
+                        alert('Please enter a valid username.');
+                    }
+                });
+            }
+
+            checkUserStatus().then((status) => {
+                switch (status) {
+                    case 'active':
+                        // User is active, allow access to the application
+                        break;
+                    case 'pending':
+                        document.getElementById('pendingApprovalScreen').style.display = 'flex';
+                        break;
+                    case 'new':
+                        registerUser();
+                        break;
                 }
             });
+
+            document.querySelectorAll('.nav-link, #slideMenu a[data-section]').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
+
+                    // Update active state for nav links
+                    document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
+                    if (this.classList.contains('nav-link')) {
+                        this.classList.add('active');
+                    }
+
+                    // Close slide menu if it's open
+                    slideMenu.style.width = '0';
+                });
+            });
+         
+            firebase.database().ref('parties').once('value', (snapshot) => {
+                const firebaseParties = snapshot.val();
+                if (firebaseParties) {
+                    parties = parties.concat(Object.values(firebaseParties));
+                    parties = [...new Set(parties)]; // Remove duplicates
+                    sortParties(); // Sort the combined list
+                }
+            });
+
+            const sendTime = '09:19'; // 1:34 PM
+
+async function sendPartyNamesToTelegram() {
+    // Retrieve the parties from Firebase
+    const partiesRef = firebase.database().ref('parties');
+    const partiesSnapshot = await partiesRef.once('value');
+    const parties = partiesSnapshot.val();
+
+    // Create a simple array of party names
+    const partyNames = parties || [];
+
+    // Create a JSON string from the party names array
+    const jsonData = JSON.stringify(partyNames);
+
+    // Create a blob from the JSON data
+    const blob = new Blob([jsonData], { type: 'application/json' });
+
+    // Get the current date and time
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+
+    // Create a file name
+    const fileName = `partydata_${year}${month}${day}.json`;
+
+    // Create a file from the blob
+    const file = new File([blob], fileName, { type: 'application/json' });
+
+    // Create a form data object
+    const formData = new FormData();
+    formData.append('document', file);
+
+    // Send the file to Telegram
+    const url = `https://api.telegram.org/bot7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs/sendDocument?chat_id=-4527298165`;
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Telegram message sent:', data);
+
+            // Create a backup details object
+            const backupDetails = {
+                type: 'Party Data',
+                date: `${year}-${month}-${day}`,
+                time: `${hour}:${minute}:${second}`,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            // Add the backup details to Firebase
+            firebase.database().ref('backupDetails').push(backupDetails);
+
+            // Update the last backup date in Firebase
+            firebase.database().ref('lastBackup').set({
+                date: date.toDateString(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Refresh the backup details table
+            loadBackupDetails();
+        })
+        .catch(error => console.error('Error sending Telegram message:', error));
+}
+
+// Function to load and display backup details
+function loadBackupDetails() {
+    const backupDetailsTable = document.getElementById('backup-details-table');
+    const tableBody = backupDetailsTable.getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    firebase.database().ref('backupDetails').orderByChild('timestamp').limitToLast(10).once('value', (snapshot) => {
+        const backups = [];
+        snapshot.forEach((childSnapshot) => {
+            backups.push(childSnapshot.val());
         });
 
-// Initialize the page
-showSection('order');
-updateTables();
+        backups.reverse().forEach((backup) => {
+            const newRow = tableBody.insertRow();
+            const typeCell = newRow.insertCell();
+            const dateCell = newRow.insertCell();
+            const timeCell = newRow.insertCell();
+            typeCell.textContent = backup.type;
+            dateCell.textContent = backup.date;
+            timeCell.textContent = backup.time;
+        });
+    });
+}
+
+// Function to check if it's time to send the data
+function checkSendTime() {
+    const currentTime = new Date();
+    const currentTimeString = `${currentTime.getHours()}:${currentTime.getMinutes()}`;
+
+    // Check if it's past the specified time and if the backup hasn't been sent today
+    if (currentTimeString >= sendTime || currentTime.getHours() >= parseInt(sendTime.split(':')[0])) {
+        checkAndSendBackup();
+    }
+}
+
+// Function to check if backup should be sent
+function checkAndSendBackup() {
+    firebase.database().ref('lastBackup').once('value', (snapshot) => {
+        const lastBackup = snapshot.val();
+        const today = new Date().toDateString();
+
+        if (!lastBackup || lastBackup.date !== today) {
+            sendPartyNamesToTelegram();
+        }
+    });
+}
+
+checkAndSendBackup();
+loadBackupDetails();
+
+// Set an interval to check the time every minute
+setInterval(checkSendTime, 60000); // 60000 milliseconds = 1 minute
+
+      // Reset the backup flag at midnight
+      function resetDailyBackupFlag() {
+                const now = new Date();
+                if (now.getHours() === 0 && now.getMinutes() === 0) {
+                    firebase.database().ref('lastBackup').remove();
+                }
+            }
+
+            // Check to reset the flag every hour
+            setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
+
+            document.addEventListener('DOMContentLoaded', checkAndSendBackup);
+
+// Reset the backup flag at midnight
+function resetDailyBackupFlag() {
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+        firebase.database().ref('lastBackup').remove();
+    }
+}
+
+// Check to reset the flag every hour
+setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
 
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-      .then(function(registration) {
-        console.log('Service Worker registered with scope:', registration.scope);
-      }).catch(function(error) {
-        console.log('Service Worker registration failed:', error);
-      });
-  }
+            //order
+            let parties = ["PARTY A", "PARTY B", "PARTY C", "XYLO"];
+            const partySearch = document.getElementById('partySearch');
+            const partyList = document.getElementById('partyList');
 
-</script>
+            partySearch.addEventListener('focus', () => showParties());
+            partySearch.addEventListener('input', () => showParties(partySearch.value));
+ 
+            document.addEventListener('click', function (e) {
+                if (e.target !== partySearch && !partyList.contains(e.target)) {
+                    partyList.style.display = 'none';
+                }
+            });
+            function sortParties() {
+                parties.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            }
+
+            function showParties(filter = '') {
+                partyList.innerHTML = '';
+                const filteredParties = parties.filter(party =>
+                    party.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                filteredParties.forEach(party => {
+                    const item = document.createElement('a');
+                    item.classList.add('list-group-item', 'list-group-item-action');
+                    item.textContent = party;
+                    item.href = '#';
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        partySearch.value = party;
+                        partyList.style.display = 'none';
+                    });
+                    partyList.appendChild(item);
+                });
+
+                if (filteredParties.length === 0 && filter !== '') {
+                    const addNewItem = document.createElement('a');
+                    addNewItem.classList.add('list-group-item', 'list-group-item-action');
+                    addNewItem.textContent = `Add "${filter}" as a new party`;
+                    addNewItem.href = '#';
+                    addNewItem.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        addNewParty(filter); // Change this line from addNewItem to addNewParty
+                    });
+                    partyList.appendChild(addNewItem);
+                }
+
+                partyList.style.display = 'block';
+            }
+     
+
+            function createCategoryRadios(categories) {
+                return `
+        <div class="category-container">
+            
+            ${categories.map((cat, index) => `
+                <label>
+                    <input type="radio" name="category" value="${cat}" ${index === 0 ? 'checked' : ''}>
+                    ${cat}
+                </label>
+            `).join('')}
+        </div>
+    `;
+            }
+
+            function createSizeQuantityGrid(sizes) {
+                const quantities = ['1', '2', '3', '4', '5', '_'];
+                return `
+        <div class="size-quantity-grid">
+            ${sizes.map(size => `
+                <div class="size-quantity-row">
+                    <div class="size-cell">${size}</div>
+                    <div class="quantity-cell">
+                        ${quantities.map(qty => `
+                            <label class="qty-label">
+                                <input type="radio" name="qty_${size}" value="${qty}">
+                                ${qty === '_' ? '<input type="number" class="custom-qty" min="1" style="width: 40px;">' : qty}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+            }
+
+  
+
+            //backup model
+            const backupModal = document.getElementById('backupModal');
+
+            backupModal.addEventListener('click', function (event) {
+                if (event.target.classList.contains('download-btn')) {
+                    downloadBackup(event.target.dataset.type);
+                } else if (event.target.classList.contains('send-btn')) {
+                    sendBackup(event.target.dataset.type);
+                }
+            });
+
+            function downloadBackup(dataType) {
+                firebase.database().ref('parties').once('value')
+                    .then((snapshot) => {
+                        const data = snapshot.val();
+                        const jsonData = JSON.stringify(data);
+                        const blob = new Blob([jsonData], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+
+                        const a = document.createElement('a');
+                        const date = new Date().toISOString().replace(/[:.]/g, '-');
+                        a.href = url;
+                        a.download = `${dataType}_${date}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+
+                        console.log('Backup downloaded successfully');
+                    })
+                    .catch((error) => {
+                        console.error('Error creating backup:', error);
+                    });
+            }
+
+            function sendBackup(dataType) {
+                firebase.database().ref('parties').once('value')
+                    .then((snapshot) => {
+                        const data = snapshot.val();
+                        const jsonData = JSON.stringify(data);
+
+                        const chatId = '-4527298165';
+                        const botToken = '7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs';
+                        const date = new Date().toISOString().replace(/[:.]/g, '-');
+                        const fileName = `${dataType}_${date}.json`;
+
+                        const formData = new FormData();
+                        formData.append('document', new Blob([jsonData], { type: 'application/json' }), fileName);
+
+                        fetch(`https://api.telegram.org/bot${botToken}/sendDocument?chat_id=${chatId}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(result => {
+                                console.log('Backup sent successfully:', result);
+                            })
+                            .catch(error => {
+                                console.error('Error sending backup:', error);
+                            });
+                    })
+                    .catch((error) => {
+                        console.error('Error creating backup:', error);
+                    });
+            }
+            
+            function sendItemsToTelegram() {
+                firebase.database().ref('items').once('value')
+                    .then((snapshot) => {
+                        const items = snapshot.val();
+                        const jsonData = JSON.stringify(items);
+
+                        // Create a blob from the JSON data
+                        const blob = new Blob([jsonData], { type: 'application/json' });
+
+                        // Get the current date and time
+                        const date = new Date();
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hour = String(date.getHours()).padStart(2, '0');
+                        const minute = String(date.getMinutes()).padStart(2, '0');
+                        const second = String(date.getSeconds()).padStart(2, '0');
+
+                        // Create a file name
+                        const fileName = `itemdata_${year}${month}${day}.json`;
+
+                        // Create a file from the blob
+                        const file = new File([blob], fileName, { type: 'application/json' });
+
+                        // Create a form data object
+                        const formData = new FormData();
+                        formData.append('document', file);
+
+                        // Send the file to Telegram
+                        const url = `https://api.telegram.org/bot7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs/sendDocument?chat_id=-4527298165`;
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Item data sent to Telegram:', data);
+
+                                // Create a backup details object
+                                const backupDetails = {
+                                    type: 'Item Data',
+                                    date: `${year}-${month}-${day}`,
+                                    time: `${hour}:${minute}:${second}`,
+                                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                                };
+
+                                // Add the backup details to Firebase
+                                firebase.database().ref('backupDetails').push(backupDetails);
+
+                                // Refresh the backup details table
+                                loadBackupDetails();
+
+                                // Log the activity
+                                logActivity('Sent item backup to Telegram', username);
+
+                                alert('Item data has been sent to Telegram successfully!');
+                            })
+                            .catch(error => {
+                                console.error('Error sending item data to Telegram:', error);
+                                alert('Error sending item data to Telegram. Please try again.');
+                            });
+                    })
+                    .catch((error) => {
+                        console.error('Error creating item backup:', error);
+                        alert('Error creating item backup. Please try again.');
+                    });
+            }
+
+            // Function to download Item data
+            function downloadItemBackup() {
+                firebase.database().ref('items').once('value')
+                    .then((snapshot) => {
+                        const data = snapshot.val();
+                        const jsonData = JSON.stringify(data);
+                        const blob = new Blob([jsonData], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+
+                        const a = document.createElement('a');
+                        const date = new Date().toISOString().replace(/[:.]/g, '-');
+                        a.href = url;
+                        a.download = `itemdata_${date}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+
+                        console.log('Item backup downloaded successfully');
+                        logActivity('Downloaded item backup', username);
+                        alert('Item backup has been downloaded successfully!');
+                    })
+                    .catch((error) => {
+                        console.error('Error creating item backup:', error);
+                        alert('Error creating item backup. Please try again.');
+                    });
+            }
+
+            backupModal.addEventListener('click', function (event) {
+                if (event.target.classList.contains('download-btn')) {
+                    if (event.target.dataset.type === 'party') {
+                        downloadBackup('party');
+                    } else if (event.target.dataset.type === 'item') {
+                        downloadItemBackup();
+                    }
+                } else if (event.target.classList.contains('send-btn')) {
+                    if (event.target.dataset.type === 'party') {
+                        sendPartyNamesToTelegram();
+                    } else if (event.target.dataset.type === 'item') {
+                        sendItemsToTelegram();
+                    }
+                }
+            });
+
+            //restore for party name
+            const restoreModal = document.getElementById('restoreModal');
+            const dataSelectionModal = new bootstrap.Modal(document.getElementById('dataSelectionModal'));
+            const uploadButton = document.getElementById('uploadRestoreFile');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const restoreSelectedButton = document.getElementById('restoreSelectedData');
+            let uploadedData = [];
+
+            uploadButton.addEventListener('click', handleFileUpload);
+            selectAllCheckbox.addEventListener('change', handleSelectAll);
+            restoreSelectedButton.addEventListener('click', restoreSelectedData);
+
+            function handleFileUpload() {
+                const fileInput = document.getElementById('restoreFile');
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const jsonData = JSON.parse(e.target.result);
+                            processUploadedData(jsonData);
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            alert('Invalid JSON file. Please try again.');
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert('Please select a file to upload.');
+                }
+            }
+
+            function processUploadedData(data) {
+    // Check if the data is an array (party names) or an object (item data)
+    if (Array.isArray(data)) {
+        // Handle party data
+        firebase.database().ref('parties').once('value', (snapshot) => {
+            const existingData = snapshot.val() || [];
+            uploadedData = data.filter(item => !existingData.includes(item));
+
+            if (uploadedData.length > 0) {
+                populateDataSelectionModal(uploadedData, 'party');
+                bootstrap.Modal.getInstance(restoreModal).hide();
+                dataSelectionModal.show();
+            } else {
+                alert('No new party data to restore.');
+            }
+        });
+    } else if (typeof data === 'object') {
+        // Handle item data
+        firebase.database().ref('items').once('value', (snapshot) => {
+            const existingData = snapshot.val() || {};
+            uploadedData = Object.entries(data).filter(([key, item]) => {
+                return !existingData[key] || JSON.stringify(existingData[key]) !== JSON.stringify(item);
+            });
+
+            if (uploadedData.length > 0) {
+                populateDataSelectionModal(uploadedData, 'item');
+                bootstrap.Modal.getInstance(restoreModal).hide();
+                dataSelectionModal.show();
+            } else {
+                alert('No new item data to restore.');
+            }
+        });
+    } else {
+        alert('Invalid data format in the uploaded file.');
+    }
+}
+function populateDataSelectionModal(data, dataType) {
+    const tbody = document.getElementById('dataSelectionBody');
+    tbody.innerHTML = '';
+    data.forEach((item, index) => {
+        const row = document.createElement('tr');
+        if (dataType === 'party') {
+            row.innerHTML = `
+                <td><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
+                <td>${item}</td>
+            `;
+        } else if (dataType === 'item') {
+            const [key, itemData] = item;
+            row.innerHTML = `
+                <td><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
+                <td>${itemData.name}</td>
+                <td>${itemData.category ? itemData.category.join(', ') : 'N/A'}</td>
+                <td>${itemData.sizes ? itemData.sizes.join(', ') : 'N/A'}</td>
+            `;
+        }
+        tbody.appendChild(row);
+    });
+
+    // Update modal title
+    document.querySelector('#dataSelectionModal .modal-title').textContent = 
+        `Select ${dataType === 'party' ? 'Parties' : 'Items'} to Restore`;
+
+    // Store the data type for use in restoreSelectedData
+    document.getElementById('dataSelectionModal').setAttribute('data-type', dataType);
+}
+
+            function handleSelectAll() {
+                const isChecked = selectAllCheckbox.checked;
+                document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            }
+
+            function restoreSelectedData() {
+    const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+        .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
+
+    const dataType = document.getElementById('dataSelectionModal').getAttribute('data-type');
+    const dataToRestore = selectedIndices.map(index => uploadedData[index]);
+
+    if (dataToRestore.length > 0) {
+        if (dataType === 'party') {
+            firebase.database().ref('parties').once('value', (snapshot) => {
+                const existingData = snapshot.val() || [];
+                const updatedData = [...new Set([...existingData, ...dataToRestore])];
+
+                firebase.database().ref('parties').set(updatedData)
+                    .then(() => {
+                        alert('Selected parties restored successfully!');
+                        dataSelectionModal.hide();
+                        loadPartyMaster(); // Refresh the party master view
+                        logActivity('Restored parties', username);
+                    })
+                    .catch(error => {
+                        console.error('Error restoring parties:', error);
+                        alert('Error restoring parties. Please try again.');
+                    });
+            });
+        } else if (dataType === 'item') {
+            firebase.database().ref('items').once('value', (snapshot) => {
+                const existingData = snapshot.val() || {};
+                const updatedData = { ...existingData };
+
+                dataToRestore.forEach(([key, item]) => {
+                    updatedData[key] = item;
+                });
+
+                firebase.database().ref('items').set(updatedData)
+                    .then(() => {
+                        alert('Selected items restored successfully!');
+                        dataSelectionModal.hide();
+                        loadItemMaster(); // Refresh the item master view
+                        logActivity('Restored items', username);
+                    })
+                    .catch(error => {
+                        console.error('Error restoring items:', error);
+                        alert('Error restoring items. Please try again.');
+                    });
+            });
+        }
+    } else {
+        alert('No data selected for restoration.');
+    }
+}
+
+//master
+document.getElementById('itemMasterBtn').addEventListener('click', function () {
+                showSection('itemMaster');
+                loadItemMaster();
+            });
+
+            function showItems(filter = '') {
+                const itemList = document.getElementById('itemList');
+                itemList.innerHTML = '';
+                const filteredItems = items.filter(item =>
+                    item && item.name && item.name.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                filteredItems.forEach(item => {
+                    const element = document.createElement('a');
+                    element.classList.add('list-group-item', 'list-group-item-action');
+                    element.textContent = item.name;
+                    element.href = '#';
+                    element.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        document.getElementById('itemSearch').value = item.name;
+                        itemList.style.display = 'none';
+                        showItemDetails(item);
+                    });
+                    itemList.appendChild(element);
+                });
+
+                if (filteredItems.length === 0 && filter !== '') {
+                    const addNewItemElement = document.createElement('a');
+                    addNewItemElement.classList.add('list-group-item', 'list-group-item-action');
+                    addNewItemElement.textContent = `Add "${filter}" as a new item`;
+                    addNewItemElement.href = '#';
+                    addNewItemElement.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        addNewItem(filter);
+                    });
+                    itemList.appendChild(addNewItemElement);
+                }
+
+                itemList.style.display = 'block';
+            }
+
+
+            function showItemDetails(item) {
+                const detailsContainer = document.createElement('div');
+                detailsContainer.id = 'itemDetailsContainer';
+                detailsContainer.innerHTML = `
+       
+        ${item.category ? createCategoryRadios(item.category) : ''}
+        ${createSizeQuantityGrid(item.sizes)}
+    `;
+
+                // Replace existing details container or append new one
+                const existingContainer = document.getElementById('itemDetailsContainer');
+                if (existingContainer) {
+                    existingContainer.replaceWith(detailsContainer);
+                } else {
+                    document.getElementById('itemSearch').insertAdjacentElement('afterend', detailsContainer);
+                }
+            }
+
+            function loadItemMaster() {
+    const itemMasterBody = document.getElementById('itemMasterBody');
+    itemMasterBody.innerHTML = '';
+
+    // Predefined items
+    const predefinedItems = [
+        { name: "o.e 2pccs", category: ["mix", "1pcs", "2pcs"], sizes: ["s", "m", "l", "xl", "2xl"] },
+        { name: "reply", sizes: ["s", "m", "l", "xl", "2xl"] },
+        { name: "clasz", sizes: ["45", "50", "55", "60", "65", "70", "75"] },
+        { name: "salsa", sizes: ["45", "50", "55", "60", "65", "70", "75"] }
+    ];
+
+    // Load predefined items
+    predefinedItems.forEach((item, index) => {
+        addItemToTable(item, index, true);
+    });
+
+    // Load custom items from Firebase
+    firebase.database().ref('items').once('value', (snapshot) => {
+        const firebaseItems = snapshot.val();
+        if (firebaseItems) {
+            Object.entries(firebaseItems).forEach(([key, item]) => {
+                if (!predefinedItems.some(predefined => predefined.name === item.name)) {
+                    addItemToTable(item, key, false);
+                }
+            });
+        }
+    });
+
+    function addItemToTable(item, key, isPredefined) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.category ? item.category.join(', ') : 'N/A'}</td>
+            <td>${item.sizes ? item.sizes.join(', ') : 'N/A'}</td>
+            <td>
+                ${isPredefined ? '' : `
+                    <button class="btn btn-sm btn-primary edit-item" data-key="${key}">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-item" data-key="${key}">Delete</button>
+                `}
+            </td>
+        `;
+        itemMasterBody.appendChild(row);
+
+        if (!isPredefined) {
+            row.querySelector('.edit-item').addEventListener('click', () => editItem(key));
+            row.querySelector('.delete-item').addEventListener('click', () => deleteItem(key));
+        }
+    }
+}
+
+// Function to edit an item
+function editItem(key) {
+    firebase.database().ref('items').child(key).once('value', (snapshot) => {
+        const item = snapshot.val();
+        if (item) {
+            const newName = prompt('Enter new item name:', item.name);
+            if (newName && newName !== item.name) {
+                item.name = newName;
+                firebase.database().ref('items').child(key).set(item).then(() => {
+                    loadItemMaster();
+                    logActivity('Edited item name', username, `${item.name} to ${newName}`);
+                }).catch(error => {
+                    console.error("Error updating item:", error);
+                    alert("Error updating item. Please try again.");
+                });
+            }
+        } else {
+            console.error("Item not found");
+            alert("Item not found. Please refresh and try again.");
+        }
+    });
+}
+
+// Function to delete an item
+function deleteItem(key) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        firebase.database().ref('items').child(key).once('value', (snapshot) => {
+            const item = snapshot.val();
+            if (item) {
+                firebase.database().ref('items').child(key).remove().then(() => {
+                    loadItemMaster();
+                    logActivity('Deleted item', username, item.name);
+                }).catch(error => {
+                    console.error("Error deleting item:", error);
+                    alert("Error deleting item. Please try again.");
+                });
+            } else {
+                console.error("Item not found");
+                alert("Item not found. Please refresh and try again.");
+            }
+        });
+    }
+}
+
+            loadItemsFromFirebase();
+
+            const itemSearch = document.getElementById('itemSearch');
+            const itemList = document.getElementById('itemList');
+
+            itemSearch.addEventListener('focus', () => showItems());
+            itemSearch.addEventListener('input', () => showItems(itemSearch.value));
+ 
+            document.addEventListener('click', function (e) {
+                if (e.target !== itemSearch && !itemList.contains(e.target)) {
+                    itemList.style.display = 'none';
+                }
+            });
+
+            //user management
+            document.getElementById('usersBtn').addEventListener('click', function () {
+                showSection('users');
+                loadUsers();
+            });
+
+            document.getElementById('approvalRequestsBtn').addEventListener('click', function () {
+                showSection('approvalRequests');
+                loadApprovalRequests();
+            });
+
+            function loadUsers() {
+                const usersBody = document.getElementById('usersBody');
+                usersBody.innerHTML = '';
+
+                firebase.database().ref('users').once('value', (snapshot) => {
+                    const users = snapshot.val();
+                    if (users) {
+                        Object.entries(users).forEach(([key, value]) => {
+                            const row = document.createElement('tr');
+                            const isCurrentUser = value === username;
+                            row.innerHTML = `
+                    <td>${value}${isCurrentUser ? ' (me)' : ''}</td>
+                    <td>
+                        ${isCurrentUser ? '' : `<button class="btn btn-sm btn-danger delete-user" data-key="${key}">Delete</button>`}
+                    </td>
+                `;
+                            usersBody.appendChild(row);
+                        });
+
+                        // Add event listeners for delete buttons
+                        document.querySelectorAll('.delete-user').forEach(button => {
+                            button.addEventListener('click', function () {
+                                const key = this.getAttribute('data-key');
+                                deleteUser(key);
+                            });
+                        });
+                    }
+                });
+            }
+
+            function deleteUser(key) {
+                const password = prompt('Enter password to delete user:');
+                if (password === '9284494154') {
+                    firebase.database().ref('users').child(key).once('value', (snapshot) => {
+                        const deletedUsername = snapshot.val();
+                        firebase.database().ref('users').child(key).remove().then(() => {
+                            loadUsers();
+                            logActivity('Deleted user', deletedUsername);
+
+                            // If the deleted user is the current user, clear localStorage and reload
+                            if (deletedUsername === username) {
+                                localStorage.removeItem('hcUsername');
+                                location.reload();
+                            }
+                        }).catch(error => {
+                            console.error("Error deleting user:", error);
+                        });
+                    });
+                } else {
+                    alert('Incorrect password');
+                }
+            }
+
+            function loadApprovalRequests() {
+                const approvalRequestsBody = document.getElementById('approvalRequestsBody');
+                approvalRequestsBody.innerHTML = '';
+
+                firebase.database().ref('approvalRequests').once('value', (snapshot) => {
+                    const requests = snapshot.val();
+                    if (requests) {
+                        Object.entries(requests).forEach(([key, value]) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                        <td>${value}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success approve-user" data-key="${key}">Approve</button>
+                            <button class="btn btn-sm btn-danger reject-user" data-key="${key}">Reject</button>
+                        </td>
+                    `;
+                            approvalRequestsBody.appendChild(row);
+                        });
+
+                        // Add event listeners for approve and reject buttons
+                        document.querySelectorAll('.approve-user, .reject-user').forEach(button => {
+                            button.addEventListener('click', function () {
+                                const key = this.getAttribute('data-key');
+                                const action = this.classList.contains('approve-user') ? 'approve' : 'reject';
+                                handleApprovalRequest(key, action);
+                            });
+                        });
+                    }
+                });
+            }
+
+            function handleApprovalRequest(key, action) {
+                const password = prompt('Enter password to ' + action + ' user:');
+                if (password === '9284494154') {
+                    if (action === 'approve') {
+                        firebase.database().ref('approvalRequests').child(key).once('value', (snapshot) => {
+                            const username = snapshot.val();
+                            firebase.database().ref('users').push(username).then(() => {
+                                firebase.database().ref('approvalRequests').child(key).remove();
+                                loadApprovalRequests();
+                                logActivity('Approved user', username);
+                            });
+                        });
+                    } else {
+                        firebase.database().ref('approvalRequests').child(key).remove().then(() => {
+                            loadApprovalRequests();
+                            logActivity('Rejected user', key);
+                        });
+                    }
+                } else {
+                    alert('Incorrect password');
+                }
+            }
+            let deferredPrompt;
+
+        window.addEventListener('load', () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:application/javascript;base64,Y29uc3QgQ0FDSEVfTkFNRSA9ICdoYy1hcHAtdjEnOwpjb25zdCB1cmxzVG9DYWNoZSA9IFsKICAnLycsCiAgJy9pbmRleC5odG1sJywKICAnL3N0eWxlcy5jc3MnLAogICcvc2NyaXB0LmpzJywKICAnL2ljb24tMTkyeDE5Mi5wbmcnLAogICcvaWNvbi01MTJ4NTEyLnBuZycKXTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignaW5zdGFsbCcsIChldmVudCkgPT4gewogIGV2ZW50LndhaXRVbnRpbCgKICAgIGNhY2hlcy5vcGVuKENBQ0hFX05BTUUpCiAgICAgIC50aGVuKChjYWNoZSkgPT4gY2FjaGUuYWRkQWxsKHVybHNUb0NhY2hlKSkKICApOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignZmV0Y2gnLCAoZXZlbnQpID0+IHsKICBldmVudC5yZXNwb25kV2l0aCgKICAgIGNhY2hlcy5tYXRjaChldmVudC5yZXF1ZXN0KQogICAgICAudGhlbigocmVzcG9uc2UpID0+IHJlc3BvbnNlIHx8IGZldGNoKGV2ZW50LnJlcXVlc3QpKQogICk7Cn0pOw==')
+                    .then((reg) => console.log('Service worker registered.', reg))
+                    .catch((err) => console.log('Service worker registration failed:', err));
+            }
+        });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        // Function to show PWA installation popup
+        function showPWAPopup() {
+            document.getElementById('pwaPopup').style.display = 'block';
+        }
+
+        // Event listener for the install button in the popup
+        document.getElementById('installPwa').addEventListener('click', () => {
+            document.getElementById('pwaPopup').style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        // Event listener for the dismiss button in the popup
+        document.getElementById('dismissPwa').addEventListener('click', () => {
+            document.getElementById('pwaPopup').style.display = 'none';
+        });
+        });
+
+        //slidng
+        document.addEventListener('DOMContentLoaded', function () {
+            const slideMenu = document.getElementById('slideMenu');
+            const menuToggle = document.getElementById('menuToggle');
+            const closeBtn = document.querySelector('.close-btn');
+
+            function showSection(sectionId) {
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+            }
+
+            menuToggle.addEventListener('click', function () {
+                slideMenu.style.width = '250px';
+            });
+
+            closeBtn.addEventListener('click', function () {
+                slideMenu.style.width = '0';
+            });
+
+            slideMenu.querySelectorAll('a[data-section]').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
+                    slideMenu.style.width = '0';
+                });
+            });
+
+            menuToggle.addEventListener('click', function () {
+                slideMenu.style.width = '250px';
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            });
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
+                });
+            });
+
+            window.addEventListener('click', function (event) {
+                if (!slideMenu.contains(event.target) && event.target !== menuToggle) {
+                    slideMenu.style.width = '0';
+                }
+            });
+            // Add event listeners for Master and Party Master buttons
+            document.getElementById('partyMasterBtn').addEventListener('click', function () {
+                showSection('partyMaster');
+                loadPartyMaster();
+            });
+
+
+            function loadPartyMaster() {
+                const partyMasterBody = document.getElementById('partyMasterBody');
+                partyMasterBody.innerHTML = '';
+
+                firebase.database().ref('parties').once('value', (snapshot) => {
+                    const firebaseParties = snapshot.val();
+                    if (firebaseParties) {
+                        firebaseParties.forEach((party, index) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                        <td>${party}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-party" data-index="${index}">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-party" data-index="${index}">Delete</button>
+                        </td>
+                    `;
+                            partyMasterBody.appendChild(row);
+                        });
+
+                        // Add event listeners for edit and delete buttons
+                        document.querySelectorAll('.edit-party').forEach(button => {
+                            button.addEventListener('click', function () {
+                                const index = this.getAttribute('data-index');
+                                editParty(index);
+                            });
+                        });
+
+                        document.querySelectorAll('.delete-party').forEach(button => {
+                            button.addEventListener('click', function () {
+                                const index = this.getAttribute('data-index');
+                                deleteParty(index);
+                            });
+                        });
+                    }
+                });
+            }
+
+            function editParty(index) {
+                firebase.database().ref('parties').once('value', (snapshot) => {
+                    const parties = snapshot.val();
+                    const oldName = parties[index];
+                    const newName = prompt('Enter new party name:', oldName);
+                    if (newName && newName !== oldName) {
+                        parties[index] = newName;
+                        firebase.database().ref('parties').set(parties).then(() => {
+                            loadPartyMaster();
+                            logActivity('Edited party name', oldName, newName);
+                        }).catch(error => {
+                            console.error("Error updating party:", error);
+                        });
+                    }
+                });
+            }
+
+            function deleteParty(index) {
+                if (confirm('Are you sure you want to delete this party?')) {
+                    firebase.database().ref('parties').once('value', (snapshot) => {
+                        const parties = snapshot.val();
+                        const deletedParty = parties[index];
+                        parties.splice(index, 1);
+                        firebase.database().ref('parties').set(parties).then(() => {
+                            loadPartyMaster();
+                            logActivity('Deleted party', deletedParty);
+                        }).catch(error => {
+                            console.error("Error deleting party:", error);
+                        });
+                    });
+                }
+            }
+
+            function logActivity(action, username) {
+                const now = new Date();
+                const activityLog = {
+                    action: action,
+                    username: username,
+                    timestamp: now.toISOString(),
+                    date: now.toLocaleDateString(),
+                    time: now.toLocaleTimeString()
+                };
+                firebase.database().ref('activityLogs').push(activityLog);
+            }
+
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                this.classList.add('active');
+            });
+        });
+
+
+        //ACTIVITY LOG
+        document.querySelector('a[data-section="activityLogs"]').addEventListener('click', loadActivityLogs);
+        function loadActivityLogs() {
+            const activityLogsSection = document.getElementById('activityLogs');
+            const logList = document.createElement('ul');
+            logList.className = 'list-group';
+
+            firebase.database().ref('activityLogs').orderByChild('timestamp').limitToLast(50).on('value', (snapshot) => {
+                logList.innerHTML = ''; // Clear existing logs
+                const logs = [];
+                snapshot.forEach((childSnapshot) => {
+                    logs.push(childSnapshot.val());
+                });
+                logs.reverse().forEach((log) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item';
+
+                    // Format date and time consistently
+                    const dateTime = new Date(log.timestamp);
+                    const formattedDateTime = dateTime.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    });
+
+                    let logMessage = `${formattedDateTime}: ${log.username}: ${log.action}`;
+                    if (log.action === 'Created new party' && log.partyName) {
+                        logMessage += ` "${log.partyName}"`;
+                    }
+
+                    listItem.textContent = logMessage;
+                    logList.appendChild(listItem);
+                });
+            });
+
+
+            activityLogsSection.innerHTML = ''; // Clear previous content
+            activityLogsSection.appendChild(logList);
+        }
+        //hc text animation
+        const hcText = document.querySelector('.hc-text');
+        let gradientAngle = 0;
+
+        function updateGradient() {
+            gradientAngle += 1; // Adjust the speed by changing the increment
+            hcText.style.backgroundImage = `linear-gradient(${gradientAngle}deg, #8B0000, #0000FF)`;
+        }
+
+        setInterval(updateGradient, 50); // Update every 50 milliseconds (adjust as needed)
+        function adjustForMobileView() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.table').forEach(table => {
+                    table.classList.add('table-responsive');
+                });
+            } else {
+                document.querySelectorAll('.table').forEach(table => {
+                    table.classList.remove('table-responsive');
+                });
+            }
+        }
+
+
+        window.addEventListener('resize', adjustForMobileView);
+        adjustForMobileView();
+    </script>
 
 </body>
+
 </html>
