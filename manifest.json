@@ -1,7 +1,7 @@
 {
-    "name": "PWA Test App",
-    "short_name": "PWA Test",
-    "description": "A simple PWA test application",
+    "name": "HC OMS",
+    "short_name": "HC OMS",
+    "description": "A OMS FOR HREENKAR CREATION",
     "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#ffffff",
