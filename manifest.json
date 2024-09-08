@@ -1,6 +1,6 @@
 {
-    "name": "HC OMS",
-    "short_name": "HC OMS",
+    "name": "Hc Oms",
+    "short_name": "Hc Oms",
     "description": "A OMS FOR HREENKAR CREATION",
     "start_url": "/index.html",
     "display": "standalone",
