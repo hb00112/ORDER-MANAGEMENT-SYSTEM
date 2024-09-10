@@ -10,14 +10,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HC OMS</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="https://i.postimg.cc/2jB7q8kP/hC-2.png" type="image/png">
+    <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
     <meta name="theme-color" content="#4285f4">
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -451,6 +451,59 @@
                 transform: translateY(-20px);
             }
         }
+
+        #passwordModal2 .modal-content {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+
+        #passwordModal2 .modal-header {
+            border-bottom: none;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        #passwordModal2 .modal-body {
+            padding: 1.5rem;
+        }
+
+        #passwordModal2 .modal-footer {
+            border-top: none;
+            padding: 0.5rem 1.5rem 1.5rem;
+        }
+
+        #passwordInput2.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        #passwordError2 {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        #orders {
+            position: relative;
+            padding-bottom: 60px;
+            /* Adjust this value based on your footer height */
+        }
+
+        .order-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f8f9fa;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-footer button {
+            width: 48%;
+            /* Adjust as needed */
+        }
     </style>
 </head>
 
@@ -700,18 +753,20 @@
         <h2>Orders</h2>
         <form id="orderForm">
             <div class="mb-3">
-
                 <input type="text" class="form-control" id="partySearch" placeholder="Search or add party">
                 <div id="partyList" class="list-group mt-2" style="display: none;"></div>
             </div>
             <div class="mb-3">
-
                 <input type="text" class="form-control" id="itemSearch" placeholder="Search or add item">
                 <div id="itemList" class="list-group mt-2" style="display: none;"></div>
             </div>
-            <!-- Add other form fields as needed -->
-            <button type="submit" class="btn btn-primary">Add to Cart</button>
+            <!-- The item details and size/quantity grid will be inserted here dynamically -->
         </form>
+        <div class="order-footer">
+            <button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
+            <button type="button" class="btn btn-success" id="saveOrderBtn">Save Order</button>
+        </div>
+        <!-- The cart summary table will be inserted here dynamically -->
     </div>
     <div class="container mt-2">
         <!-- Pending Orders Section -->
@@ -722,7 +777,7 @@
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>ORD NO.</th>
                         <th>Party</th>
                         <th>Items</th>
                         <th>Status</th>
@@ -767,11 +822,12 @@
         </div>
     </div>
     <script>
-    //home screen
-    let username = null;  
+        //home screen
+        let username = null;
+        let orderCounter = 0;
 
-    //activity log
-    function logActivity(action, username) {
+        //activity log
+        function logActivity(action, username) {
             const now = new Date();
             const activityLog = {
                 action: action,
@@ -783,8 +839,8 @@
             firebase.database().ref('activityLogs').push(activityLog);
         }
 
-//order
-let items = [
+        //order
+        let items = [
             { name: "o.e 2pccs", category: ["mix", "1pcs", "2pcs"], sizes: ["s", "m", "l", "xl", "2xl"] },
             { name: "reply", sizes: ["s", "m", "l", "xl", "2xl"] },
             { name: "clasz", sizes: ["45", "50", "55", "60", "65", "70", "75"] },
@@ -861,46 +917,13 @@ let items = [
                 alert(`Item "${itemName}" already exists in the list.`);
             }
         }
-       
-        
-           
-            function addNewParty(partyName) {
-                if (!parties.includes(partyName)) {
-                    parties.push(partyName);
-                    sortParties(); // Sort the list after adding new party
-                    // Save to Firebase
-                    firebase.database().ref('parties').set(parties);
-                    console.log(`Added new party: ${partyName}`);
 
-                    // Log the activity
-                    const now = new Date();
-                    const activityLog = {
-                        action: 'Created new party',
-                        partyName: partyName,
-                        timestamp: now.toISOString(),
-                        date: now.toLocaleDateString(),
-                        time: now.toLocaleTimeString(),
-                        username: username
-                    };
-                    firebase.database().ref('activityLogs').push(activityLog);
 
-                    // Send Telegram message
-                    const chatId = '-4527298165';
-                    const botToken = '7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs';
-                    const message = `${username}: created new party ${partyName}`;
-                    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
 
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(data => console.log('Telegram message sent:', data))
-                        .catch(error => console.error('Error sending Telegram message:', error));
-                }
-                partySearch.value = partyName;
-                partyList.style.display = 'none';
-            }
-            
-//loading
-function loadItemsFromFirebase() {
+      
+
+        //loading
+        function loadItemsFromFirebase() {
             firebase.database().ref('items').once('value', (snapshot) => {
                 const firebaseItems = snapshot.val();
                 if (firebaseItems) {
@@ -920,8 +943,8 @@ function loadItemsFromFirebase() {
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-         //backend
-         const firebaseConfig = {
+            //backend
+            const firebaseConfig = {
                 apiKey: "AIzaSyBRV-i_70Xdk86bNuQQ43jiYkRNCXGvvyo",
                 authDomain: "hcoms-221aa.firebaseapp.com",
                 databaseURL: "https://hcoms-221aa-default-rtdb.firebaseio.com",
@@ -1034,7 +1057,7 @@ function loadItemsFromFirebase() {
                     slideMenu.style.width = '0';
                 });
             });
-         
+
             firebase.database().ref('parties').once('value', (snapshot) => {
                 const firebaseParties = snapshot.val();
                 if (firebaseParties) {
@@ -1046,128 +1069,128 @@ function loadItemsFromFirebase() {
 
             const sendTime = '09:19'; // 1:34 PM
 
-async function sendPartyNamesToTelegram() {
-    // Retrieve the parties from Firebase
-    const partiesRef = firebase.database().ref('parties');
-    const partiesSnapshot = await partiesRef.once('value');
-    const parties = partiesSnapshot.val();
+            async function sendPartyNamesToTelegram() {
+                // Retrieve the parties from Firebase
+                const partiesRef = firebase.database().ref('parties');
+                const partiesSnapshot = await partiesRef.once('value');
+                const parties = partiesSnapshot.val();
 
-    // Create a simple array of party names
-    const partyNames = parties || [];
+                // Create a simple array of party names
+                const partyNames = parties || [];
 
-    // Create a JSON string from the party names array
-    const jsonData = JSON.stringify(partyNames);
+                // Create a JSON string from the party names array
+                const jsonData = JSON.stringify(partyNames);
 
-    // Create a blob from the JSON data
-    const blob = new Blob([jsonData], { type: 'application/json' });
+                // Create a blob from the JSON data
+                const blob = new Blob([jsonData], { type: 'application/json' });
 
-    // Get the current date and time
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hour = String(date.getHours()).padStart(2, '0');
-    const minute = String(date.getMinutes()).padStart(2, '0');
-    const second = String(date.getSeconds()).padStart(2, '0');
+                // Get the current date and time
+                const date = new Date();
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+                const second = String(date.getSeconds()).padStart(2, '0');
 
-    // Create a file name
-    const fileName = `partydata_${year}${month}${day}.json`;
+                // Create a file name
+                const fileName = `partydata_${year}${month}${day}.json`;
 
-    // Create a file from the blob
-    const file = new File([blob], fileName, { type: 'application/json' });
+                // Create a file from the blob
+                const file = new File([blob], fileName, { type: 'application/json' });
 
-    // Create a form data object
-    const formData = new FormData();
-    formData.append('document', file);
+                // Create a form data object
+                const formData = new FormData();
+                formData.append('document', file);
 
-    // Send the file to Telegram
-    const url = `https://api.telegram.org/bot7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs/sendDocument?chat_id=-4527298165`;
-    fetch(url, {
-        method: 'POST',
-        body: formData,
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Telegram message sent:', data);
+                // Send the file to Telegram
+                const url = `https://api.telegram.org/bot7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs/sendDocument?chat_id=-4527298165`;
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Telegram message sent:', data);
 
-            // Create a backup details object
-            const backupDetails = {
-                type: 'Party Data',
-                date: `${year}-${month}-${day}`,
-                time: `${hour}:${minute}:${second}`,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
+                        // Create a backup details object
+                        const backupDetails = {
+                            type: 'Party Data',
+                            date: `${year}-${month}-${day}`,
+                            time: `${hour}:${minute}:${second}`,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        };
 
-            // Add the backup details to Firebase
-            firebase.database().ref('backupDetails').push(backupDetails);
+                        // Add the backup details to Firebase
+                        firebase.database().ref('backupDetails').push(backupDetails);
 
-            // Update the last backup date in Firebase
-            firebase.database().ref('lastBackup').set({
-                date: date.toDateString(),
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
+                        // Update the last backup date in Firebase
+                        firebase.database().ref('lastBackup').set({
+                            date: date.toDateString(),
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
 
-            // Refresh the backup details table
+                        // Refresh the backup details table
+                        loadBackupDetails();
+                    })
+                    .catch(error => console.error('Error sending Telegram message:', error));
+            }
+
+            // Function to load and display backup details
+            function loadBackupDetails() {
+                const backupDetailsTable = document.getElementById('backup-details-table');
+                const tableBody = backupDetailsTable.getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                firebase.database().ref('backupDetails').orderByChild('timestamp').limitToLast(10).once('value', (snapshot) => {
+                    const backups = [];
+                    snapshot.forEach((childSnapshot) => {
+                        backups.push(childSnapshot.val());
+                    });
+
+                    backups.reverse().forEach((backup) => {
+                        const newRow = tableBody.insertRow();
+                        const typeCell = newRow.insertCell();
+                        const dateCell = newRow.insertCell();
+                        const timeCell = newRow.insertCell();
+                        typeCell.textContent = backup.type;
+                        dateCell.textContent = backup.date;
+                        timeCell.textContent = backup.time;
+                    });
+                });
+            }
+
+            // Function to check if it's time to send the data
+            function checkSendTime() {
+                const currentTime = new Date();
+                const currentTimeString = `${currentTime.getHours()}:${currentTime.getMinutes()}`;
+
+                // Check if it's past the specified time and if the backup hasn't been sent today
+                if (currentTimeString >= sendTime || currentTime.getHours() >= parseInt(sendTime.split(':')[0])) {
+                    checkAndSendBackup();
+                }
+            }
+
+            // Function to check if backup should be sent
+            function checkAndSendBackup() {
+                firebase.database().ref('lastBackup').once('value', (snapshot) => {
+                    const lastBackup = snapshot.val();
+                    const today = new Date().toDateString();
+
+                    if (!lastBackup || lastBackup.date !== today) {
+                        sendPartyNamesToTelegram();
+                    }
+                });
+            }
+
+            checkAndSendBackup();
             loadBackupDetails();
-        })
-        .catch(error => console.error('Error sending Telegram message:', error));
-}
 
-// Function to load and display backup details
-function loadBackupDetails() {
-    const backupDetailsTable = document.getElementById('backup-details-table');
-    const tableBody = backupDetailsTable.getElementsByTagName('tbody')[0];
-    tableBody.innerHTML = ''; // Clear existing rows
+            // Set an interval to check the time every minute
+            setInterval(checkSendTime, 60000); // 60000 milliseconds = 1 minute
 
-    firebase.database().ref('backupDetails').orderByChild('timestamp').limitToLast(10).once('value', (snapshot) => {
-        const backups = [];
-        snapshot.forEach((childSnapshot) => {
-            backups.push(childSnapshot.val());
-        });
-
-        backups.reverse().forEach((backup) => {
-            const newRow = tableBody.insertRow();
-            const typeCell = newRow.insertCell();
-            const dateCell = newRow.insertCell();
-            const timeCell = newRow.insertCell();
-            typeCell.textContent = backup.type;
-            dateCell.textContent = backup.date;
-            timeCell.textContent = backup.time;
-        });
-    });
-}
-
-// Function to check if it's time to send the data
-function checkSendTime() {
-    const currentTime = new Date();
-    const currentTimeString = `${currentTime.getHours()}:${currentTime.getMinutes()}`;
-
-    // Check if it's past the specified time and if the backup hasn't been sent today
-    if (currentTimeString >= sendTime || currentTime.getHours() >= parseInt(sendTime.split(':')[0])) {
-        checkAndSendBackup();
-    }
-}
-
-// Function to check if backup should be sent
-function checkAndSendBackup() {
-    firebase.database().ref('lastBackup').once('value', (snapshot) => {
-        const lastBackup = snapshot.val();
-        const today = new Date().toDateString();
-
-        if (!lastBackup || lastBackup.date !== today) {
-            sendPartyNamesToTelegram();
-        }
-    });
-}
-
-checkAndSendBackup();
-loadBackupDetails();
-
-// Set an interval to check the time every minute
-setInterval(checkSendTime, 60000); // 60000 milliseconds = 1 minute
-
-      // Reset the backup flag at midnight
-      function resetDailyBackupFlag() {
+            // Reset the backup flag at midnight
+            function resetDailyBackupFlag() {
                 const now = new Date();
                 if (now.getHours() === 0 && now.getMinutes() === 0) {
                     firebase.database().ref('lastBackup').remove();
@@ -1179,16 +1202,16 @@ setInterval(checkSendTime, 60000); // 60000 milliseconds = 1 minute
 
             document.addEventListener('DOMContentLoaded', checkAndSendBackup);
 
-// Reset the backup flag at midnight
-function resetDailyBackupFlag() {
-    const now = new Date();
-    if (now.getHours() === 0 && now.getMinutes() === 0) {
-        firebase.database().ref('lastBackup').remove();
-    }
-}
+            // Reset the backup flag at midnight
+            function resetDailyBackupFlag() {
+                const now = new Date();
+                if (now.getHours() === 0 && now.getMinutes() === 0) {
+                    firebase.database().ref('lastBackup').remove();
+                }
+            }
 
-// Check to reset the flag every hour
-setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
+            // Check to reset the flag every hour
+            setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
 
 
             //order
@@ -1198,7 +1221,7 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
 
             partySearch.addEventListener('focus', () => showParties());
             partySearch.addEventListener('input', () => showParties(partySearch.value));
- 
+
             document.addEventListener('click', function (e) {
                 if (e.target !== partySearch && !partyList.contains(e.target)) {
                     partyList.style.display = 'none';
@@ -1241,12 +1264,45 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
 
                 partyList.style.display = 'block';
             }
-     
+            function addNewParty(partyName) {
+    if (!parties.includes(partyName)) {
+        parties.push(partyName);
+        sortParties(); // Sort the list after adding new party
+        // Save to Firebase
+        firebase.database().ref('parties').set(parties);
+        console.log(`Added new party: ${partyName}`);
 
-            function createCategoryRadios(categories) {
-                return `
+        // Log the activity
+        const now = new Date();
+        const activityLog = {
+            action: 'Created new party',
+            partyName: partyName,
+            timestamp: now.toISOString(),
+            date: now.toLocaleDateString(),
+            time: now.toLocaleTimeString(),
+            username: username
+        };
+        firebase.database().ref('activityLogs').push(activityLog);
+
+        // Send Telegram message
+        const chatId = '-4527298165';
+        const botToken = '7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs';
+        const message = `${username}: created new party ${partyName}`;
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => console.log('Telegram message sent:', data))
+            .catch(error => console.error('Error sending Telegram message:', error));
+    }
+    partySearch.value = partyName;
+    partyList.style.display = 'none';
+}
+
+           // Existing code
+function createCategoryRadios(categories) {
+    return `
         <div class="category-container">
-            
             ${categories.map((cat, index) => `
                 <label>
                     <input type="radio" name="category" value="${cat}" ${index === 0 ? 'checked' : ''}>
@@ -1255,11 +1311,66 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
             `).join('')}
         </div>
     `;
-            }
+}
 
-            function createSizeQuantityGrid(sizes) {
-                const quantities = ['1', '2', '3', '4', '5', '_'];
-                return `
+function showItems(filter = '') {
+    const itemList = document.getElementById('itemList');
+    itemList.innerHTML = '';
+    const filteredItems = items.filter(item =>
+        item && item.name && item.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    filteredItems.forEach(item => {
+        const element = document.createElement('a');
+        element.classList.add('list-group-item', 'list-group-item-action');
+        element.textContent = item.name;
+        element.href = '#';
+        element.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('itemSearch').value = item.name;
+            showItemDetails(item);
+            itemList.style.display = 'none';
+        });
+        itemList.appendChild(element);
+    });
+
+    if (filteredItems.length === 0 && filter !== '') {
+        const addNewItemElement = document.createElement('a');
+        addNewItemElement.classList.add('list-group-item', 'list-group-item-action');
+        addNewItemElement.textContent = `Add "${filter}" as a new item`;
+        addNewItemElement.href = '#';
+        addNewItemElement.addEventListener('click', function (e) {
+            e.preventDefault();
+            addNewItem(filter);
+            itemList.style.display = 'none';
+        });
+        itemList.appendChild(addNewItemElement);
+    }
+
+    itemList.style.display = 'block';
+}
+
+function showItemDetails(item) {
+    const existingDetailsContainer = document.getElementById('itemDetailsContainer');
+    if (existingDetailsContainer) {
+        existingDetailsContainer.remove();
+    }
+
+    const detailsContainer = document.createElement('div');
+    detailsContainer.id = 'itemDetailsContainer';
+    detailsContainer.innerHTML = `
+        ${item.category ? createCategoryRadios(item.category) : ''}
+        ${createSizeQuantityGrid(item.sizes)}
+    `;
+
+    const itemList = document.getElementById('itemList');
+    itemList.insertAdjacentElement('afterend', detailsContainer);
+}
+
+
+function createSizeQuantityGrid(sizes) {
+    const quantities = ['1', '2', '3', '4', '5', '_'];
+    return `
         <div class="size-quantity-grid">
             ${sizes.map(size => `
                 <div class="size-quantity-row">
@@ -1268,7 +1379,7 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
                         ${quantities.map(qty => `
                             <label class="qty-label">
                                 <input type="radio" name="qty_${size}" value="${qty}">
-                                ${qty === '_' ? '<input type="number" class="custom-qty" min="1" style="width: 40px;">' : qty}
+                                ${qty === '_' ? `<input type="number" class="custom-qty" min="1" style="width: 40px;" inputmode="numeric" oninput="this.previousElementSibling.checked = true;">` : qty}
                             </label>
                         `).join('')}
                     </div>
@@ -1276,9 +1387,465 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
             `).join('')}
         </div>
     `;
-            }
+}
 
-  
+// New code for cart functionality
+let cart = [];
+
+function addToCart() {
+    const itemName = document.getElementById('itemSearch').value;
+    const item = items.find(i => i.name === itemName);
+    
+    if (!item) {
+        alert('Please select a valid item.');
+        return;
+    }
+
+    const selectedCategory = document.querySelector('input[name="category"]:checked');
+    const category = selectedCategory ? selectedCategory.value : '';
+
+    const selectedQuantities = {};
+    item.sizes.forEach(size => {
+        const selectedQty = document.querySelector(`input[name="qty_${size}"]:checked`);
+        if (selectedQty) {
+            const qty = selectedQty.value === '_' ? 
+                selectedQty.nextElementSibling.value : 
+                selectedQty.value;
+            if (qty && parseInt(qty) > 0) {
+                selectedQuantities[size] = parseInt(qty);
+            }
+        }
+    });
+
+    if (Object.keys(selectedQuantities).length === 0) {
+        alert('Please select at least one size and quantity.');
+        return;
+    }
+
+    const existingItemIndex = cart.findIndex(cartItem => cartItem.name === itemName);
+
+    if (existingItemIndex !== -1) {
+        // Merge quantities for existing item
+        Object.entries(selectedQuantities).forEach(([size, qty]) => {
+            if (cart[existingItemIndex].quantities[size]) {
+                cart[existingItemIndex].quantities[size] += qty;
+            } else {
+                cart[existingItemIndex].quantities[size] = qty;
+            }
+        });
+        cart[existingItemIndex].total = Object.values(cart[existingItemIndex].quantities).reduce((sum, qty) => sum + qty, 0);
+    } else {
+        // Add new item to cart
+        const cartItem = {
+            name: itemName,
+            category: category,
+            quantities: selectedQuantities,
+            total: Object.values(selectedQuantities).reduce((sum, qty) => sum + qty, 0)
+        };
+        cart.push(cartItem);
+    }
+
+    updateCartSummary();
+    resetItemSelection();
+}
+// Update the updateCartSummary function
+function updateCartSummary() {
+    const cartSummary = document.getElementById('cartSummary') || createCartSummaryTable();
+    const tbody = cartSummary.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    let totalQuantity = 0;
+
+    cart.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name} ${item.category ? `(${item.category})` : ''}</td>
+            <td>${Object.entries(item.quantities)
+                .map(([size, qty]) => `${size}/${qty}`)
+                .join(', ')}</td>
+            <td>${item.total}</td>
+        `;
+        row.addEventListener('click', () => showEditItemModal(index, false));
+        tbody.appendChild(row);
+        totalQuantity += item.total;
+    });
+
+    // Update total quantity in the cart button
+    const cartButton = document.getElementById('saveOrderBtn');
+    cartButton.textContent = `Cart (${totalQuantity})`;
+}
+
+// Function to show edit item modal
+function showEditItemModal(itemIndex, isOrderSummaryModal = false) {
+    const item = cart[itemIndex];
+    const allSizes = items.find(i => i.name === item.name).sizes;
+    
+    // Remove any existing edit modal
+    const existingModal = document.getElementById('editItemModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'editItemModal';
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Item: ${item.name}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ${allSizes.map(size => `
+                        <div class="mb-3 d-flex align-items-center">
+                            <label class="form-label me-2 mb-0" style="width: 50px;">${size}</label>
+                            <div class="input-group" style="width: 150px;">
+                                <button class="btn btn-outline-secondary minus-btn" type="button" data-size="${size}">-</button>
+                                <input type="number" class="form-control text-center" id="qty_${size}" value="${item.quantities[size] || 0}" min="0" readonly>
+                                <button class="btn btn-outline-secondary plus-btn" type="button" data-size="${size}">+</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteItemBtn">Delete Item</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveItemBtn">Save Item</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const editModalInstance = new bootstrap.Modal(document.getElementById('editItemModal'));
+
+    // Add event listeners for plus and minus buttons
+    modal.querySelectorAll('.minus-btn').forEach(btn => {
+        btn.addEventListener('click', () => updateQuantity(btn.dataset.size, -1));
+    });
+    modal.querySelectorAll('.plus-btn').forEach(btn => {
+        btn.addEventListener('click', () => updateQuantity(btn.dataset.size, 1));
+    });
+
+    document.getElementById('saveItemBtn').addEventListener('click', () => {
+        editCartSummaryItem(itemIndex, isOrderSummaryModal);
+        editModalInstance.hide();
+    });
+
+    document.getElementById('deleteItemBtn').addEventListener('click', () => {
+        deleteCartItem(itemIndex, isOrderSummaryModal);
+        editModalInstance.hide();
+    });
+
+    editModalInstance.show();
+}
+// Function to update quantity
+function updateQuantity(size, change) {
+    const input = document.getElementById(`qty_${size}`);
+    let newValue = parseInt(input.value) + change;
+    newValue = Math.max(0, newValue); // Ensure non-negative value
+    input.value = newValue;
+}
+
+// Function to edit cart summary item
+function editCartSummaryItem(itemIndex, isOrderSummaryModal = false) {
+    const item = cart[itemIndex];
+    const allSizes = items.find(i => i.name === item.name).sizes;
+    let newTotal = 0;
+
+    allSizes.forEach(size => {
+        const newQty = parseInt(document.getElementById(`qty_${size}`).value);
+        if (newQty > 0) {
+            item.quantities[size] = newQty;
+            newTotal += newQty;
+        } else {
+            delete item.quantities[size];
+        }
+    });
+
+    item.total = newTotal;
+
+    if (newTotal === 0) {
+        deleteCartItem(itemIndex, isOrderSummaryModal);
+    } else {
+        updateCartSummary();
+        if (isOrderSummaryModal) {
+            updateModalCartSummary();
+        }
+    }
+}
+// Function to delete cart item
+function deleteCartItem(itemIndex, isOrderSummaryModal = false) {
+    cart.splice(itemIndex, 1);
+    updateCartSummary();
+    if (isOrderSummaryModal) {
+        updateModalCartSummary();
+    }
+}
+function createCartSummaryTable() {
+    const table = document.createElement('table');
+    table.id = 'cartSummary';
+    table.className = 'table table-bordered mt-4';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Sizes and Qty</th>
+                <th>Item Total</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    document.getElementById('orders').appendChild(table);
+    return table;
+}
+
+function resetItemSelection() {
+    document.getElementById('itemSearch').value = '';
+    const itemDetailsContainer = document.getElementById('itemDetailsContainer');
+    if (itemDetailsContainer) {
+        itemDetailsContainer.remove();
+    }
+}
+// Event listeners
+document.getElementById('addToCartBtn').addEventListener('click', addToCart);
+// Initialize the cart summary table
+createCartSummaryTable();
+// Function to show the order summary modal
+function showOrderSummaryModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'modal3';
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Party Name:</strong> <span id="modalPartyName"></span></p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Sizes and Qty</th>
+                                <th>Item Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalCartSummary"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><strong>Total Quantity</strong></td>
+                                <td id="modalTotalQuantity"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="placeOrderBtn">Place Order</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalInstance = new bootstrap.Modal(document.getElementById('modal3'));
+    
+    // Populate modal with data
+    document.getElementById('modalPartyName').textContent = document.getElementById('partySearch').value;
+    updateModalCartSummary();
+
+    // Add event listener to Place Order button
+    document.getElementById('placeOrderBtn').addEventListener('click', showOrderConfirmationModal);
+
+    modalInstance.show();
+}
+function saveOrderToFirebase(order) {
+    return firebase.database().ref('orders').push(order);
+}
+// Function to show the order confirmation modal
+function showOrderConfirmationModal() {
+    bootstrap.Modal.getInstance(document.getElementById('modal3')).hide();
+
+    orderCounter++;
+    const orderNumber = `H${orderCounter}`;
+    const partyName = document.getElementById('partySearch').value;
+    const dateTime = new Date().toISOString();
+
+    const order = {
+        orderNumber: orderNumber,
+        partyName: partyName,
+        dateTime: dateTime,
+        items: cart,
+        status: 'Pending'
+    };
+
+    saveOrderToFirebase(order)
+        .then(() => {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'modal4';
+            modal.setAttribute('tabindex', '-1');
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Order Confirmation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Party Name:</strong> ${partyName}</p>
+                            <p><strong>Date and Time:</strong> ${new Date(dateTime).toLocaleString()}</p>
+                            <p><strong>Order Number:</strong> ${orderNumber}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const modalInstance = new bootstrap.Modal(document.getElementById('modal4'));
+
+            modal.querySelector('.btn-close').addEventListener('click', returnToHomepage);
+            modal.querySelector('.btn-primary').addEventListener('click', returnToHomepage);
+
+            modalInstance.show();
+        })
+        .catch(error => {
+            console.error("Error saving order: ", error);
+            alert("An error occurred while saving the order. Please try again.");
+        });
+}
+function updateModalCartSummary() {
+    const modalCartSummary = document.getElementById('modalCartSummary');
+    modalCartSummary.innerHTML = '';
+    let totalQuantity = 0;
+
+    cart.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.className = 'clickable-row';
+        row.dataset.index = index;
+        row.innerHTML = `
+            <td>${item.name} ${item.category ? `(${item.category})` : ''}</td>
+            <td>${Object.entries(item.quantities)
+                .map(([size, qty]) => `${size}/${qty}`)
+                .join(', ')}</td>
+            <td>${item.total}</td>
+        `;
+        modalCartSummary.appendChild(row);
+        totalQuantity += item.total;
+    });
+
+    document.getElementById('modalTotalQuantity').textContent = totalQuantity;
+
+    // Add click event listener to rows
+    modalCartSummary.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const itemIndex = parseInt(this.dataset.index);
+            showEditItemModal(itemIndex, true);
+        });
+    });
+}
+// Function to return to homepage
+function returnToHomepage() {
+    document.getElementById('partySearch').value = '';
+    document.getElementById('itemSearch').value = '';
+    cart = [];
+    updateCartSummary();
+
+    const itemDetailsContainer = document.getElementById('itemDetailsContainer');
+    if (itemDetailsContainer) {
+        itemDetailsContainer.remove();
+    }
+
+    loadPendingOrders(); // Refresh the pending orders list
+    console.log('Returned to homepage');
+}
+
+// Event listener for Save Order button
+document.getElementById('saveOrderBtn').addEventListener('click', showOrderSummaryModal);
+document.addEventListener('DOMContentLoaded', () => {
+    createCartSummaryTable();
+    updateCartSummary();
+});
+//PENDING ORDER
+// Function to load and display pending orders
+function loadPendingOrders() {
+    const pendingOrdersBody = document.getElementById('pendingOrdersBody');
+    pendingOrdersBody.innerHTML = '';
+
+    firebase.database().ref('orders').orderByChild('status').equalTo('Pending').on('value', snapshot => {
+        snapshot.forEach(childSnapshot => {
+            const order = childSnapshot.val();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.orderNumber}</td>
+                <td>${order.partyName}</td>
+                <td>${order.items.map(item => `${item.name} (${Object.entries(item.quantities).map(([size, qty]) => `${size}/${qty}`).join(', ')})`).join('; ')}</td>
+                <td>${order.status}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary view-order" data-order-id="${childSnapshot.key}">View</button>
+                    <button class="btn btn-sm btn-success complete-order" data-order-id="${childSnapshot.key}">Complete</button>
+                </td>
+            `;
+            pendingOrdersBody.appendChild(row);
+        });
+    });
+}
+
+// Function to handle order completion
+function completeOrder(orderId) {
+    firebase.database().ref('orders').child(orderId).update({ status: 'Completed' })
+        .then(() => {
+            console.log("Order completed successfully");
+        })
+        .catch(error => {
+            console.error("Error completing order: ", error);
+        });
+}
+
+// Function to view order details
+function viewOrderDetails(orderId) {
+    firebase.database().ref('orders').child(orderId).once('value')
+        .then(snapshot => {
+            const order = snapshot.val();
+            // Create and show a modal with order details
+            // This is left as an exercise, you can create a similar modal to the confirmation modal
+        })
+        .catch(error => {
+            console.error("Error fetching order details: ", error);
+        });
+}
+
+// Event listeners for pending orders actions
+document.getElementById('pendingOrdersBody').addEventListener('click', function(e) {
+    if (e.target.classList.contains('complete-order')) {
+        completeOrder(e.target.getAttribute('data-order-id'));
+    } else if (e.target.classList.contains('view-order')) {
+        viewOrderDetails(e.target.getAttribute('data-order-id'));
+    }
+});
+
+// Search functionality for pending orders
+document.getElementById('pendingOrderSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.getElementById('pendingOrdersBody').getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    }
+});
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', loadPendingOrders);
 
             //backup model
             const backupModal = document.getElementById('backupModal');
@@ -1344,7 +1911,7 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
                         console.error('Error creating backup:', error);
                     });
             }
-            
+
             function sendItemsToTelegram() {
                 firebase.database().ref('items').once('value')
                     .then((snapshot) => {
@@ -1489,70 +2056,70 @@ setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
             }
 
             function processUploadedData(data) {
-    // Check if the data is an array (party names) or an object (item data)
-    if (Array.isArray(data)) {
-        // Handle party data
-        firebase.database().ref('parties').once('value', (snapshot) => {
-            const existingData = snapshot.val() || [];
-            uploadedData = data.filter(item => !existingData.includes(item));
+                // Check if the data is an array (party names) or an object (item data)
+                if (Array.isArray(data)) {
+                    // Handle party data
+                    firebase.database().ref('parties').once('value', (snapshot) => {
+                        const existingData = snapshot.val() || [];
+                        uploadedData = data.filter(item => !existingData.includes(item));
 
-            if (uploadedData.length > 0) {
-                populateDataSelectionModal(uploadedData, 'party');
-                bootstrap.Modal.getInstance(restoreModal).hide();
-                dataSelectionModal.show();
-            } else {
-                alert('No new party data to restore.');
-            }
-        });
-    } else if (typeof data === 'object') {
-        // Handle item data
-        firebase.database().ref('items').once('value', (snapshot) => {
-            const existingData = snapshot.val() || {};
-            uploadedData = Object.entries(data).filter(([key, item]) => {
-                return !existingData[key] || JSON.stringify(existingData[key]) !== JSON.stringify(item);
-            });
+                        if (uploadedData.length > 0) {
+                            populateDataSelectionModal(uploadedData, 'party');
+                            bootstrap.Modal.getInstance(restoreModal).hide();
+                            dataSelectionModal.show();
+                        } else {
+                            alert('No new party data to restore.');
+                        }
+                    });
+                } else if (typeof data === 'object') {
+                    // Handle item data
+                    firebase.database().ref('items').once('value', (snapshot) => {
+                        const existingData = snapshot.val() || {};
+                        uploadedData = Object.entries(data).filter(([key, item]) => {
+                            return !existingData[key] || JSON.stringify(existingData[key]) !== JSON.stringify(item);
+                        });
 
-            if (uploadedData.length > 0) {
-                populateDataSelectionModal(uploadedData, 'item');
-                bootstrap.Modal.getInstance(restoreModal).hide();
-                dataSelectionModal.show();
-            } else {
-                alert('No new item data to restore.');
+                        if (uploadedData.length > 0) {
+                            populateDataSelectionModal(uploadedData, 'item');
+                            bootstrap.Modal.getInstance(restoreModal).hide();
+                            dataSelectionModal.show();
+                        } else {
+                            alert('No new item data to restore.');
+                        }
+                    });
+                } else {
+                    alert('Invalid data format in the uploaded file.');
+                }
             }
-        });
-    } else {
-        alert('Invalid data format in the uploaded file.');
-    }
-}
-function populateDataSelectionModal(data, dataType) {
-    const tbody = document.getElementById('dataSelectionBody');
-    tbody.innerHTML = '';
-    data.forEach((item, index) => {
-        const row = document.createElement('tr');
-        if (dataType === 'party') {
-            row.innerHTML = `
+            function populateDataSelectionModal(data, dataType) {
+                const tbody = document.getElementById('dataSelectionBody');
+                tbody.innerHTML = '';
+                data.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    if (dataType === 'party') {
+                        row.innerHTML = `
                 <td><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
                 <td>${item}</td>
             `;
-        } else if (dataType === 'item') {
-            const [key, itemData] = item;
-            row.innerHTML = `
+                    } else if (dataType === 'item') {
+                        const [key, itemData] = item;
+                        row.innerHTML = `
                 <td><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
                 <td>${itemData.name}</td>
                 <td>${itemData.category ? itemData.category.join(', ') : 'N/A'}</td>
                 <td>${itemData.sizes ? itemData.sizes.join(', ') : 'N/A'}</td>
             `;
-        }
-        tbody.appendChild(row);
-    });
+                    }
+                    tbody.appendChild(row);
+                });
 
-    // Update modal title
-    document.querySelector('#dataSelectionModal .modal-title').textContent = 
-        `Select ${dataType === 'party' ? 'Parties' : 'Items'} to Restore`;
+                // Update modal title
+                document.querySelector('#dataSelectionModal .modal-title').textContent =
+                    `Select ${dataType === 'party' ? 'Parties' : 'Items'} to Restore`;
 
-    // Store the data type for use in restoreSelectedData
-    document.getElementById('dataSelectionModal').setAttribute('data-type', dataType);
-}
+                // Store the data type for use in restoreSelectedData
+                document.getElementById('dataSelectionModal').setAttribute('data-type', dataType);
+            }
 
             function handleSelectAll() {
                 const isChecked = selectAllCheckbox.checked;
@@ -1562,150 +2129,97 @@ function populateDataSelectionModal(data, dataType) {
             }
 
             function restoreSelectedData() {
-    const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
-        .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
+                const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                    .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
 
-    const dataType = document.getElementById('dataSelectionModal').getAttribute('data-type');
-    const dataToRestore = selectedIndices.map(index => uploadedData[index]);
+                const dataType = document.getElementById('dataSelectionModal').getAttribute('data-type');
+                const dataToRestore = selectedIndices.map(index => uploadedData[index]);
 
-    if (dataToRestore.length > 0) {
-        if (dataType === 'party') {
-            firebase.database().ref('parties').once('value', (snapshot) => {
-                const existingData = snapshot.val() || [];
-                const updatedData = [...new Set([...existingData, ...dataToRestore])];
+                if (dataToRestore.length > 0) {
+                    if (dataType === 'party') {
+                        firebase.database().ref('parties').once('value', (snapshot) => {
+                            const existingData = snapshot.val() || [];
+                            const updatedData = [...new Set([...existingData, ...dataToRestore])];
 
-                firebase.database().ref('parties').set(updatedData)
-                    .then(() => {
-                        alert('Selected parties restored successfully!');
-                        dataSelectionModal.hide();
-                        loadPartyMaster(); // Refresh the party master view
-                        logActivity('Restored parties', username);
-                    })
-                    .catch(error => {
-                        console.error('Error restoring parties:', error);
-                        alert('Error restoring parties. Please try again.');
-                    });
-            });
-        } else if (dataType === 'item') {
-            firebase.database().ref('items').once('value', (snapshot) => {
-                const existingData = snapshot.val() || {};
-                const updatedData = { ...existingData };
+                            firebase.database().ref('parties').set(updatedData)
+                                .then(() => {
+                                    alert('Selected parties restored successfully!');
+                                    dataSelectionModal.hide();
+                                    loadPartyMaster(); // Refresh the party master view
+                                    logActivity('Restored parties', username);
+                                })
+                                .catch(error => {
+                                    console.error('Error restoring parties:', error);
+                                    alert('Error restoring parties. Please try again.');
+                                });
+                        });
+                    } else if (dataType === 'item') {
+                        firebase.database().ref('items').once('value', (snapshot) => {
+                            const existingData = snapshot.val() || {};
+                            const updatedData = { ...existingData };
 
-                dataToRestore.forEach(([key, item]) => {
-                    updatedData[key] = item;
-                });
+                            dataToRestore.forEach(([key, item]) => {
+                                updatedData[key] = item;
+                            });
 
-                firebase.database().ref('items').set(updatedData)
-                    .then(() => {
-                        alert('Selected items restored successfully!');
-                        dataSelectionModal.hide();
-                        loadItemMaster(); // Refresh the item master view
-                        logActivity('Restored items', username);
-                    })
-                    .catch(error => {
-                        console.error('Error restoring items:', error);
-                        alert('Error restoring items. Please try again.');
-                    });
-            });
-        }
-    } else {
-        alert('No data selected for restoration.');
-    }
-}
+                            firebase.database().ref('items').set(updatedData)
+                                .then(() => {
+                                    alert('Selected items restored successfully!');
+                                    dataSelectionModal.hide();
+                                    loadItemMaster(); // Refresh the item master view
+                                    logActivity('Restored items', username);
+                                })
+                                .catch(error => {
+                                    console.error('Error restoring items:', error);
+                                    alert('Error restoring items. Please try again.');
+                                });
+                        });
+                    }
+                } else {
+                    alert('No data selected for restoration.');
+                }
+            }
 
-//master
-document.getElementById('itemMasterBtn').addEventListener('click', function () {
+            //master
+            document.getElementById('itemMasterBtn').addEventListener('click', function () {
                 showSection('itemMaster');
                 loadItemMaster();
             });
 
-            function showItems(filter = '') {
-                const itemList = document.getElementById('itemList');
-                itemList.innerHTML = '';
-                const filteredItems = items.filter(item =>
-                    item && item.name && item.name.toLowerCase().includes(filter.toLowerCase())
-                );
-
-                filteredItems.forEach(item => {
-                    const element = document.createElement('a');
-                    element.classList.add('list-group-item', 'list-group-item-action');
-                    element.textContent = item.name;
-                    element.href = '#';
-                    element.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        document.getElementById('itemSearch').value = item.name;
-                        itemList.style.display = 'none';
-                        showItemDetails(item);
-                    });
-                    itemList.appendChild(element);
-                });
-
-                if (filteredItems.length === 0 && filter !== '') {
-                    const addNewItemElement = document.createElement('a');
-                    addNewItemElement.classList.add('list-group-item', 'list-group-item-action');
-                    addNewItemElement.textContent = `Add "${filter}" as a new item`;
-                    addNewItemElement.href = '#';
-                    addNewItemElement.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        addNewItem(filter);
-                    });
-                    itemList.appendChild(addNewItemElement);
-                }
-
-                itemList.style.display = 'block';
-            }
-
-
-            function showItemDetails(item) {
-                const detailsContainer = document.createElement('div');
-                detailsContainer.id = 'itemDetailsContainer';
-                detailsContainer.innerHTML = `
-       
-        ${item.category ? createCategoryRadios(item.category) : ''}
-        ${createSizeQuantityGrid(item.sizes)}
-    `;
-
-                // Replace existing details container or append new one
-                const existingContainer = document.getElementById('itemDetailsContainer');
-                if (existingContainer) {
-                    existingContainer.replaceWith(detailsContainer);
-                } else {
-                    document.getElementById('itemSearch').insertAdjacentElement('afterend', detailsContainer);
-                }
-            }
+          
 
             function loadItemMaster() {
-    const itemMasterBody = document.getElementById('itemMasterBody');
-    itemMasterBody.innerHTML = '';
+                const itemMasterBody = document.getElementById('itemMasterBody');
+                itemMasterBody.innerHTML = '';
 
-    // Predefined items
-    const predefinedItems = [
-        { name: "o.e 2pccs", category: ["mix", "1pcs", "2pcs"], sizes: ["s", "m", "l", "xl", "2xl"] },
-        { name: "reply", sizes: ["s", "m", "l", "xl", "2xl"] },
-        { name: "clasz", sizes: ["45", "50", "55", "60", "65", "70", "75"] },
-        { name: "salsa", sizes: ["45", "50", "55", "60", "65", "70", "75"] }
-    ];
+                // Predefined items
+                const predefinedItems = [
+                    { name: "o.e 2pccs", category: ["mix", "1pcs", "2pcs"], sizes: ["s", "m", "l", "xl", "2xl"] },
+                    { name: "reply", sizes: ["s", "m", "l", "xl", "2xl"] },
+                    { name: "clasz", sizes: ["45", "50", "55", "60", "65", "70", "75"] },
+                    { name: "salsa", sizes: ["45", "50", "55", "60", "65", "70", "75"] }
+                ];
 
-    // Load predefined items
-    predefinedItems.forEach((item, index) => {
-        addItemToTable(item, index, true);
-    });
+                // Load predefined items
+                predefinedItems.forEach((item, index) => {
+                    addItemToTable(item, index, true);
+                });
 
-    // Load custom items from Firebase
-    firebase.database().ref('items').once('value', (snapshot) => {
-        const firebaseItems = snapshot.val();
-        if (firebaseItems) {
-            Object.entries(firebaseItems).forEach(([key, item]) => {
-                if (!predefinedItems.some(predefined => predefined.name === item.name)) {
-                    addItemToTable(item, key, false);
-                }
-            });
-        }
-    });
+                // Load custom items from Firebase
+                firebase.database().ref('items').once('value', (snapshot) => {
+                    const firebaseItems = snapshot.val();
+                    if (firebaseItems) {
+                        Object.entries(firebaseItems).forEach(([key, item]) => {
+                            if (!predefinedItems.some(predefined => predefined.name === item.name)) {
+                                addItemToTable(item, key, false);
+                            }
+                        });
+                    }
+                });
 
-    function addItemToTable(item, key, isPredefined) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+                function addItemToTable(item, key, isPredefined) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
             <td>${item.name}</td>
             <td>${item.category ? item.category.join(', ') : 'N/A'}</td>
             <td>${item.sizes ? item.sizes.join(', ') : 'N/A'}</td>
@@ -1716,58 +2230,58 @@ document.getElementById('itemMasterBtn').addEventListener('click', function () {
                 `}
             </td>
         `;
-        itemMasterBody.appendChild(row);
+                    itemMasterBody.appendChild(row);
 
-        if (!isPredefined) {
-            row.querySelector('.edit-item').addEventListener('click', () => editItem(key));
-            row.querySelector('.delete-item').addEventListener('click', () => deleteItem(key));
-        }
-    }
-}
+                    if (!isPredefined) {
+                        row.querySelector('.edit-item').addEventListener('click', () => editItem(key));
+                        row.querySelector('.delete-item').addEventListener('click', () => deleteItem(key));
+                    }
+                }
+            }
 
-// Function to edit an item
-function editItem(key) {
-    firebase.database().ref('items').child(key).once('value', (snapshot) => {
-        const item = snapshot.val();
-        if (item) {
-            const newName = prompt('Enter new item name:', item.name);
-            if (newName && newName !== item.name) {
-                item.name = newName;
-                firebase.database().ref('items').child(key).set(item).then(() => {
-                    loadItemMaster();
-                    logActivity('Edited item name', username, `${item.name} to ${newName}`);
-                }).catch(error => {
-                    console.error("Error updating item:", error);
-                    alert("Error updating item. Please try again.");
+            // Function to edit an item
+            function editItem(key) {
+                firebase.database().ref('items').child(key).once('value', (snapshot) => {
+                    const item = snapshot.val();
+                    if (item) {
+                        const newName = prompt('Enter new item name:', item.name);
+                        if (newName && newName !== item.name) {
+                            item.name = newName;
+                            firebase.database().ref('items').child(key).set(item).then(() => {
+                                loadItemMaster();
+                                logActivity('Edited item name', username, `${item.name} to ${newName}`);
+                            }).catch(error => {
+                                console.error("Error updating item:", error);
+                                alert("Error updating item. Please try again.");
+                            });
+                        }
+                    } else {
+                        console.error("Item not found");
+                        alert("Item not found. Please refresh and try again.");
+                    }
                 });
             }
-        } else {
-            console.error("Item not found");
-            alert("Item not found. Please refresh and try again.");
-        }
-    });
-}
 
-// Function to delete an item
-function deleteItem(key) {
-    if (confirm('Are you sure you want to delete this item?')) {
-        firebase.database().ref('items').child(key).once('value', (snapshot) => {
-            const item = snapshot.val();
-            if (item) {
-                firebase.database().ref('items').child(key).remove().then(() => {
-                    loadItemMaster();
-                    logActivity('Deleted item', username, item.name);
-                }).catch(error => {
-                    console.error("Error deleting item:", error);
-                    alert("Error deleting item. Please try again.");
-                });
-            } else {
-                console.error("Item not found");
-                alert("Item not found. Please refresh and try again.");
+            // Function to delete an item
+            function deleteItem(key) {
+                if (confirm('Are you sure you want to delete this item?')) {
+                    firebase.database().ref('items').child(key).once('value', (snapshot) => {
+                        const item = snapshot.val();
+                        if (item) {
+                            firebase.database().ref('items').child(key).remove().then(() => {
+                                loadItemMaster();
+                                logActivity('Deleted item', username, item.name);
+                            }).catch(error => {
+                                console.error("Error deleting item:", error);
+                                alert("Error deleting item. Please try again.");
+                            });
+                        } else {
+                            console.error("Item not found");
+                            alert("Item not found. Please refresh and try again.");
+                        }
+                    });
+                }
             }
-        });
-    }
-}
 
             loadItemsFromFirebase();
 
@@ -1776,7 +2290,7 @@ function deleteItem(key) {
 
             itemSearch.addEventListener('focus', () => showItems());
             itemSearch.addEventListener('input', () => showItems(itemSearch.value));
- 
+
             document.addEventListener('click', function (e) {
                 if (e.target !== itemSearch && !itemList.contains(e.target)) {
                     itemList.style.display = 'none';
@@ -1825,26 +2339,96 @@ function deleteItem(key) {
             }
 
             function deleteUser(key) {
-                const password = prompt('Enter password to delete user:');
-                if (password === '9284494154') {
-                    firebase.database().ref('users').child(key).once('value', (snapshot) => {
-                        const deletedUsername = snapshot.val();
-                        firebase.database().ref('users').child(key).remove().then(() => {
-                            loadUsers();
-                            logActivity('Deleted user', deletedUsername);
+                // Create the modal HTML
+                const modalHtml = `
+    <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="passwordModalLabel">Authentication Required</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-3">Please enter your password to proceed with the delete action.</p>
+            <div class="form-group">
+              <label for="passwordInput" class="sr-only">Password</label>
+              <input type="password" id="passwordInput" class="form-control" placeholder="Enter password">
+              <div id="passwordError" class="invalid-feedback">
+                Incorrect password. Please try again.
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="submitPassword">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
-                            // If the deleted user is the current user, clear localStorage and reload
-                            if (deletedUsername === username) {
-                                localStorage.removeItem('hcUsername');
-                                location.reload();
-                            }
-                        }).catch(error => {
-                            console.error("Error deleting user:", error);
-                        });
-                    });
-                } else {
-                    alert('Incorrect password');
+                // Append the modal to the body if it doesn't exist
+                if (!document.getElementById('passwordModal')) {
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
                 }
+
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+                modal.show();
+
+                // Handle close button
+                document.querySelector('#passwordModal .close').addEventListener('click', () => {
+                    modal.hide();
+                });
+
+                // Handle cancel button
+                document.querySelector('#passwordModal .btn-secondary').addEventListener('click', () => {
+                    modal.hide();
+                });
+
+                // Handle password submission
+                document.getElementById('submitPassword').onclick = function () {
+                    const passwordInput = document.getElementById('passwordInput');
+                    const password = passwordInput.value;
+                    if (password === '9284494154') {
+                        modal.hide();
+                        passwordInput.value = ''; // Clear the password
+
+                        firebase.database().ref('users').child(key).once('value', (snapshot) => {
+                            const deletedUsername = snapshot.val();
+                            firebase.database().ref('users').child(key).remove().then(() => {
+                                loadUsers();
+                                logActivity('Deleted user', deletedUsername);
+
+                                // If the deleted user is the current user, clear localStorage and reload
+                                if (deletedUsername === username) {
+                                    localStorage.removeItem('hcUsername');
+                                    location.reload();
+                                }
+                            }).catch(error => {
+                                console.error("Error deleting user:", error);
+                            });
+                        });
+                    } else {
+                        passwordInput.classList.add('is-invalid');
+                        document.getElementById('passwordError').style.display = 'block';
+                    }
+                };
+
+                // Reset error state when input changes
+                document.getElementById('passwordInput').addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                    document.getElementById('passwordError').style.display = 'none';
+                });
+
+                // Clear password when modal is hidden
+                document.getElementById('passwordModal').addEventListener('hidden.bs.modal', function () {
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').classList.remove('is-invalid');
+                    document.getElementById('passwordError').style.display = 'none';
+                });
             }
 
             function loadApprovalRequests() {
@@ -1879,26 +2463,94 @@ function deleteItem(key) {
             }
 
             function handleApprovalRequest(key, action) {
-                const password = prompt('Enter password to ' + action + ' user:');
-                if (password === '9284494154') {
-                    if (action === 'approve') {
-                        firebase.database().ref('approvalRequests').child(key).once('value', (snapshot) => {
-                            const username = snapshot.val();
-                            firebase.database().ref('users').push(username).then(() => {
-                                firebase.database().ref('approvalRequests').child(key).remove();
-                                loadApprovalRequests();
-                                logActivity('Approved user', username);
-                            });
-                        });
-                    } else {
-                        firebase.database().ref('approvalRequests').child(key).remove().then(() => {
-                            loadApprovalRequests();
-                            logActivity('Rejected user', key);
-                        });
-                    }
-                } else {
-                    alert('Incorrect password');
+                // Create the modal HTML
+                const modalHtml = `
+        <div class="modal fade" id="passwordModal2" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel2" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="passwordModalLabel2">Authentication Required</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Please enter your password to proceed with the ${action} action.</p>
+                        <div class="form-group">
+                            <label for="passwordInput2" class="sr-only">Password</label>
+                            <input type="password" id="passwordInput2" class="form-control" placeholder="Enter password">
+                            <div id="passwordError2" class="invalid-feedback">
+                                Incorrect password. Please try again.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="submitPassword2">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+                // Append the modal to the body if it doesn't exist
+                if (!document.getElementById('passwordModal2')) {
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
                 }
+
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('passwordModal2'));
+                modal.show();
+                // Handle close button
+                document.querySelector('#passwordModal2 .close').addEventListener('click', () => {
+                    modal.hide();
+                });
+
+                // Handle cancel button
+                document.querySelector('#passwordModal2 .btn-secondary').addEventListener('click', () => {
+                    modal.hide();
+                });
+                // Handle password submission
+                document.getElementById('submitPassword2').onclick = function () {
+                    const passwordInput = document.getElementById('passwordInput2');
+                    const password = passwordInput.value;
+                    if (password === '9284494154') {
+                        modal.hide();
+                        passwordInput.value = ''; // Clear the password
+
+                        if (action === 'approve') {
+                            firebase.database().ref('approvalRequests').child(key).once('value', (snapshot) => {
+                                const username = snapshot.val();
+                                firebase.database().ref('users').push(username).then(() => {
+                                    firebase.database().ref('approvalRequests').child(key).remove();
+                                    loadApprovalRequests();
+                                    logActivity('Approved user', username);
+                                });
+                            });
+                        } else {
+                            firebase.database().ref('approvalRequests').child(key).remove().then(() => {
+                                loadApprovalRequests();
+                                logActivity('Rejected user', key);
+                            });
+                        }
+                    } else {
+                        passwordInput.classList.add('is-invalid');
+                        document.getElementById('passwordError2').style.display = 'block';
+                    }
+                };
+
+                // Reset error state when input changes
+                document.getElementById('passwordInput2').addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                    document.getElementById('passwordError2').style.display = 'none';
+                });
+
+                // Clear password when modal is hidden
+                document.getElementById('passwordModal2').addEventListener('hidden.bs.modal', function () {
+                    document.getElementById('passwordInput2').value = '';
+                    document.getElementById('passwordInput2').classList.remove('is-invalid');
+                    document.getElementById('passwordError2').style.display = 'none';
+                });
             }
         });
 
@@ -2120,7 +2772,7 @@ function deleteItem(key) {
         window.addEventListener('resize', adjustForMobileView);
         adjustForMobileView();
     </script>
-     <script>
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
