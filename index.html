@@ -1729,6 +1729,25 @@ function showOrderConfirmationModal() {
         console.error("Error getting next order number: ", error);
         alert("An error occurred while generating the order number. Please try again.");
     });
+sendOrderConfirmationNotification();
+}
+function sendOrderConfirmationNotification() {
+  fetch('https://onesignal.com/api/v1/notifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ZWZlZDE0MGMtOWU1ZC00MjhhLTk1NmUtNDkwODlmYWZmNGJk'
+    },
+    body: JSON.stringify({
+      app_id: "697ef522-6ac4-4748-a009-5a97d1a67373",
+      included_segments: ["All"],
+      contents: {"en": "New order confirmed! Check it out now."},
+      headings: {"en": "Order Confirmation"},
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log('Notification sent:', data))
+  .catch(error => console.error('Error sending notification:', error));
 }
 function sendTelegramNotification(partyName, totalQuantity, orderNumber) {
     const token = '6489265710:AAFx6-OaL09SpByMPyfiQBmgetvbtx0InyI';
