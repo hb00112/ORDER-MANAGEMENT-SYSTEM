@@ -1894,6 +1894,27 @@ document.getElementById('pendingOrderSearch').addEventListener('input', function
 
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', loadPendingOrders);
+            // Function to request notification permission
+function requestNotificationPermission() {
+  messaging.requestPermission()
+    .then(function () {
+      console.log('Notification permission granted.');
+      return messaging.getToken();
+    })
+    .then(function (token) {
+      console.log('FCM Token:', token);
+      // Send token to your server to use for push notifications
+    })
+    .catch(function (err) {
+      console.log('Unable to get permission for notifications:', err);
+    });
+}
+
+// Add event listener to trigger when order confirmation modal opens
+document.getElementById('order-confirmation-modal').addEventListener('show.bs.modal', function () {
+  requestNotificationPermission();
+});
+
 
             //backup model
             const backupModal = document.getElementById('backupModal');
