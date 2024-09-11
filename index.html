@@ -525,7 +525,7 @@
             </div>
         </div>
     </div>
-
+ <button id="subscribeButton">Subscribe to Notifications</button>
     <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
         You are currently offline. Some features may be limited.
     </div>
@@ -1213,7 +1213,21 @@
 
             // Check to reset the flag every hour
             setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
+ document.getElementById('subscribeButton').addEventListener('click', function() {
+            OneSignal.push(function() {
+                OneSignal.registerForPushNotifications();
+                OneSignal.setSubscription(true);
+            });
+        });
 
+        // Optional: Update button state based on subscription status
+        OneSignal.push(function() {
+            OneSignal.on('subscriptionChange', function (isSubscribed) {
+                console.log("The user's subscription state is now:", isSubscribed);
+                document.getElementById('subscribeButton').textContent = 
+                    isSubscribed ? "You're Subscribed!" : "Subscribe to Notifications";
+            });
+        });
 
             //order
             let parties = ["PARTY A", "PARTY B", "PARTY C", "XYLO"];
