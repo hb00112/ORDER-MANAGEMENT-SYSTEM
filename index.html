@@ -525,16 +525,6 @@
             </div>
         </div>
     </div>
- <button id="subscribeButton">Subscribe to Notifications</button>
-
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Subscription Successful!</h2>
-            <p>You have successfully subscribed to notifications.</p>
-        </div>
-    </div>
     <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
         You are currently offline. Some features may be limited.
     </div>
@@ -1222,39 +1212,7 @@
 
             // Check to reset the flag every hour
             setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
- const subscribeButton = document.getElementById('subscribeButton');
-        const modal = document.getElementById('successModal');
-        const closeBtn = document.getElementsByClassName('close')[0];
 
-        subscribeButton.addEventListener('click', function() {
-            OneSignal.push(function() {
-                OneSignal.registerForPushNotifications().then(function() {
-                    OneSignal.setSubscription(true);
-                });
-            });
-        });
-
-        OneSignal.push(function() {
-            OneSignal.on('subscriptionChange', function (isSubscribed) {
-                console.log("The user's subscription state is now:", isSubscribed);
-                subscribeButton.textContent = isSubscribed ? "You're Subscribed!" : "Subscribe to Notifications";
-                if (isSubscribed) {
-                    modal.style.display = "block";
-                }
-            });
-        });
-
-        // Close modal when clicking the close button
-        closeBtn.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        // Close modal when clicking outside of it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
             //order
             let parties = ["PARTY A", "PARTY B", "PARTY C", "XYLO"];
             const partySearch = document.getElementById('partySearch');
@@ -1950,13 +1908,17 @@ document.getElementById('pendingOrderSearch').addEventListener('input', function
 
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', loadPendingOrders);
-            window.OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-  OneSignal.init({
-    appId: "697ef522-6ac4-4748-a009-5a97d1a67373",
-  });
-});
 
+ window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "697ef522-6ac4-4748-a009-5a97d1a67373",
+
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
             //backup model
             const backupModal = document.getElementById('backupModal');
 
