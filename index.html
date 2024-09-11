@@ -10,6 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -954,6 +956,8 @@
                 appId: "1:817694176734:web:176bf69333bd7119d3194f",
                 measurementId: "G-JB143EY71N"
             };
+const app = firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
             firebase.initializeApp(firebaseConfig);
             function showSection(sectionId) {
                 document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
@@ -1847,6 +1851,48 @@ document.getElementById('pendingOrderSearch').addEventListener('input', function
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', loadPendingOrders);
 
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(swReg => {
+      initializePushNotifications(swReg);
+    })
+    .catch(error => console.error('Service Worker Error', error));
+}
+
+function initializePushNotifications(swReg) {
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        subscribeUser(swReg);
+      }
+    });
+  } else if (Notification.permission === 'granted') {
+    subscribeUser(swReg);
+  }
+}
+
+function subscribeUser(swReg) {
+  messaging.getToken({ vapidKey: 'YOUR_PUBLIC_VAPID_KEY' })
+    .then(token => {
+      // Send token to your server
+      saveTokenToServer(token);
+    })
+    .catch(error => console.error('Failed to get token', error));
+}
+
+function saveTokenToServer(token) {
+  // Implement logic to save the token to your server
+  fetch('/save-token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ token: token })
+  })
+  .then(response => response.json())
+  .then(data => console.log('Token saved:', data))
+  .catch(error => console.error('Error saving token:', error));
+}
             //backup model
             const backupModal = document.getElementById('backupModal');
 
