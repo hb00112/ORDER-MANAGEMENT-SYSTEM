@@ -21,34 +21,3 @@ self.addEventListener('fetch', event => {
       .then(response => response || fetch(event.request))
   );
 });
-
-// Add this to your service-worker.js file
-
-// Listen for push events from Firebase
-self.addEventListener('push', function (event) {
-  const data = event.data.json();
-
-  const options = {
-    body: data.body,
-    icon: '/path/to/icon.png', // Optional: Replace with your app's notification icon
-    vibrate: [200, 100, 200],  // Optional: Add vibration pattern
-    data: { primaryKey: 1 },   // Optional: Add custom data for notification actions
-    actions: [
-      { action: 'explore', title: 'Open App' }  // Optional: Add custom action button
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
-
-// Optional: Handle notification click events
-self.addEventListener('notificationclick', function (event) {
-  event.notification.close();
-
-  event.waitUntil(
-    clients.openWindow('/')  // Customize the URL as needed
-  );
-});
-
