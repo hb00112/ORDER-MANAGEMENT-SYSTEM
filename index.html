@@ -526,6 +526,15 @@
         </div>
     </div>
  <button id="subscribeButton">Subscribe to Notifications</button>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Subscription Successful!</h2>
+            <p>You have successfully subscribed to notifications.</p>
+        </div>
+    </div>
     <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
         You are currently offline. Some features may be limited.
     </div>
@@ -1213,22 +1222,39 @@
 
             // Check to reset the flag every hour
             setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
- document.getElementById('subscribeButton').addEventListener('click', function() {
+ const subscribeButton = document.getElementById('subscribeButton');
+        const modal = document.getElementById('successModal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        subscribeButton.addEventListener('click', function() {
             OneSignal.push(function() {
-                OneSignal.registerForPushNotifications();
-                OneSignal.setSubscription(true);
+                OneSignal.registerForPushNotifications().then(function() {
+                    OneSignal.setSubscription(true);
+                });
             });
         });
 
-        // Optional: Update button state based on subscription status
         OneSignal.push(function() {
             OneSignal.on('subscriptionChange', function (isSubscribed) {
                 console.log("The user's subscription state is now:", isSubscribed);
-                document.getElementById('subscribeButton').textContent = 
-                    isSubscribed ? "You're Subscribed!" : "Subscribe to Notifications";
+                subscribeButton.textContent = isSubscribed ? "You're Subscribed!" : "Subscribe to Notifications";
+                if (isSubscribed) {
+                    modal.style.display = "block";
+                }
             });
         });
 
+        // Close modal when clicking the close button
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
             //order
             let parties = ["PARTY A", "PARTY B", "PARTY C", "XYLO"];
             const partySearch = document.getElementById('partySearch');
