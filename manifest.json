@@ -18,9 +18,7 @@
             "sizes": "512x512",
             "type": "image/png"
             {
-  "gcm_sender_id": "482941778795", //This is a default value
-  "gcm_user_visible_only": true,
-  ...
+  
 }
 
         }
