@@ -1721,12 +1721,70 @@ function showOrderConfirmationModal() {
             modal.querySelector('.btn-primary').addEventListener('click', returnToHomepage);
 
             modalInstance.show();
+
+ saveOrderToFirebase(order)
+    .then(() => {
+      sendPushNotification(order);
+
         })
+
+
         .catch(error => {
             console.error("Error saving order: ", error);
             alert("An error occurred while saving the order. Please try again.");
         });
+
 }
+
+function sendPushNotification(order) {
+  fetch('/send-notification', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      title: 'New Order Created',
+      body: `Order #${order.orderNumber} for ${order.partyName}`,
+      tokens: ['TOKEN1', 'TOKEN2'] // Replace with actual tokens
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log('Push notification sent:', data))
+  .catch(error => console.error('Error sending push notification:', error));
+}
+const express = require('express');
+const app = express();
+const admin = require('firebase-admin');
+const serviceAccount = require('./path/to/serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  messagingSenderId: 'YOUR_SENDER_ID'
+});
+
+app.post('/send-notification', (req, res) => {
+  const { title, body, tokens } = req.body;
+  const payload = {
+    notification: {
+      title,
+      body
+    }
+  };
+
+  admin.messaging().sendToDevice(tokens, payload)
+    .then(response => {
+      console.log('Notifications sent:', response);
+      res.json({ message: 'Notifications sent successfully' });
+    })
+    .catch(error => {
+      console.error('Error sending notifications:', error);
+      res.status(500).json({ message: 'Error sending notifications' });
+    });
+});
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
 function updateModalCartSummary() {
     const modalCartSummary = document.getElementById('modalCartSummary');
     modalCartSummary.innerHTML = '';
