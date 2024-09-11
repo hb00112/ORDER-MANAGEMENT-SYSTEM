@@ -1,3 +1,4 @@
+
 const CACHE_NAME = 'pwa-test-cache-v1';
 const urlsToCache = [
   '/',
