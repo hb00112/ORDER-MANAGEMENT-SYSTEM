@@ -1891,6 +1891,12 @@ document.getElementById('pendingOrderSearch').addEventListener('input', function
 
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', loadPendingOrders);
+            window.OneSignal = window.OneSignal || [];
+OneSignal.push(function() {
+  OneSignal.init({
+    appId: "697ef522-6ac4-4748-a009-5a97d1a67373",
+  });
+});
 
             //backup model
             const backupModal = document.getElementById('backupModal');
