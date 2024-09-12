@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -525,6 +524,7 @@
             </div>
         </div>
     </div>
+
     <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
         You are currently offline. Some features may be limited.
     </div>
@@ -1213,6 +1213,7 @@
             // Check to reset the flag every hour
             setInterval(resetDailyBackupFlag, 3600000); // 3600000 milliseconds = 1 hour
 
+
             //order
             let parties = ["PARTY A", "PARTY B", "PARTY C", "XYLO"];
             const partySearch = document.getElementById('partySearch');
@@ -1727,25 +1728,6 @@ function showOrderConfirmationModal() {
         console.error("Error getting next order number: ", error);
         alert("An error occurred while generating the order number. Please try again.");
     });
-sendOrderConfirmationNotification();
-}
-function sendOrderConfirmationNotification() {
-  fetch('https://onesignal.com/api/v1/notifications', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'ZWZlZDE0MGMtOWU1ZC00MjhhLTk1NmUtNDkwODlmYWZmNGJk'
-    },
-    body: JSON.stringify({
-      app_id: "697ef522-6ac4-4748-a009-5a97d1a67373",
-      included_segments: ["All"],
-      contents: {"en": "New order confirmed! Check it out now."},
-      headings: {"en": "Order Confirmation"},
-    })
-  })
-  .then(response => response.json())
-  .then(data => console.log('Notification sent:', data))
-  .catch(error => console.error('Error sending notification:', error));
 }
 function sendTelegramNotification(partyName, totalQuantity, orderNumber) {
     const token = '6489265710:AAFx6-OaL09SpByMPyfiQBmgetvbtx0InyI';
@@ -1909,16 +1891,6 @@ document.getElementById('pendingOrderSearch').addEventListener('input', function
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', loadPendingOrders);
 
- window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "697ef522-6ac4-4748-a009-5a97d1a67373",
-
-      notifyButton: {
-        enable: true,
-      },
-    });
-  });
             //backup model
             const backupModal = document.getElementById('backupModal');
 
