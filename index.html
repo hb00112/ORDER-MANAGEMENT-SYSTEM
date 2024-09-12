@@ -12,16 +12,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HC OMS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
     <meta name="theme-color" content="#4285f4">
 
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f8f9fa;
@@ -246,10 +246,15 @@
 
         #homeScreen {
             text-align: center;
-            padding: 100px 0px;
+            padding:100px 0px;
             width: 100%;
             /* Adjust container width if needed */
             max-width: 800px;
+            margin-top: 0px; /*HC TEXT HEIGHT*/
+            padding-bottom: 350PX;
+
+            
+        
         }
 
         #homeScreen h3 {
@@ -257,6 +262,7 @@
             margin-bottom: 20px;
             font-weight: bold;
             /* Make text bold */
+            
         }
 
         .text-effect-wrapper {
@@ -405,7 +411,7 @@
         .approval-content {
             text-align: center;
             color: white;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Arial', sans-serif;
         }
 
         .approval-content h1 {
@@ -487,6 +493,7 @@
             position: relative;
             padding-bottom: 60px;
             /* Adjust this value based on your footer height */
+            margin-top: 10px;
         }
 
         .order-footer {
@@ -1676,6 +1683,17 @@ function showOrderConfirmationModal() {
     const partyName = document.getElementById('partySearch').value;
     const dateTime = new Date().toISOString();
 
+    // Create and append modal immediately
+    const modal = createModal(partyName, dateTime);
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('modal4'));
+
+    // Show modal immediately
+    modalInstance.show();
+
+    // Play sound effect
+    playConfirmationSound();
+
     getNextOrderNumber().then(orderNumber => {
         const order = {
             orderNumber: orderNumber,
@@ -1687,36 +1705,8 @@ function showOrderConfirmationModal() {
 
         saveOrderToFirebase(order)
             .then(() => {
-                const modal = document.createElement('div');
-                modal.className = 'modal fade';
-                modal.id = 'modal4';
-                modal.setAttribute('tabindex', '-1');
-                modal.innerHTML = `
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Order Confirmation</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p><strong>Party Name:</strong> ${partyName}</p>
-                                <p><strong>Date and Time:</strong> ${new Date(dateTime).toLocaleString()}</p>
-                                <p><strong>Order Number:</strong> ${orderNumber}</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-
-                const modalInstance = new bootstrap.Modal(document.getElementById('modal4'));
-
-                modal.querySelector('.btn-close').addEventListener('click', returnToHomepage);
-                modal.querySelector('.btn-primary').addEventListener('click', returnToHomepage);
-
-                modalInstance.show();
+                // Update modal content with order number
+                updateModalContent(orderNumber);
 
                 // Send notification to Telegram
                 sendTelegramNotification(partyName, getTotalQuantity(cart), orderNumber);
@@ -1730,6 +1720,169 @@ function showOrderConfirmationModal() {
         alert("An error occurred while generating the order number. Please try again.");
     });
 }
+
+function createModal(partyName, dateTime) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'modal4';
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = `
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes drawCheck {
+                0% { stroke-dashoffset: 100; }
+                100% { stroke-dashoffset: 0; }
+            }
+            .modal-content {
+                background-color: #ffffff;
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                animation: fadeIn 0.6s ease-out;
+            }
+            .modal-header {
+                border-bottom: 1px solid #f0f0f0;
+                padding: 1.5rem 2rem;
+            }
+            .modal-title {
+                font-family: 'Arial', sans-serif;
+                font-weight: 600;
+                color: #333333;
+                font-size: 1.5rem;
+            }
+            .modal-body {
+                padding: 2rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .confirmation-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.6s ease-out 0.3s both;
+}
+.confirmation-icon circle {
+    fill: #e6f4ea;  /* Light green background */
+    stroke: #34a853;  /* Green stroke for circle */
+    stroke-width: 2;
+}
+.confirmation-icon path {
+    fill: none;
+    stroke: #34a853;  /* Green checkmark */
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: drawCheck 0.6s ease-out 0.9s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+}
+            .order-info {
+                text-align: center;
+                font-family: 'Arial', sans-serif;
+                color: #555555;
+                width: 100%;
+            }
+            .order-info p {
+                margin: 0.75rem 0;
+                animation: slideUp 0.6s ease-out forwards;
+                opacity: 0;
+            }
+            .order-info p:nth-child(1) { animation-delay: 0.6s; }
+            .order-info p:nth-child(2) { animation-delay: 0.75s; }
+            .order-info p:nth-child(3) { animation-delay: 0.9s; }
+            .order-key {
+                font-weight: 600;
+                color: #333333;
+                margin-right: 0.5rem;
+            }
+            .btn-primary {
+                background-color: #4a90e2;
+                border: none;
+                padding: 0.75rem 2rem;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+                font-size: 1rem;
+            }
+            .btn-primary:hover {
+                background-color: #3a7bc8;
+            }
+            .modal-footer {
+                border-top: none;
+                padding: 1rem 2rem 2rem;
+            }
+        </style>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <svg class="confirmation-icon" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48"/>
+                        <path d="M30 50 L45 65 L70 35"/>
+                    </svg>
+                    <div class="order-info">
+                        <p><span class="order-key">Party Name:</span>${partyName}</p>
+                        <p><span class="order-key">Date and Time:</span>${new Date(dateTime).toLocaleString()}</p>
+                        <p><span class="order-key">Order Number:</span><span id="orderNumberSpan">Generating...</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.querySelector('.btn-close').addEventListener('click', returnToHomepage);
+    modal.querySelector('.btn-primary').addEventListener('click', returnToHomepage);
+
+    return modal;
+}
+
+function updateModalContent(orderNumber) {
+    const orderNumberSpan = document.getElementById('orderNumberSpan');
+    if (orderNumberSpan) {
+        orderNumberSpan.textContent = orderNumber;
+    }
+}
+
+function playConfirmationSound() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(587.33, audioContext.currentTime); // D5
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+}
+
 function sendTelegramNotification(partyName, totalQuantity, orderNumber) {
     const token = '6489265710:AAFx6-OaL09SpByMPyfiQBmgetvbtx0InyI';
     const chatId = '-1002170737027';
