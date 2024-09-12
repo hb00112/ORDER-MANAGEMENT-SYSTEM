@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -779,24 +780,59 @@
     <div class="container mt-2">
         
         <!-- Pending Orders Section -->
-        <div id="pendingOrders" class="section">
-            <h4>Pending Orders</h4>
-            <input type="text" class="form-control form-control-sm mb-2" id="pendingOrderSearch"
-                placeholder="Search orders...">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>ORD NO.</th>
-                        <th>Party</th>
-                        <th>Items</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="pendingOrdersBody"></tbody>
-            </table>
-        </div>
+<div id="pendingOrders" class="section">
+    <h4>Pending Orders</h4>
+    <div class="btn-group btn-group-toggle w-100 mb-2" data-toggle="buttons">
+        <label class="btn btn-outline-primary active">
+            <input type="radio" name="viewOption" id="summarizedView" checked> Summarized View
+        </label>
+        <label class="btn btn-outline-primary">
+            <input type="radio" name="viewOption" id="detailedView"> Detailed View
+        </label>
+    </div>
+    <table class="table table-sm" id="summarizedTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Party Name</th>
+                <th>Total Quantity</th>
+            </tr>
+        </thead>
+        <tbody id="summarizedOrdersBody"></tbody>
+    </table>
+    <table class="table table-sm" id="detailedTable" style="display: none;">
+        <thead>
+            <tr>
+                <th>ORD NO.</th>
+                <th>Party</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="detailedOrdersBody"></tbody>
+    </table>
+</div>
 
+<!-- Modal for Order Details -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="orderDetailsModalBody">
+                <!-- Order details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
         <!-- Billing Section -->
         <div id="billing" class="section">
             <h4>Billing</h4>
@@ -965,6 +1001,151 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+           
+
+// Create audio context
+let audioContext;
+
+// Debounce flag
+let isDebouncing = false;
+
+// Volume control (0.0 to 1.0)
+let hapticVolume = 0.2; // Increased from 0.1 to 0.3
+
+// Function to initialize audio context
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+// Function to create soft sound
+function createSoftSound() {
+    initAudioContext();
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
+
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(hapticVolume, audioContext.currentTime + 0.01);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.05);
+}
+
+// Function to set haptic feedback volume
+function setHapticVolume(volume) {
+    hapticVolume = Math.max(0, Math.min(1, volume));
+}
+
+// Function to check if element is interactive
+function isInteractiveElement(element) {
+    const interactiveElements = [
+        'a', 'button', 'input', 'select', 'textarea', 'label',
+        '[role="button"]', '[role="link"]', '[role="checkbox"]', '[role="radio"]',
+        '[role="switch"]', '[role="tab"]', '[role="menuitem"]'
+    ];
+    return interactiveElements.includes(element.tagName.toLowerCase()) || 
+           interactiveElements.some(selector => element.matches(selector)) ||
+           element.classList.contains('interactive') ||
+           element.getAttribute('tabindex') === '0';
+}
+
+// Function to add haptic feedback
+function addHapticFeedback(event) {
+    if (isDebouncing) return;
+    isDebouncing = true;
+
+    let target = event.target;
+
+    // Check if the clicked element or its parent is interactive
+    while (target && target !== document.body) {
+        if (isInteractiveElement(target)) {
+            // Trigger vibration
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50); // Short vibration, 50ms
+            }
+
+            // Play soft sound
+            createSoftSound();
+            break;
+        }
+        target = target.parentElement;
+    }
+
+    // Reset debounce after a short delay
+    setTimeout(() => {
+        isDebouncing = false;
+    }, 100);
+}
+
+// Function to handle input events for sliders and other continuous inputs
+function handleInputEvent(event) {
+    if (isDebouncing) return;
+    isDebouncing = true;
+
+    if (event.target.type === 'range' || event.target.type === 'number') {
+        if ('vibrate' in navigator) {
+            navigator.vibrate(25); // Even shorter vibration for continuous input
+        }
+        createSoftSound();
+    }
+
+    // Reset debounce after a short delay
+    setTimeout(() => {
+        isDebouncing = false;
+    }, 50); // Shorter delay for continuous inputs
+}
+
+// Add event listeners
+document.addEventListener('click', addHapticFeedback, { capture: true });
+document.addEventListener('touchstart', addHapticFeedback, { capture: true, passive: true });
+document.addEventListener('input', handleInputEvent, { passive: true });
+
+// Initialize audio context on first user interaction
+document.addEventListener('click', initAudioContext, { once: true });
+
+// Expose setHapticVolume function globally
+window.setHapticVolume = setHapticVolume;
+
+
+//stop copy paste
+
+// Function to prevent copy-paste
+function preventCopyPaste(e) {
+    e.preventDefault();
+    return false;
+}
+
+// Function to disable context menu
+function disableContextMenu(e) {
+    e.preventDefault();
+    return false;
+}
+
+// Prevent copy-paste
+document.addEventListener('copy', preventCopyPaste);
+document.addEventListener('cut', preventCopyPaste);
+document.addEventListener('paste', preventCopyPaste);
+
+// Disable context menu
+document.addEventListener('contextmenu', disableContextMenu);
+
+// Apply user-select: none to the entire body
+document.body.style.userSelect = 'none';
+document.body.style.webkitUserSelect = 'none';
+document.body.style.msUserSelect = 'none';
+document.body.style.mozUserSelect = 'none';
+
+
+           
             //backend
             const firebaseConfig = {
                 apiKey: "AIzaSyBRV-i_70Xdk86bNuQQ43jiYkRNCXGvvyo",
@@ -1091,6 +1272,8 @@
             loadPendingOrders();
             loadBillingOrders();
             loadSentOrders();
+            document.addEventListener('DOMContentLoaded', loadPendingOrders);
+
             const sendTime = '09:19'; // 1:34 PM
 
             async function sendPartyNamesToTelegram() {
@@ -1997,65 +2180,138 @@ function getNextOrderNumber() {
 
 //PENDING ORDER
 // Function to load and display pending orders
+// Function to load and display pending orders
 function loadPendingOrders() {
-    const pendingOrdersBody = document.getElementById('pendingOrdersBody');
-    pendingOrdersBody.innerHTML = '';
+    const summarizedOrdersBody = document.getElementById('summarizedOrdersBody');
+    const detailedOrdersBody = document.getElementById('detailedOrdersBody');
+    summarizedOrdersBody.innerHTML = '';
+    detailedOrdersBody.innerHTML = '';
 
     firebase.database().ref('orders').orderByChild('status').equalTo('Pending').once('value')
         .then(snapshot => {
             if (snapshot.exists()) {
                 snapshot.forEach(childSnapshot => {
                     const order = childSnapshot.val();
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${order.orderNumber || 'N/A'}</td>
-                        <td>${order.partyName || 'N/A'}</td>
-                        <td>${order.items && Array.isArray(order.items) ? order.items.map(item => 
-                            `${item.name} (${Object.entries(item.quantities || {}).map(([size, qty]) => `${size}/${qty}`).join(', ')})`
-                        ).join('; ') : 'No items'}</td>
-                        <td>${order.status || 'N/A'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary view-order" data-order-id="${childSnapshot.key}">View</button>
-                            <button class="btn btn-sm btn-success complete-order" data-order-id="${childSnapshot.key}">Mark for Billing</button>
-                        </td>
-                    `;
-                    pendingOrdersBody.appendChild(row);
+                    addSummarizedOrderRow(order, childSnapshot.key);
+                    addDetailedOrderRow(order, childSnapshot.key);
                 });
             } else {
-                pendingOrdersBody.innerHTML = '<tr><td colspan="5">No pending orders found</td></tr>';
+                summarizedOrdersBody.innerHTML = '<tr><td colspan="3">No pending orders found</td></tr>';
+                detailedOrdersBody.innerHTML = '<tr><td colspan="5">No pending orders found</td></tr>';
             }
         })
         .catch(error => {
             console.error("Error loading orders: ", error);
-            pendingOrdersBody.innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
+            summarizedOrdersBody.innerHTML = '<tr><td colspan="3">Error loading orders</td></tr>';
+            detailedOrdersBody.innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
         });
 }
 
-// Function to handle order completion
+function addSummarizedOrderRow(order, orderId) {
+    const summarizedOrdersBody = document.getElementById('summarizedOrdersBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${order.date || 'N/A'}</td>
+        <td>${order.partyName || 'N/A'}</td>
+        <td>${calculateTotalQuantity(order.items)}</td>
+    `;
+    row.addEventListener('click', () => viewOrderDetails(orderId));
+    summarizedOrdersBody.appendChild(row);
+}
+
+function addDetailedOrderRow(order, orderId) {
+    const detailedOrdersBody = document.getElementById('detailedOrdersBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${order.orderNumber || 'N/A'}</td>
+        <td>${order.partyName || 'N/A'}</td>
+        <td>${order.items && Array.isArray(order.items) ? order.items.map(item => 
+            `${item.name} (${Object.entries(item.quantities || {}).map(([size, qty]) => `${size}/${qty}`).join(', ')})`
+        ).join('; ') : 'No items'}</td>
+        <td>${order.status || 'N/A'}</td>
+        <td>
+            <button class="btn btn-sm btn-primary view-order" data-order-id="${orderId}">View</button>
+            <button class="btn btn-sm btn-success complete-order" data-order-id="${orderId}">Mark for Billing</button>
+        </td>
+    `;
+    detailedOrdersBody.appendChild(row);
+}
+
+function calculateTotalQuantity(items) {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((total, item) => {
+        const itemTotal = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty, 10), 0);
+        return total + itemTotal;
+    }, 0);
+}
+
 function markForBilling(orderId) {
     firebase.database().ref('orders').child(orderId).update({ status: 'Waiting for Billing' })
         .then(() => {
             console.log("Order marked for billing successfully");
-            loadPendingOrders(); // Reload the pending orders
-            loadBillingOrders(); // Load the billing orders (new function to be created)
+            loadPendingOrders();
+            loadBillingOrders(); // Assuming this function exists
         })
         .catch(error => {
             console.error("Error marking order for billing: ", error);
         });
 }
 
-// Function to view order details
 function viewOrderDetails(orderId) {
     firebase.database().ref('orders').child(orderId).once('value')
         .then(snapshot => {
             const order = snapshot.val();
-            // Create and show a modal with order details
-            // This is left as an exercise, you can create a similar modal to the confirmation modal
+            const modalBody = document.getElementById('orderDetailsModalBody');
+            modalBody.innerHTML = `
+                <p><strong>Order Number:</strong> ${order.orderNumber || 'N/A'}</p>
+                <p><strong>Party Name:</strong> ${order.partyName || 'N/A'}</p>
+                <p><strong>Date:</strong> ${order.date || 'N/A'}</p>
+                <p><strong>Status:</strong> ${order.status || 'N/A'}</p>
+                <p><strong>Items:</strong></p>
+                <ul>
+                    ${order.items && Array.isArray(order.items) ? order.items.map(item => `
+                        <li>${item.name}: ${Object.entries(item.quantities || {}).map(([size, qty]) => `${size}/${qty}`).join(', ')}</li>
+                    `).join('') : '<li>No items</li>'}
+                </ul>
+            `;
+            $('#orderDetailsModal').modal('show');
         })
         .catch(error => {
             console.error("Error fetching order details: ", error);
         });
 }
+
+// Event listeners
+document.getElementById('summarizedOrdersBody').addEventListener('click', function(e) {
+    if (e.target.tagName === 'TD') {
+        const row = e.target.closest('tr');
+        const orderId = row.getAttribute('data-order-id');
+        viewOrderDetails(orderId);
+    }
+});
+
+document.getElementById('detailedOrdersBody').addEventListener('click', function(e) {
+    if (e.target.classList.contains('complete-order')) {
+        markForBilling(e.target.getAttribute('data-order-id'));
+    } else if (e.target.classList.contains('view-order')) {
+        viewOrderDetails(e.target.getAttribute('data-order-id'));
+    }
+});
+
+// View switch functionality
+document.querySelectorAll('input[name="viewOption"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const summarizedTable = document.getElementById('summarizedTable');
+        const detailedTable = document.getElementById('detailedTable');
+        if (this.id === 'summarizedView') {
+            summarizedTable.style.display = '';
+            detailedTable.style.display = 'none';
+        } else {
+            summarizedTable.style.display = 'none';
+            detailedTable.style.display = '';
+        }
+    });
+});
 
 // Event listeners for pending orders actions
 document.getElementById('pendingOrdersBody').addEventListener('click', function(e) {
@@ -2179,148 +2435,6 @@ document.getElementById('sentOrdersBody').addEventListener('click', function(e) 
     }
 });
 
-
-
-// Create audio context
-let audioContext;
-
-// Debounce flag
-let isDebouncing = false;
-
-// Volume control (0.0 to 1.0)
-let hapticVolume = 0.2; // Increased from 0.1 to 0.3
-
-// Function to initialize audio context
-function initAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-}
-
-// Function to create soft sound
-function createSoftSound() {
-    initAudioContext();
-
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
-
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(hapticVolume, audioContext.currentTime + 0.01);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.05);
-}
-
-// Function to set haptic feedback volume
-function setHapticVolume(volume) {
-    hapticVolume = Math.max(0, Math.min(1, volume));
-}
-
-// Function to check if element is interactive
-function isInteractiveElement(element) {
-    const interactiveElements = [
-        'a', 'button', 'input', 'select', 'textarea', 'label',
-        '[role="button"]', '[role="link"]', '[role="checkbox"]', '[role="radio"]',
-        '[role="switch"]', '[role="tab"]', '[role="menuitem"]'
-    ];
-    return interactiveElements.includes(element.tagName.toLowerCase()) || 
-           interactiveElements.some(selector => element.matches(selector)) ||
-           element.classList.contains('interactive') ||
-           element.getAttribute('tabindex') === '0';
-}
-
-// Function to add haptic feedback
-function addHapticFeedback(event) {
-    if (isDebouncing) return;
-    isDebouncing = true;
-
-    let target = event.target;
-
-    // Check if the clicked element or its parent is interactive
-    while (target && target !== document.body) {
-        if (isInteractiveElement(target)) {
-            // Trigger vibration
-            if ('vibrate' in navigator) {
-                navigator.vibrate(50); // Short vibration, 50ms
-            }
-
-            // Play soft sound
-            createSoftSound();
-            break;
-        }
-        target = target.parentElement;
-    }
-
-    // Reset debounce after a short delay
-    setTimeout(() => {
-        isDebouncing = false;
-    }, 100);
-}
-
-// Function to handle input events for sliders and other continuous inputs
-function handleInputEvent(event) {
-    if (isDebouncing) return;
-    isDebouncing = true;
-
-    if (event.target.type === 'range' || event.target.type === 'number') {
-        if ('vibrate' in navigator) {
-            navigator.vibrate(25); // Even shorter vibration for continuous input
-        }
-        createSoftSound();
-    }
-
-    // Reset debounce after a short delay
-    setTimeout(() => {
-        isDebouncing = false;
-    }, 50); // Shorter delay for continuous inputs
-}
-
-// Add event listeners
-document.addEventListener('click', addHapticFeedback, { capture: true });
-document.addEventListener('touchstart', addHapticFeedback, { capture: true, passive: true });
-document.addEventListener('input', handleInputEvent, { passive: true });
-
-// Initialize audio context on first user interaction
-document.addEventListener('click', initAudioContext, { once: true });
-
-// Expose setHapticVolume function globally
-window.setHapticVolume = setHapticVolume;
-
-
-//stop copy paste
-
-// Function to prevent copy-paste
-function preventCopyPaste(e) {
-    e.preventDefault();
-    return false;
-}
-
-// Function to disable context menu
-function disableContextMenu(e) {
-    e.preventDefault();
-    return false;
-}
-
-// Prevent copy-paste
-document.addEventListener('copy', preventCopyPaste);
-document.addEventListener('cut', preventCopyPaste);
-document.addEventListener('paste', preventCopyPaste);
-
-// Disable context menu
-document.addEventListener('contextmenu', disableContextMenu);
-
-// Apply user-select: none to the entire body
-document.body.style.userSelect = 'none';
-document.body.style.webkitUserSelect = 'none';
-document.body.style.msUserSelect = 'none';
-document.body.style.mozUserSelect = 'none';
 
 
             //backup model
