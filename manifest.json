@@ -14,9 +14,9 @@
             "type": "image/png"
         },
         {
-            "src": "https://i.postimg.cc/J42RXYdQ/Untitled-design.png",
+            "src": "https://res.cloudinary.com/dfb8lszpo/video/upload/v1727802463/xtlzfrrwrmnnymz5tz43.mp4",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "video/mp4"
         }
     ]
 }
