@@ -12,6 +12,8 @@
     <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <meta name="theme-color" content="#4285f4">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -58,22 +60,60 @@
         <a href="#" data-section="deletedOrders">Deleted Orders</a>
         <a href="#" data-section="master">Master</a>
         <a href="#" data-section="userManagement">User Management</a>
+        <a href="#" data-section="stockUpdation">Stock Updation</a>
+        <a href="#" data-section="stock">Stock</a>
     </div>
-
+    
     <div id="deletedOrders" class="section">
         <h4>Deleted Orders</h4>
         <p>Deleted orders will be displayed here.</p>
     </div>
-
+    
     <div id="master" class="section">
         <h4>Master</h4>
         <button class="btn btn-primary" id="partyMasterBtn">Party Master</button>
         <button class="btn btn-primary" id="itemMasterBtn">Item Master</button>
     </div>
+    
     <div id="userManagement" class="section">
         <h4>User Management</h4>
         <button class="btn btn-primary" id="usersBtn">Users</button>
         <button class="btn btn-primary" id="approvalRequestsBtn">Approval Requests</button>
+    </div>
+    
+    <div id="stockUpdation" class="section">
+        <h4>Stock Updation</h4>
+        <input type="file" id="xlsFile" accept=".xls,.xlsx" />
+        <button class="btn btn-primary" id="uploadStockBtn">Upload Stock Data</button>
+        <div class="alert alert-danger mt-3">
+            <strong>NOTE:</strong> Once the XLS file is uploaded, the current stock data will be completely reset and replaced with the new data from the file. This action cannot be undone, so please ensure that the file is accurate before proceeding. Any errors may result in incorrect stock levels. Upload the file carefully to avoid potential issues.
+        </div>
+    </div>
+    
+    <div id="stock" class="section">
+        <h4>Stock</h4>
+        <div id="stockList" class="stock-grid">
+            <!-- Stock items will be dynamically added here -->
+        </div>
+    </div>
+    
+    <!-- Item Stock Modal -->
+    <div id="itemStockModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalItemName"></h2>
+            <table id="modalStockTable">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Size & Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Stock details will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="users" class="section">
@@ -213,6 +253,15 @@
         </div>
     </div>
     <div id="noFilterSelectedMessage" class="message">No filter selected</div>
+
+    <!-- Stock Removal Modal -->
+    <div id="stockRemovalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body"></div>
+        </div>
+    </div>
     
     <div id="billing" class="section">
         <h4>Billing</h4>
@@ -272,5 +321,6 @@
     <script src="user-management.js"></script>
     <script src="main.js"></script>
     <script src="animations.js"></script>
+    <script src="stock.js"></script>
 </body>
 </html>
