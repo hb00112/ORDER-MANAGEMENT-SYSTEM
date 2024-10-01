@@ -330,5 +330,26 @@
     <script src="main.js"></script>
     <script src="animations.js"></script>
     <script src="stock.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashContainer = document.getElementById('splash-container');
+            const splashVideo = document.getElementById('splash-video');
+            const appContent = document.getElementById('app-content');
+
+            splashVideo.addEventListener('ended', function() {
+                splashContainer.style.display = 'none';
+                appContent.style.display = 'block';
+            });
+
+            // If video fails to load or play, hide splash screen after 5 seconds
+            setTimeout(() => {
+                if (splashContainer.style.display !== 'none') {
+                    splashContainer.style.display = 'none';
+                    appContent.style.display = 'block';
+                }
+            }, 5000);
+        });
+    </script>
+    <!-- Your other scripts and PWA-related code -->
 </body>
 </html>
