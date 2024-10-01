@@ -1,3 +1,4 @@
+// Ensure the DOM is fully loaded before initializing
 document.addEventListener('DOMContentLoaded', function() {
     initializeDB()
         .then(() => {
@@ -7,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error("Error initializing IndexedDB:", error));
 });
-
 
 // IndexedDB setup
 let db;
@@ -51,15 +51,106 @@ function saveOrdersToIndexedDB(orders) {
         transaction.onerror = (event) => reject(event.target.error);
     });
 }
-function syncWithFirebase() {
-    console.log("Syncing with Firebase...");
-    fetchOrdersFromFirebase()
-        .then(() => console.log("Sync complete"))
-        .catch(error => console.error("Sync error:", error));
+let lastSyncTime = 0;
+const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+function initializeUI() {
+    // ... (existing code)
+
+    // Initial sync
+    syncWithFirebase();
+
+    // Set up realtime listener for new pending orders
+    setupRealtimeListener();
 }
 
-// Call this function periodically, e.g., every 5 minutes
-setInterval(syncWithFirebase, 5 * 60 * 1000);
+function syncWithFirebase() {
+    const now = Date.now();
+    if (now - lastSyncTime < SYNC_INTERVAL) {
+        console.log("Sync skipped: Too soon since last sync");
+        return Promise.resolve();
+    }
+
+    console.log("Syncing with Firebase...");
+    lastSyncTime = now;
+
+    return fetchOrdersFromFirebase()
+        .then(firebaseOrders => {
+            return updateIndexedDB(firebaseOrders);
+        })
+        .then(() => {
+            console.log("Sync complete");
+            loadPendingOrders(); // Reload the UI after sync
+        })
+        .catch(error => {
+            console.error("Sync error:", error);
+            lastSyncTime = 0; // Reset last sync time on error to allow immediate retry
+        });
+}
+
+function setupRealtimeListener() {
+    const ordersRef = firebase.database().ref('orders');
+    ordersRef.on('child_added', (snapshot) => {
+        const newOrder = snapshot.val();
+        if (newOrder.status === 'Pending') {
+            console.log("New pending order detected, requesting sync...");
+            requestSync();
+        }
+    });
+}
+
+function requestSync() {
+    const now = Date.now();
+    if (now - lastSyncTime >= SYNC_INTERVAL) {
+        syncWithFirebase();
+    } else {
+        const timeToNextSync = SYNC_INTERVAL - (now - lastSyncTime);
+        console.log(`Sync requested, but it's too soon. Next sync in ${timeToNextSync / 1000} seconds`);
+    }
+}
+
+// Call this function when the page loads or when you want to start the sync cycle
+function startSyncCycle() {
+    syncWithFirebase(); // Initial sync
+    setInterval(requestSync, SYNC_INTERVAL); // Set up interval for future syncs
+}
+
+// Call startSyncCycle when your app initializes
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDB()
+        .then(() => {
+            console.log("IndexedDB initialized");
+            initializeUI();
+            startSyncCycle();
+        })
+        .catch(error => console.error("Error initializing IndexedDB:", error));
+});
+
+
+function updateIndexedDB(firebaseOrders) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error("Database not initialized"));
+            return;
+        }
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const objectStore = transaction.objectStore(STORE_NAME);
+
+        // Clear existing data
+        objectStore.clear();
+
+        // Add new data
+        firebaseOrders.forEach(order => {
+            objectStore.add(order);
+        });
+
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = event => reject(event.target.error);
+    });
+}
+
+
+
 
 
 function getOrdersFromIndexedDB() {
@@ -103,11 +194,18 @@ function initializeUI() {
     });
 
     document.getElementById('pendingOrdersBody').addEventListener('click', handleOrderActions);
-      // Initially hide the Clear Filters button
-      updateClearFiltersButtonVisibility();
+    updateClearFiltersButtonVisibility();
+
+    setInterval(syncWithFirebase, 5 * 60 * 1000);
+    syncWithFirebase();
+    setupRealtimeListener();
+    
+    // Initialize the stock removal modal
+    initializeModal();
 }
 
 let currentFilters = [];
+
 
 
 function loadPendingOrders() {
@@ -123,18 +221,18 @@ function loadPendingOrders() {
     detailedHeader.style.display = isDetailed ? '' : 'none';
     summarizedHeader.style.display = isDetailed ? 'none' : '';
 
-    initializeDB()
+    syncWithFirebase()
         .then(() => getOrdersFromIndexedDB())
         .then(orders => {
             if (orders.length > 0) {
                 displayOrders(orders, isDetailed);
             } else {
-                return fetchOrdersFromFirebase();
+                pendingOrdersBody.innerHTML = '<tr><td colspan="5">No pending orders found</td></tr>';
             }
         })
         .catch(error => {
-            console.error("Error loading orders from IndexedDB: ", error);
-            return fetchOrdersFromFirebase();
+            console.error("Error loading orders: ", error);
+            pendingOrdersBody.innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
         });
 }
 
@@ -170,28 +268,31 @@ function fetchOrdersFromFirebase() {
                 snapshot.forEach(childSnapshot => {
                     const order = childSnapshot.val();
                     order.id = childSnapshot.key;
-                    // Ensure totalQuantity is included
-                    if (typeof order.totalQuantity === 'undefined') {
-                        order.totalQuantity = calculateTotalQuantityForOrder(order);
+                    // Process items to flatten the structure
+                    if (order.items && Array.isArray(order.items)) {
+                        order.items = order.items.flatMap(item => {
+                            return Object.entries(item.colors || {}).map(([color, sizes]) => ({
+                                name: item.name,
+                                color: color,
+                                quantities: sizes
+                            }));
+                        });
                     }
                     orders.push(order);
                 });
-                
-                saveOrdersToIndexedDB(orders)
-                    .then(() => console.log("Orders saved to IndexedDB"))
-                    .catch(error => console.error("Error saving to IndexedDB:", error));
-                
-                displayOrders(orders, document.getElementById('viewToggle').checked);
+                console.log('Fetched and processed orders from Firebase:', orders);
+                return orders;
             } else {
                 console.log('No pending orders found in Firebase');
-                document.getElementById('pendingOrdersBody').innerHTML = '<tr><td colspan="5">No pending orders found</td></tr>';
+                return [];
             }
         })
         .catch(error => {
-            console.error("Error loading orders from Firebase: ", error);
-            document.getElementById('pendingOrdersBody').innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
+            console.error('Error fetching orders from Firebase:', error);
+            throw error;
         });
 }
+
 
 function calculateTotalQuantityForOrder(order) {
     if (order.totalQuantity) return order.totalQuantity;
@@ -211,7 +312,7 @@ function displayDetailedOrders(orders, container) {
 }
 
 function displaySummarizedOrders(orders, container) {
-    console.log('Displaying summarized orders. Total orders:', orders.length);
+    console.log('Displaying summarized orders. Total orders:', orders);
     container.innerHTML = '';
     const groupedOrders = groupOrdersBySummary(orders);
     console.log('Grouped orders:', groupedOrders);
@@ -219,16 +320,192 @@ function displaySummarizedOrders(orders, container) {
     for (const [key, group] of Object.entries(groupedOrders)) {
         const [date, partyName] = key.split('|');
         const totalQty = group.reduce((sum, order) => sum + (order.totalQuantity || 0), 0);
+        const itemNames = getUniqueItemNames(group);
         
-        console.log('Creating row for:', date, partyName, 'Total Quantity:', totalQty);
+        console.log('Creating row for:', date, partyName, 'Total Quantity:', totalQty, 'Items:', itemNames);
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${date}</td>
-            <td>${partyName}</td>
+            <td>
+                ${partyName}
+                <br>
+                <span class="item-names">(${itemNames})</span>
+            </td>
             <td>${totalQty}</td>
         `;
+        row.addEventListener('click', () => {
+            fetchOrdersFromFirebase()
+                .then(allOrders => {
+                    const partyOrders = allOrders.filter(order => order.partyName === partyName);
+                    openStockRemovalModal(partyName, partyOrders);
+                })
+                .catch(error => console.error('Error fetching orders for modal:', error));
+        });
         container.appendChild(row);
     }
+}
+function openStockRemovalModal(partyName, orders) {
+    console.log('Opening modal for party:', partyName);
+    console.log('Orders:', orders);
+
+    const modal = document.getElementById('stockRemovalModal');
+    const modalContent = document.querySelector('#stockRemovalModal .modal-content');
+    const modalBody = document.querySelector('#stockRemovalModal .modal-body');
+    
+    // Set modal title
+    document.querySelector('#stockRemovalModal .modal-title').textContent = partyName;
+    
+    // Create table for items
+    const table = document.createElement('table');
+    table.className = 'table table-bordered';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Item Name & Color</th>
+                <th>Sizes</th>
+                <th>S.Q</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    
+    const tbody = table.querySelector('tbody');
+    
+    // Process orders and create a map of unique items
+    const itemMap = new Map();
+    orders.forEach(order => {
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const key = `${item.name}-${item.color}`;
+                if (!itemMap.has(key)) {
+                    itemMap.set(key, {
+                        name: item.name,
+                        color: item.color,
+                        sizes: new Set(),
+                        quantities: {}
+                    });
+                }
+                const itemData = itemMap.get(key);
+                Object.entries(item.quantities).forEach(([size, quantity]) => {
+                    if (quantity > 0) {
+                        itemData.sizes.add(size);
+                        itemData.quantities[size] = (itemData.quantities[size] || 0) + quantity;
+                    }
+                });
+            });
+        }
+    });
+
+    // Convert the map to an array and sort it
+    const uniqueItems = Array.from(itemMap.values())
+        .sort((a, b) => a.name.localeCompare(b.name) || a.color.localeCompare(b.color));
+
+    if (uniqueItems.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="3">No items found or error in data structure</td>';
+        tbody.appendChild(row);
+    } else {
+        uniqueItems.forEach(item => {
+            const row = document.createElement('tr');
+            const sizesWithQuantities = Array.from(item.sizes)
+                .sort()
+                .map(size => `${size}/${item.quantities[size] || 0}`)
+                .join(', ');
+            row.innerHTML = `
+                <td>${item.name}(${item.color})</td>
+                <td class="sizes-cell">${sizesWithQuantities}</td>
+                <td>${Object.values(item.quantities).reduce((sum, qty) => sum + qty, 0)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    modalBody.innerHTML = '';
+    modalBody.appendChild(table);
+    
+    // Set modal to full screen with small margins
+    modalContent.style.width = '98%';
+    modalContent.style.height = '96%';
+    modalContent.style.margin = '1% auto';
+    
+    modal.style.display = 'block';
+}
+
+function getUniqueItems(orders) {
+    console.log('Orders received:', orders);
+    const uniqueItems = new Map();
+    orders.forEach(order => {
+        console.log('Processing order:', order);
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                console.log('Processing item:', item);
+                const key = `${item.name}-${item.color || 'N/A'}`;
+                if (!uniqueItems.has(key)) {
+                    uniqueItems.set(key, {
+                        name: item.name,
+                        color: item.color || 'N/A',
+                        sizes: new Set()
+                    });
+                }
+                if (item.quantities) {
+                    console.log('Item quantities:', item.quantities);
+                    Object.keys(item.quantities).forEach(size => {
+                        if (item.quantities[size] > 0) {
+                            uniqueItems.get(key).sizes.add(size);
+                        }
+                    });
+                } else {
+                    console.warn('No quantities found for item:', item);
+                }
+            });
+        } else {
+            console.warn('No items array found in order:', order);
+        }
+    });
+    const result = Array.from(uniqueItems.values()).map(item => ({
+        ...item,
+        sizes: Array.from(item.sizes).sort()
+    }));
+    console.log('Unique items result:', result);
+    return result;
+}
+function initializeModal() {
+    const modal = document.getElementById('stockRemovalModal');
+    if (!modal) {
+        console.error('Stock removal modal not found in the DOM');
+        return;
+    }
+
+    const closeBtn = modal.querySelector('.close');
+    if (!closeBtn) {
+        console.error('Close button not found in the stock removal modal');
+        return;
+    }
+    
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+
+function getUniqueItemNames(orders) {
+    const uniqueItems = new Set();
+    orders.forEach(order => {
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                if (item.name) {
+                    uniqueItems.add(item.name);
+                }
+            });
+        }
+    });
+    return Array.from(uniqueItems).join(', ');
 }
 
 function groupOrdersBySummary(orders) {
