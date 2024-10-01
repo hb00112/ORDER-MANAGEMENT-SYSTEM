@@ -169,4 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
     }
+    
+// Call setupFirebaseListener when the page loads
+setupFirebaseListener();
 });
