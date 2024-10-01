@@ -1,6 +1,7 @@
 // stock.js
 // Ensure this script is loaded after Firebase SDK and XLSX library
 
+
 let stockIndexedDB;
 const STOCK_DB_NAME = 'StockIndexedDB';
 const STOCK_STORE_NAME = 'stockItems';
@@ -11,9 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("StockIndexedDB initialized");
         loadStockItems();
         setupFirebaseListener();
-        displayLastUpdateTime();
     }).catch(error => {
         console.error("Failed to initialize StockIndexedDB:", error);
+        // Fallback to Firebase if IndexedDB fails
+        loadStockItemsFromFirebase();
     });
 
     document.getElementById('uploadStockBtn').addEventListener('click', handleFileUpload);
@@ -42,7 +44,6 @@ function initStockIndexedDB() {
         };
     });
 }
-
 
 function handleFileUpload() {
     const fileInput = document.getElementById('xlsFile');
@@ -76,18 +77,23 @@ function validateFileFormat(data) {
     return requiredHeaders.every(header => fileHeaders.includes(header));
 }
 
-
 function uploadStockData(stockData) {
     const db = firebase.database();
     const stockRef = db.ref('stock');
+    const lastUpdateRef = db.ref('lastUpdate');
 
     // Remove existing stock data
     stockRef.remove().then(() => {
         // Upload new stock data
         stockRef.set(stockData).then(() => {
-            alert('Stock updation successful!');
-            updateStockIndexedDB(stockData);
-            saveLastUpdateTime();
+            const now = new Date().toISOString();
+            lastUpdateRef.set(now).then(() => {
+                alert('Stock update successful!');
+                updateStockIndexedDB(stockData);
+                // No need to call saveLastUpdateTime here as it will be handled by the Firebase listener
+            }).catch((error) => {
+                console.error('Error saving last update time:', error);
+            });
         }).catch((error) => {
             console.error('Error uploading stock data:', error);
             alert('An error occurred while updating stock data. Please try again.');
@@ -98,11 +104,12 @@ function uploadStockData(stockData) {
     });
 }
 
-function saveLastUpdateTime() {
-    const now = new Date().toISOString();
+
+function saveLastUpdateTime(lastUpdate) {
     const transaction = stockIndexedDB.transaction(['metadata'], "readwrite");
     const store = transaction.objectStore('metadata');
-    store.put({ key: LAST_UPDATE_KEY, value: now });
+    store.put({ key: LAST_UPDATE_KEY, value: lastUpdate });
+    displayLastUpdateTime(lastUpdate);
 }
 
 function getLastUpdateTime() {
@@ -121,35 +128,33 @@ function getLastUpdateTime() {
     });
 }
 
-
-function displayLastUpdateTime() {
-    getLastUpdateTime().then(lastUpdate => {
-        if (lastUpdate) {
-            const formattedDate = formatDate(lastUpdate);
-            
-            // Remove any existing marquee
-            const existingMarquee = document.querySelector('#stock marquee');
-            if (existingMarquee) {
-                existingMarquee.remove();
-            }
-            
-            const marquee = document.createElement('marquee');
-            marquee.textContent = `Last stock update: ${formattedDate}`;
-            marquee.style.backgroundColor = '#87044c';
-            marquee.style.color = 'white';
-            marquee.style.padding = '5px';
-            marquee.style.marginBottom = '10px';
-            marquee.style.display = 'block'; // Ensure it's a block element
-            marquee.style.width = '100%'; // Make it full width
-            
-            const stockSection = document.getElementById('stock');
-            stockSection.insertBefore(marquee, stockSection.firstChild);
+function displayLastUpdateTime(lastUpdate) {
+    if (lastUpdate) {
+        const formattedDate = formatDate(lastUpdate);
+        
+        // Remove any existing marquee
+        const existingMarquee = document.querySelector('#stock marquee');
+        if (existingMarquee) {
+            existingMarquee.remove();
         }
-    }).catch(error => {
-        console.error("Failed to fetch last update time:", error);
-    });
+        
+        const marquee = document.createElement('marquee');
+        marquee.textContent = `Last stock update: ${formattedDate}`;
+        marquee.style.backgroundColor = '#87044c';
+        marquee.style.color = 'white';
+        marquee.style.padding = '5px';
+        marquee.style.marginBottom = '10px';
+        marquee.style.display = 'block';
+        marquee.style.width = '100%';
+        
+        const stockSection = document.getElementById('stock');
+        if (stockSection) {
+            stockSection.insertBefore(marquee, stockSection.firstChild);
+        } else {
+            console.error("Stock section not found");
+        }
+    }
 }
-
 
 function updateStockIndexedDB(stockData) {
     const transaction = stockIndexedDB.transaction([STOCK_STORE_NAME], "readwrite");
@@ -238,11 +243,14 @@ function openItemStockModal(itemName, itemData) {
         }
     }
 }
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = date.getDate();
     const month = date.toLocaleString('default', { month: 'short' });
     const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
     
     const suffix = (day) => {
         if (day > 3 && day < 21) return 'th';
@@ -254,8 +262,9 @@ function formatDate(dateString) {
         }
     }
     
-    return `${day}${suffix(day)} ${month} ${year}`;
+    return `${day}${suffix(day)} ${month} ${year} at ${hours}:${minutes}`;
 }
+
 function loadStockItems() {
     const transaction = stockIndexedDB.transaction([STOCK_STORE_NAME], "readonly");
     const objectStore = transaction.objectStore(STOCK_STORE_NAME);
@@ -265,7 +274,7 @@ function loadStockItems() {
         const stockData = event.target.result;
         if (stockData && stockData.length > 0) {
             displayStockItems(stockData);
-            displayLastUpdateTime();
+            fetchLastUpdateTimeFromFirebase();
         } else {
             loadStockItemsFromFirebase();
         }
@@ -276,6 +285,7 @@ function loadStockItems() {
         loadStockItemsFromFirebase();
     };
 }
+
 function loadStockItemsFromFirebase() {
     const db = firebase.database();
     const stockRef = db.ref('stock');
@@ -284,6 +294,7 @@ function loadStockItemsFromFirebase() {
         const stockData = snapshot.val();
         if (stockData) {
             updateStockIndexedDB(stockData);
+            fetchLastUpdateTimeFromFirebase();
         } else {
             document.getElementById('stockList').innerHTML = '<p>No stock items available.</p>';
         }
@@ -293,14 +304,44 @@ function loadStockItemsFromFirebase() {
     });
 }
 
+function fetchLastUpdateTimeFromFirebase() {
+    const db = firebase.database();
+    const lastUpdateRef = db.ref('lastUpdate');
+
+    lastUpdateRef.once('value').then((snapshot) => {
+        const lastUpdate = snapshot.val();
+        if (lastUpdate) {
+            saveLastUpdateTime(lastUpdate);
+            displayLastUpdateTime(lastUpdate);
+        } else {
+            console.log("No last update time found in Firebase");
+        }
+    }).catch((error) => {
+        console.error('Error fetching last update time from Firebase:', error);
+    });
+}
+
 function setupFirebaseListener() {
     const db = firebase.database();
     const stockRef = db.ref('stock');
+    const lastUpdateRef = db.ref('lastUpdate');
 
     stockRef.on('value', (snapshot) => {
         const stockData = snapshot.val();
         if (stockData) {
             updateStockIndexedDB(stockData);
         }
+    }, (error) => {
+        console.error("Error in Firebase stock listener:", error);
+    });
+
+    lastUpdateRef.on('value', (snapshot) => {
+        const lastUpdate = snapshot.val();
+        if (lastUpdate) {
+            saveLastUpdateTime(lastUpdate);
+            displayLastUpdateTime(lastUpdate);
+        }
+    }, (error) => {
+        console.error("Error in Firebase lastUpdate listener:", error);
     });
 }
