@@ -1,4 +1,11 @@
-#splash-container{
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#splash-container {
     position: fixed;
     top: 0;
     left: 0;
@@ -10,11 +17,14 @@
     justify-content: center;
     align-items: center;
 }
-#splash-video{
+
+#splash-video {
     max-width: 100%;
     max-height: 100%;
+    object-fit: contain;
 }
-#app-content{
+
+#app-content {
     display: none;
 }
 
