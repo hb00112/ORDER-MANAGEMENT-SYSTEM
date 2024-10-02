@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <link rel="manifest" href="manifest.json">
+     <link rel="stylesheet" href="styles.css">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <meta name="theme-color" content="#4285f4">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -16,14 +17,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<div id="splash-container">
+    <div id="splash-container">
         <video id="splash-video" autoplay muted playsinline>
             <source src="https://res.cloudinary.com/dfb8lszpo/video/upload/v1727802463/xtlzfrrwrmnnymz5tz43.mp4" type="video/mp4">
         </video>
     </div>
     <div id="app-content">
-        <!-- Your app's main content goes here -->
+
     </div>
     <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -330,26 +330,38 @@
     <script src="main.js"></script>
     <script src="animations.js"></script>
     <script src="stock.js"></script>
-    <script>
+       <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('splash-video');
             const splashContainer = document.getElementById('splash-container');
-            const splashVideo = document.getElementById('splash-video');
             const appContent = document.getElementById('app-content');
 
-            splashVideo.addEventListener('ended', function() {
+            video.addEventListener('ended', function() {
                 splashContainer.style.display = 'none';
                 appContent.style.display = 'block';
             });
 
-            // If video fails to load or play, hide splash screen after 5 seconds
-            setTimeout(() => {
-                if (splashContainer.style.display !== 'none') {
-                    splashContainer.style.display = 'none';
-                    appContent.style.display = 'block';
-                }
-            }, 5000);
+            video.addEventListener('error', function() {
+                splashContainer.style.display = 'none';
+                appContent.style.display = 'block';
+            });
+
+            video.play().catch(function(error) {
+                console.log("Video play failed:", error);
+                splashContainer.style.display = 'none';
+                appContent.style.display = 'block';
+            });
         });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     </script>
-    <!-- Your other scripts and PWA-related code -->
 </body>
 </html>
