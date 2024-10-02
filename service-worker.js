@@ -1,29 +1,24 @@
-const CACHE_NAME = 'ka-oms-cache-v1';
+
+
+const CACHE_NAME = 'pwa-test-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/styles.css',
   '/manifest.json',
-  'https://res.cloudinary.com/dfb8lszpo/video/upload/v1727802463/xtlzfrrwrmnnymz5tz43.mp4'
+  'https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png',
+  'https://github.com/username/repo-name/raw/main/icon-512x512.png'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
+      .then(response => response || fetch(event.request))
   );
 });
