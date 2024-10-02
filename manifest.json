@@ -4,14 +4,19 @@
     "short_name": "KA Oms",
     "description": "A OMS FOR KAMBESHWAR AGENCIES",
     "start_url": "/index.html",
-    "display": "fullscreen",
-    "background_color": "#000000",
-    "theme_color": "#000000",
-    "icons": [
-          "src": "https://res.cloudinary.com/dfb8lszpo/video/upload/v1727802463/xtlzfrrwrmnnymz5tz43.mp4",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4285f4",
+     "icons": [
+        {
+            "src": "https://i.postimg.cc/2jB7q8kP/hC-2.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://i.postimg.cc/wvVJkhL4/hC-1.png",
             "sizes": "512x512",
-            "type": "video/mp4",
-            "purpose": "any maskable"
+            "type": "image/png"
         }
     ]
 }
