@@ -2,6 +2,7 @@ const CACHE_NAME = 'ka-oms-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/styles.css',
   '/manifest.json',
   'https://res.cloudinary.com/dfb8lszpo/video/upload/v1727802463/xtlzfrrwrmnnymz5tz43.mp4'
 ];
