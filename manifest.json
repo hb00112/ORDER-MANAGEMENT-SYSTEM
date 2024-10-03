@@ -1,0 +1,23 @@
+
+
+{
+    "name": "Hc Oms",
+    "short_name": "Hc Oms",
+    "description": "A OMS FOR HREENKAR CREATION",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4285f4",
+    "icons": [
+        {
+            "src": "https://i.postimg.cc/2jB7q8kP/hC-2.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://i.postimg.cc/wvVJkhL4/hC-1.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
