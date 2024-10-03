@@ -5,8 +5,8 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  'https://i.postimg.cc/2jB7q8kP/hC-2.png',
-  'https://i.postimg.cc/2jB7q8kP/hC-2.png'
+  'https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png',
+  'https://github.com/username/repo-name/raw/main/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
