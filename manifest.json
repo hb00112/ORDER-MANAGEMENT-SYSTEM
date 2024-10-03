@@ -1,13 +1,14 @@
 
+
 {
-    "name": "KA Oms",
-    "short_name": "KA Oms",
-    "description": "A OMS FOR KAMBESHWAR AGENCIES",
+    "name": "Hc Oms",
+    "short_name": "Hc Oms",
+    "description": "A OMS FOR HREENKAR CREATION",
     "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#4285f4",
-     "icons": [
+    "icons": [
         {
             "src": "https://i.postimg.cc/2jB7q8kP/hC-2.png",
             "sizes": "192x192",
