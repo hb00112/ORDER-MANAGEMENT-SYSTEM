@@ -650,6 +650,9 @@ display: none;
     background-color: #f0f0f0;
     padding: 10px 0;
     z-index: 1;
+    gap: 2px;
+    border-radius: 4px;
+    font-size: 10px;
 }
 
 .party-name-list {
