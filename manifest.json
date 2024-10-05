@@ -1,21 +1,21 @@
 
 
 {
-    "name": "Hc Oms",
-    "short_name": "Hc Oms",
-    "description": "A OMS FOR HREENKAR CREATION",
+    "name": "Ka Oms",
+    "short_name": "Ka Oms",
+    "description": "A OMS FOR KAMBESHWAR AGENCIES",
     "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#4285f4",
     "icons": [
         {
-            "src": "https://i.postimg.cc/2jB7q8kP/hC-2.png",
+            "src": "https://i.postimg.cc/7h6L6H9r/Untitled-design-3.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "https://i.postimg.cc/wvVJkhL4/hC-1.png",
+            "src": "https://i.postimg.cc/Gt8HK3yJ/Untitled-design-4.png",
             "sizes": "512x512",
             "type": "image/png"
         }
