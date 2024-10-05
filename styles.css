@@ -188,9 +188,9 @@ body {
 #partySearch {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
+    font-size: 15px;
     border: 1px solid #ddd;
-    border-radius: 15px;
+    border-radius: 20px;
 }
 
 #partyList {
@@ -499,8 +499,8 @@ align-items: center;
 .switch {
 position: relative;
 display: inline-block;
-width: 60px;
-height: 34px;
+width: 50px;
+height: 26px;
 }
 
 .switch input {
@@ -729,10 +729,10 @@ display: none;
 
 .close4 {
     color: #00ff00;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 13px;
+    
     cursor: pointer;
-    text-shadow: 0 0 10px #00ff00;
+    
 }
 
 .close4:hover,
@@ -777,7 +777,7 @@ display: none;
 
 .quantity-input {
     width: 80px; /* Slightly reduced width to accommodate the gap */
-    border-radius: 5px; /* Rounded edges for the input */
+    border-radius: 20px; /* Rounded edges for the input */
     padding: 5px;
     height: 30px;
     box-sizing: border-box;
