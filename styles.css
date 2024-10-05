@@ -618,9 +618,10 @@ display: none;
 }
 
 .modal4-sidebar {
-    width: 40%;
+    width: 80%;
     background-color: #e0e0e0;
     padding: 20px;
+    border-radius: 4px;
     
     overflow-y: auto;
 }
@@ -632,6 +633,8 @@ display: none;
     position: relative;
     display: flex;
     flex-direction: column;
+    gap: 3px;
+    border-radius: 8px;
 }
 
 .filter-item {
@@ -667,7 +670,8 @@ display: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 16px;
+    border-radius: 4px;
 }
 
 .message {
