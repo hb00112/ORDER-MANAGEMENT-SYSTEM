@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="https://i.postimg.cc/zBtj21zX/Untitled-design-6.png" type="image/png">
+    <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <meta name="theme-color" content="#4285f4">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -41,7 +41,7 @@
         <div class="container-fluid">
             <button id="menuToggle" class="btn btn-link">☰</button>
             <div class="navbar-nav">
-                <a class="nav-link active" href="#" data-section="orders">Orders</a>
+                <a class="nav-link active" href="#" data-section="orders">Order</a>
                 <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
                 <a class="nav-link" href="#" data-section="billing">Billing</a>
                 <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
@@ -62,8 +62,10 @@
         <a href="#" data-section="userManagement">User Management</a>
         <a href="#" data-section="stockUpdation">Stock Updation</a>
         <a href="#" data-section="stock">Stock</a>
+        
     </div>
     
+   
     <div id="deletedOrders" class="section">
         <h4>Deleted Orders</h4>
         <p>Deleted orders will be displayed here.</p>
@@ -97,6 +99,7 @@
             <!-- Stock items will be dynamically added here -->
         </div>
     </div>
+   
     
     <!-- Item Stock Modal -->
     <div id="itemStockModal" class="modal">
@@ -202,17 +205,11 @@
                     <span class="ms-2">Detailed</span>
                 </div>
             </div>
-            <button id="filterButton" class="btn btn-success" style="width: 120px; height: 35px; gap: 4px;">Filter</button>
+            <button id="filterButton" class="btn btn-success" style="width: 200px; height: 30px;">Filter</button>
             <button id="clearFiltersButton" class="btn btn-secondary">Clear Filters</button>
             <table class="table table-sm">
                 <thead id="pendingOrdersHeadDetailed">
-                    <tr>
-                        <th>ORD NO.</th>
-                        <th>Party</th>
-                        <th>Items</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
+                    
                 </thead>
                 <thead id="pendingOrdersHeadSummarized" style="display: none;">
                     <tr>
@@ -223,6 +220,8 @@
                 </thead>
                 <tbody id="pendingOrdersBody"></tbody>
             </table>
+           
+
         </div>
     </div>
     
