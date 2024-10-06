@@ -2,7 +2,7 @@ function loadBillingOrders() {
     const billingOrdersBody = document.getElementById('billingOrdersBody');
     billingOrdersBody.innerHTML = '';
 
-    firebase.database().ref('orders').orderByChild('status').equalTo('Waiting for Billing').once('value')
+    firebase.database().ref('billingOrders').once('value')
         .then(snapshot => {
             if (snapshot.exists()) {
                 snapshot.forEach(childSnapshot => {
@@ -12,7 +12,9 @@ function loadBillingOrders() {
                         <td>${order.orderNumber || 'N/A'}</td>
                         <td>${order.partyName || 'N/A'}</td>
                         <td>${order.items && Array.isArray(order.items) ? order.items.map(item => 
-                            `${item.name} (${Object.entries(item.quantities || {}).map(([size, qty]) => `${size}/${qty}`).join(', ')})`
+                            `${item.name} (${Object.entries(item.colors || {}).map(([color, sizes]) => 
+                                `${color}: ${Object.entries(sizes).map(([size, qty]) => `${size}/${qty}`).join(', ')}`
+                            ).join('; ')})`
                         ).join('; ') : 'No items'}</td>
                         <td>${order.status || 'N/A'}</td>
                         <td>
@@ -33,7 +35,7 @@ function loadBillingOrders() {
 }
 
 function billOrder(orderId) {
-    firebase.database().ref('orders').child(orderId).update({ status: 'Sent' })
+    firebase.database().ref('billingOrders').child(orderId).update({ status: 'Sent' })
         .then(() => {
             console.log("Order billed and moved to Sent successfully");
             loadBillingOrders(); // Reload the billing orders
@@ -43,6 +45,8 @@ function billOrder(orderId) {
             console.error("Error billing order: ", error);
         });
 }
+
+// ... rest of the code remains the same
 
 document.getElementById('billingOrdersBody').addEventListener('click', function(e) {
     if (e.target.classList.contains('bill-order')) {
