@@ -734,7 +734,7 @@ display: none;
     max-width: 138px;
     min-width: 20px;
     padding: 10px;
-    border-radius: 50px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
 }
