@@ -731,10 +731,10 @@ display: none;
 
 .color-container {
     flex: 0 1 calc(50% - 10px);
-    max-width: 160px;
+    max-width: 138px;
     min-width: 20px;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 50px;
     display: flex;
     flex-direction: column;
 }
