@@ -17,7 +17,10 @@ function loadSentOrders() {
                     return dateB - dateA;
                 });
                 
-                orders.forEach((order, index) => {
+                // Merge orders with same order number and bill date
+                const mergedOrders = mergeOrders(orders);
+                
+                mergedOrders.forEach((order, index) => {
                     const orderElement = createSentOrderElement(order, index);
                     sentOrdersContainer.appendChild(orderElement);
                 });
@@ -31,6 +34,43 @@ function loadSentOrders() {
         });
 }
 
+function mergeOrders(orders) {
+    const mergedOrdersMap = new Map();
+
+    orders.forEach(order => {
+        const key = `${order.orderNumber}_${formatDateOnly(order.billingDate)}`;
+        if (!mergedOrdersMap.has(key)) {
+            mergedOrdersMap.set(key, { ...order, partyNames: new Set([order.partyName]) });
+        } else {
+            const existingOrder = mergedOrdersMap.get(key);
+            existingOrder.partyNames.add(order.partyName);
+            // Merge billedQuantities
+            Object.entries(order.billedQuantities || {}).forEach(([item, colors]) => {
+                if (!existingOrder.billedQuantities[item]) {
+                    existingOrder.billedQuantities[item] = colors;
+                } else {
+                    Object.entries(colors).forEach(([color, sizes]) => {
+                        if (!existingOrder.billedQuantities[item][color]) {
+                            existingOrder.billedQuantities[item][color] = sizes;
+                        } else {
+                            Object.entries(sizes).forEach(([size, quantity]) => {
+                                if (!existingOrder.billedQuantities[item][color][size]) {
+                                    existingOrder.billedQuantities[item][color][size] = quantity;
+                                } else {
+                                    existingOrder.billedQuantities[item][color][size] += quantity;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    return Array.from(mergedOrdersMap.values());
+}
+
+
 function createSentOrderElement(order, index) {
     const orderElement = document.createElement('div');
     orderElement.className = `sent-order ${index % 2 === 0 ? 'light-blue' : 'dark-blue'}`;
@@ -39,13 +79,29 @@ function createSentOrderElement(order, index) {
         <h5>Order No: ${order.orderNumber || 'N/A'}</h5>
         <p>Order Date: ${formatDate(order.dateTime) || 'N/A'}</p>
         <p>Bill Date: ${formatDate(order.billingDate) || 'N/A'}</p>
+        <p>Party Name(s): ${Array.from(order.partyNames).join(', ') || 'N/A'}</p>
     `;
     
     const itemsTable = createItemsTable(order.billedQuantities);
+    const totalQuantity = calculateTotalQuantity(order.billedQuantities);
     
-    orderElement.innerHTML = orderInfo + itemsTable;
+    orderElement.innerHTML = orderInfo + itemsTable + `<p><strong>Total Quantity: ${totalQuantity}</strong></p>`;
     
     return orderElement;
+}
+
+function calculateTotalQuantity(billedQuantities) {
+    if (!billedQuantities) return 0;
+
+    let total = 0;
+    for (const colors of Object.values(billedQuantities)) {
+        for (const sizes of Object.values(colors)) {
+            for (const quantity of Object.values(sizes)) {
+                total += quantity;
+            }
+        }
+    }
+    return total;
 }
 
 function createItemsTable(billedQuantities) {
@@ -93,6 +149,11 @@ function formatDate(dateString) {
     return date.toLocaleString(); // You can customize this format as needed
 }
 
+function formatDateOnly(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // This will return only the date part
+}
 
 // Load sent orders when the page loads
 document.addEventListener('DOMContentLoaded', loadSentOrders);
@@ -131,7 +192,7 @@ function createSentOrderRow(order) {
 
     row.innerHTML = `
         <td>${order.orderNumber || 'N/A'}</td>
-        <td>${order.partyName || 'N/A'}</td>
+        <td>${Array.from(order.partyNames).join(', ') || 'N/A'}</td>
         <td>${itemsText}</td>
         <td>
             <button class="btn btn-sm btn-info view-btn" data-order-id="${order.key || ''}">View</button>
@@ -145,10 +206,9 @@ function createSentOrderRow(order) {
 function getNestedValue(obj, ...args) {
     return args.reduce((obj, level) => obj && obj[level], obj);
 }
+
 document.getElementById('sentOrdersBody').addEventListener('click', function(e) {
     if (e.target.classList.contains('view-order')) {
         viewOrderDetails(e.target.getAttribute('data-order-id'));
     }
 });
-
-
