@@ -52,7 +52,7 @@ function saveOrdersToIndexedDB(orders) {
     });
 }
 let lastSyncTime = 0;
-const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+const SYNC_INTERVAL = 1 * 60 * 1000; // 5 minutes in milliseconds
 
 function initializeUI() {
     // ... (existing code)
