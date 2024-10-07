@@ -691,8 +691,39 @@ display: none;
 }
 
 #filterButton.active {
-    background-color: #28a745;
-    color: white;
+   background-color: #b4eebe;
+    color: #02300c;
+    min-width: 308px;
+    text-align: right;
+    padding-left: 20px;
+    letter-spacing: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center the text horizontally */
+    align-items: center;
+
+}
+#filterButton {
+    background-color: #b4eebe;
+    color: #02300c;
+    min-width: 308px;
+    text-align: right;
+    padding-left: 20px;
+    letter-spacing: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center the text horizontally */
+    align-items: center;
+
+}   
+#filterButton {
+    /* ... other properties ... */
+    text-transform: uppercase;
+  
 }
 
 .party-name-btn {
