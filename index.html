@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KA ORDER MANAGEMENT SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <meta name="theme-color" content="#4285f4">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Welcome!</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter your username:</p>
+                    <input type="text" id="usernameInput" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="saveUsername">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
+        You are currently offline. Some features may be limited.
+    </div>
+    <nav class="navbar navbar-expand navbar-light bg-light">
+        <div class="container-fluid">
+            <button id="menuToggle" class="btn btn-link">☰</button>
+            <div class="navbar-nav">
+                <a class="nav-link active" href="#" data-section="orders">Orders</a>
+                <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
+                <a class="nav-link" href="#" data-section="billing">Billing</a>
+                <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
+            </div>
+        </div>
+    </nav>
+    <div id="homeScreen" class="section active">
+        <h3>Hello <span id="userNameDisplay"></span></h3>
+        <div class="text-effect-wrapper">
+            <h1 class="hc-text">KA</h1>
+        </div>
+        <h4>KAMBESHWAR AGENCIES</h4>
+    </div>
+    <div id="slideMenu" class="slide-menu">
+        <a href="#" class="close-btn">&times;</a>
+        <a href="#" data-section="deletedOrders">Deleted Orders</a>
+        <a href="#" data-section="master">Master</a>
+        <a href="#" data-section="userManagement">User Management</a>
+        <a href="#" data-section="stockUpdation">Stock Updation</a>
+        <a href="#" data-section="stock">Stock</a>
+        
+    </div>
+    
+   
+    <div id="deletedOrders" class="section">
+        <h4>Deleted Orders</h4>
+        <p>Deleted orders will be displayed here.</p>
+    </div>
+    
+    <div id="master" class="section">
+        <h4>Master</h4>
+        <button class="btn btn-primary" id="partyMasterBtn">Party Master</button>
+        <button class="btn btn-primary" id="itemMasterBtn">Item Master</button>
+    </div>
+    
+    <div id="userManagement" class="section">
+        <h4>User Management</h4>
+        <button class="btn btn-primary" id="usersBtn">Users</button>
+        <button class="btn btn-primary" id="approvalRequestsBtn">Approval Requests</button>
+    </div>
+    
+    <div id="stockUpdation" class="section">
+        <h4>Stock Updation</h4>
+        <input type="file" id="xlsFile" accept=".xls,.xlsx" />
+        <button class="btn btn-primary" id="uploadStockBtn">Upload Stock Data</button>
+        
+        <div class="alert alert-danger mt-3">
+            <strong>NOTE:</strong> Once the XLS file is uploaded, the current stock data will be completely reset and replaced with the new data from the file. This action cannot be undone, so please ensure that the file is accurate before proceeding. Any errors may result in incorrect stock levels. Upload the file carefully to avoid potential issues.
+        </div>
+    </div>
+    
+    <div id="stock" class="section">
+        <h4>Stock</h4>
+        <div id="stockList" class="stock-grid">
+            <!-- Stock items will be dynamically added here -->
+        </div>
+    </div>
+  
+    <!-- Item Stock Modal -->
+    <div id="itemStockModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalItemName"></h2>
+            <table id="modalStockTable">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Size & Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Stock details will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="users" class="section">
+        <h4>Users</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+        </table>
+    </div>
+
+    <div id="approvalRequests" class="section">
+        <h4>Approval Requests</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="approvalRequestsBody"></tbody>
+        </table>
+    </div>
+
+    <div id="partyMaster" class="section">
+        <h4>Party Master</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Party Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="partyMasterBody"></tbody>
+        </table>
+    </div>
+    <div id="itemMaster" class="section">
+        <h2>Item Master</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Sizes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="itemMasterBody"></tbody>
+        </table>
+    </div>
+    <div id="orders" class="section">
+        <h4>Orders</h4>
+        <form id="orderForm">
+            <div class="mb-3">
+                <input type="text" class="form-control" id="partySearch" placeholder="Search or add party">
+                <div id="partyList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="itemSearch" placeholder="Search or add item">
+                <div id="itemList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <!-- The item details and size/quantity grid will be inserted here dynamically -->
+        </form>
+        <div class="order-footer">
+            <button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
+            <button type="button" class="btn btn-success" id="saveOrderBtn">Save Order</button>
+        </div>
+        <!-- The cart summary table will be inserted here dynamically -->
+    </div>
+    
+    <div class="container mt-2">
+        <div id="pendingOrders" class="section">
+            <h4>Pending Orders</h4>
+            <div class="d-flex justify-content-center align-items-center mb-2">
+                <div class="toggle-container d-flex align-items-center">
+                    <span class="me-2">Summarized</span>
+                    <label class="switch mx-2">
+                        <input type="checkbox" id="viewToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="ms-2">Detailed</span>
+                </div>
+            </div>
+            <button id="filterButton" class="btn btn-success" style="width: 200px; height: 30px;">Filter</button>
+            <button id="clearFiltersButton" class="btn btn-secondary">Clear Filters</button>
+            <table class="table table-sm">
+                <thead id="pendingOrdersHeadDetailed">
+                    
+                </thead>
+                <thead id="pendingOrdersHeadSummarized" style="display: none;">
+                    <tr>
+                        <th>Party Name</th>
+                        <th>Items</th>
+                        <th>Total Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingOrdersBody"></tbody>
+            </table>
+           
+        </div>
+    </div>
+    
+    <div id="filterModal4" class="modal4">
+        <div class="modal4-content">
+            <div class="modal4-header">
+                <h5>Filters</h5>
+                <span class="close4">CLOSE</span>
+            </div>
+            <div class="modal4-body">
+                <div class="modal4-sidebar">
+                    <ul id="filterMenu">
+                        <li data-filter="partyName" class="filter-item active">Party Name</li>
+                        <!-- Add more filter options here -->
+                    </ul>
+                </div>
+                <div class="modal4-main" id="filterContent">
+                    <div class="filter-actions">
+                        <button id="selectAllBtn" class="btn btn-secondary">Select All</button>
+                        <button id="deselectAllBtn" class="btn btn-secondary">Deselect All</button>
+                    </div>
+                    <div id="partyNameList" class="party-name-list"></div>
+                    <div class="modal4-footer">
+                        <span id="selectionCount">0 parties selected</span>
+                        <button id="saveFilterBtn" class="btn btn-primary">Show Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="noFilterSelectedMessage" class="message">No filter selected</div>
+
+    <!-- Stock Removal Modal -->
+    <div id="stockRemovalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+    
+    <div id="billing" class="section">
+        <h4>Billing</h4>
+        <div id="billingOrders"></div>
+    </div>
+
+    <div id="sentOrders" class="section">
+        <h4>Sent Orders</h4>
+        <div id="sentOrdersContainer"></div>
+    </div>
+
+    <div id="pendingApprovalScreen" class="fullscreen-overlay" style="display: none;">
+        <div class="approval-content">
+            <h1>Registration Pending</h1>
+            <p>Please wait for your registration to be approved.</p>
+            <div class="loading-animation">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your JavaScript files -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/pending.js"></script>
+    <script src="js/billing.js"></script>
+    <script src="js/sent.js"></script>
+    <script src="js/deleted-orders.js"></script>
+    <script src="js/masters.js"></script>
+    <script src="js/user-management.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/stock.js"></script>
+</body>
+</html>
