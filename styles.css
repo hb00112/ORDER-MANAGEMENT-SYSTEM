@@ -694,7 +694,7 @@ display: none;
 #filterButton.active {
     background-color: #b4eebe;
     color: #02300c;
-    min-width: 100px;
+    min-width: 80px;
     text-align: right;
     padding-left: 20px;
     letter-spacing: 3px;
@@ -710,7 +710,7 @@ display: none;
 #filterButton {
     background-color: #b4eebe;
     color: #02300c;
-    min-width: 100px;
+    min-width: 80px;
     text-align: right;
     padding-left: 20px;
     letter-spacing: 3px;
