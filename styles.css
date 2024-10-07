@@ -740,7 +740,7 @@ display: none;
     border-color: #28a745;
 }
 
-.close4 {
+/*.close4 {
     color: #00ff00;
     font-size: 16px;
     font-weight: bold;
@@ -754,6 +754,7 @@ display: none;
     text-decoration: none;
     cursor: pointer;
 }
+*/
 .color-containers {
     display: flex;
     flex-wrap: wrap;
