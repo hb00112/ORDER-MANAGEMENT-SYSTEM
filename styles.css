@@ -740,12 +740,12 @@ display: none;
     border-color: #28a745;
 }
 
-/*.close4 {
-    color: #00ff00;
-    font-size: 16px;
+.close4 {
+    color: #ffffff;
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    text-shadow: 0 0 10px #00ff00;
+    
 }
 
 .close4:hover,
@@ -754,7 +754,7 @@ display: none;
     text-decoration: none;
     cursor: pointer;
 }
-*/
+
 .color-containers {
     display: flex;
     flex-wrap: wrap;
