@@ -199,7 +199,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 24px;
 }
-#partyList {
+/*#partyList {
     position: absolute;
     width: calc(100% - 30px);
     max-height: 200px;
@@ -210,7 +210,8 @@ body {
     border-radius: 0 0 4px 4px;
     z-index: 1000;
     display: none;
-}
+}*/
+
 
 #partyList a {
     padding: 10px;
