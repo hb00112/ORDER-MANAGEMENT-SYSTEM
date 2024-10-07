@@ -52,7 +52,7 @@ function saveOrdersToIndexedDB(orders) {
     });
 }
 let lastSyncTime = 0;
-const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+const SYNC_INTERVAL = 1 * 60 * 1000; // 5 minutes in milliseconds
 
 function initializeUI() {
     // ... (existing code)
@@ -1072,20 +1072,38 @@ function sendToBilling(orderId) {
             // Get the current SRQ values
             const srqValues = getCurrentSRQValues(orderId);
 
-            // Create the billing order
-            const billingOrder = createBillingOrder(order, srqValues);
+            // Check if there's an existing billing order with the same order number
+            return firebase.database().ref('billingOrders').orderByChild('orderNumber').equalTo(order.orderNumber).once('value')
+                .then(billingSnapshot => {
+                    let billingOrder;
+                    let billingOrderKey;
 
-            // Update the pending order
-            const updatedPendingOrder = updatePendingOrder(order, srqValues);
+                    if (billingSnapshot.exists()) {
+                        // An existing billing order was found
+                        billingSnapshot.forEach(childSnapshot => {
+                            billingOrder = childSnapshot.val();
+                            billingOrderKey = childSnapshot.key;
+                        });
+                        billingOrder = mergeBillingOrders(billingOrder, order, srqValues);
+                    } else {
+                        // No existing billing order, create a new one
+                        billingOrder = createBillingOrder(order, srqValues);
+                        billingOrderKey = orderId;
+                    }
 
-            // Perform the database updates
-            return firebase.database().ref().update({
-                [`billingOrders/${orderId}`]: billingOrder,
-                [`orders/${orderId}`]: updatedPendingOrder
-            });
+                    // Update the pending order
+                    const updatedPendingOrder = updatePendingOrder(order, srqValues);
+
+                    // Perform the database updates
+                    return firebase.database().ref().update({
+                        [`billingOrders/${billingOrderKey}`]: billingOrder,
+                        [`orders/${orderId}`]: updatedPendingOrder
+                    });
+                });
         })
         .then(() => {
             console.log(`Order ${orderId} sent to billing successfully`);
+            showNotification('Order sent to billing successfully');
             
             // Set a flag in localStorage to indicate we want to show pending orders after refresh
             localStorage.setItem('showPendingOrders', 'true');
@@ -1095,9 +1113,43 @@ function sendToBilling(orderId) {
         })
         .catch(error => {
             console.error("Error sending order to billing: ", error);
-            alert("Error sending order to billing. Please try again.");
+            showNotification('Error sending order to billing. Please try again.');
         });
 }
+
+function mergeBillingOrders(existingBillingOrder, newOrder, srqValues) {
+    const mergedOrder = { ...existingBillingOrder };
+    mergedOrder.totalQuantity = existingBillingOrder.totalQuantity || 0;
+
+    newOrder.items.forEach(newItem => {
+        const itemName = newItem.name;
+        const existingItem = mergedOrder.items.find(item => item.name === itemName);
+
+        if (existingItem) {
+            // Merge quantities for existing item
+            Object.keys(srqValues[itemName] || {}).forEach(color => {
+                Object.keys(srqValues[itemName][color] || {}).forEach(size => {
+                    const srqValue = srqValues[itemName][color][size] || 0;
+                    if (srqValue > 0) {
+                        if (!existingItem.colors[color]) {
+                            existingItem.colors[color] = {};
+                        }
+                        existingItem.colors[color][size] = (existingItem.colors[color][size] || 0) + srqValue;
+                        mergedOrder.totalQuantity += srqValue;
+                    }
+                });
+            });
+        } else {
+            // Add new item
+            const newBillingItem = createBillingItem(newItem, srqValues[itemName]);
+            mergedOrder.items.push(newBillingItem);
+            mergedOrder.totalQuantity += newBillingItem.totalQuantity;
+        }
+    });
+
+    return mergedOrder;
+}
+
 
 // Add this function to your main JavaScript file or inline script
 function checkAndShowPendingOrders() {
@@ -1136,49 +1188,34 @@ function showNotification(message) {
     }, 3000);
 }
 
-function createBillingOrder(order, srqValues) {
-    const billingOrder = {...order};
-    billingOrder.status = 'billing';
-    billingOrder.totalQuantity = 0;
+function createBillingItem(item, srqValues) {
+    const billingItem = { ...item, colors: {}, totalQuantity: 0 };
 
-    billingOrder.items = order.items.map(item => {
-        const billingItem = {...item};
-        billingItem.colors = {};
-
-        // Handle both normal and merged order structures
-        if (item.colors) {
-            // Merged order structure
-            Object.keys(item.colors).forEach(color => {
-                if (srqValues[item.name] && srqValues[item.name][color]) {
+    Object.keys(srqValues || {}).forEach(color => {
+        Object.keys(srqValues[color] || {}).forEach(size => {
+            const srqValue = srqValues[color][size] || 0;
+            if (srqValue > 0) {
+                if (!billingItem.colors[color]) {
                     billingItem.colors[color] = {};
-                    Object.keys(item.colors[color]).forEach(size => {
-                        const srqValue = srqValues[item.name][color][size] || 0;
-                        if (srqValue > 0) {
-                            billingItem.colors[color][size] = srqValue;
-                            billingOrder.totalQuantity += srqValue;
-                        }
-                    });
                 }
-            });
-        } else if (item.quantities) {
-            // Normal order structure
-            const color = item.color || 'N/A';
-            billingItem.colors[color] = {};
-            Object.keys(item.quantities).forEach(size => {
-                const srqValue = srqValues[item.name] && srqValues[item.name][color] && srqValues[item.name][color][size] || 0;
-                if (srqValue > 0) {
-                    billingItem.colors[color][size] = srqValue;
-                    billingOrder.totalQuantity += srqValue;
-                }
-            });
-        }
+                billingItem.colors[color][size] = srqValue;
+                billingItem.totalQuantity += srqValue;
+            }
+        });
+    });
 
-        return billingItem;
-    }).filter(item => Object.keys(item.colors).length > 0);
-
-    return billingOrder;
+    return billingItem;
 }
 
+function createBillingOrder(order, srqValues) {
+    const billingOrder = { ...order };
+    billingOrder.status = 'billing';
+    billingOrder.totalQuantity = 0;
+    billingOrder.items = order.items.map(item => createBillingItem(item, srqValues[item.name]))
+        .filter(item => item.totalQuantity > 0);
+    billingOrder.totalQuantity = billingOrder.items.reduce((total, item) => total + item.totalQuantity, 0);
+    return billingOrder;
+}
 function updatePendingOrder(order, srqValues) {
     const updatedOrder = {...order};
     updatedOrder.totalQuantity = 0;
