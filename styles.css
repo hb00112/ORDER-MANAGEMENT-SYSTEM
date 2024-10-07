@@ -741,8 +741,8 @@ display: none;
 }
 
 .close4 {
-    color: #ffffff;
-    font-size: 18px;
+    color: #000000;
+    font-size: 20px;
     font-weight: bold;
     cursor: pointer;
     
@@ -750,7 +750,7 @@ display: none;
 
 .close4:hover,
 .close4:focus {
-    color: #00cc00;
+    color: #000000;
     text-decoration: none;
     cursor: pointer;
 }
