@@ -98,10 +98,13 @@ body {
 .table td {
     padding: 10px;
     border: 1px solid #dee2e6;
+    
+
+    
 }
 
 .table th {
-    background-color: #007bff;
+    background-color: #cc0464;
     color: white;
 }
 
@@ -211,7 +214,6 @@ body {
     z-index: 1000;
     display: none;
 }*/
-
 
 #partyList a {
     padding: 10px;
@@ -494,6 +496,7 @@ body {
     margin: 0;
     font-size: 18px;
    
+   
   }
   
 .order-footer {
@@ -511,8 +514,12 @@ body {
 .order-footer button {
     width: 46%;
     /* Adjust as needed */
-    border-radius: 12px;
+    border-radius: 15px;
 }
+#addToCartBtn {
+    background-color: #072dd6; /* Change the background color to your desired color */
+    border-color: #FFD700;
+  }
 /*toggle switch*/
 .toggle-container {
 display: inline-flex;
@@ -661,6 +668,7 @@ display: none;
     border: 1px solid #ccc; /* Adjust border color and width as needed */
     border-radius: 20px; /* Adjust border radius for curvature */
     overflow: hidden; /* Hide overflow content */
+    
   }
 .party-name-list {
     flex-grow: 1;
@@ -694,7 +702,7 @@ display: none;
 #filterButton.active {
     background-color: #b4eebe;
     color: #02300c;
-    min-width: 98px;
+    min-width: 100px;
     text-align: right;
     padding-left: 20px;
     letter-spacing: 3px;
@@ -739,22 +747,21 @@ display: none;
 .party-name-btn.selected {
     border-color: #28a745;
 }
-
+/*
 .close4 {
-    color: #000000;
+    color: #00ff00;
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
-    
+    text-shadow: 0 0 10px #00ff00;
 }
 
 .close4:hover,
 .close4:focus {
-    color: #000000;
+    color: #00cc00;
     text-decoration: none;
     cursor: pointer;
-}
-
+}*/
 .color-containers {
     display: flex;
     flex-wrap: wrap;
@@ -851,6 +858,8 @@ display: none;
 
 .order-actions {
     margin-top: 10px;
+    width: auto;
+    gap: 5px;
 }
 .quantity-control {
     display: flex;
@@ -1089,10 +1098,12 @@ project/
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
+    background-color: #cc0464;
 }
 
 #modalStockTable th {
     background-color: #f2f2f2;
+    background-color: #cc0464;
 }
 .stock-grid {
     display: grid;
@@ -1260,6 +1271,7 @@ project/
     border: 1px solid #e0e0e0;
     padding: 0.5rem;
     text-align: left;
+    background-color: #cc0464;
   }
   
   .stock-removal-detailed-modal .table th {
@@ -1301,16 +1313,19 @@ project/
 }
 
 .sent-order.light-blue {
-    background-color: #e6f2ff;
+    background-color: #f1c9e3;
 }
 
 .sent-order.dark-blue {
-    background-color: #cce5ff;
+    background-color: #f0a9d2;
 }
 
 .sent-order h5 {
     margin-top: 0;
 }
+.table.table-striped th {
+    background-color: #cc0464; /* Change the background color as desired */
+  }
 
 .sent-order table {
     width: 100%;
