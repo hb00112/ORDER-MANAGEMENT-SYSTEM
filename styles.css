@@ -617,6 +617,15 @@ display: none;
     padding: 20px;
     background-color: #f5f5f5;
 }
+.modal4-header h5 {
+    font-size: 24px; /* Adjust the font size as needed */
+    font-weight: 700;
+    margin-left: 10px;
+    margin-top: 5px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
 
 .modal4-body {
     display: flex;
@@ -626,15 +635,16 @@ display: none;
 }
 
 .modal4-sidebar {
-    width: 40%;
+    width: 30%;
     background-color: #e0e0e0;
     padding: 20px;
+    text-align: left;
     
     overflow-y: auto;
 }
 
 .modal4-main {
-    width: 60%;
+    width: 70%;
     background-color: #f0f0f0;
     padding: 20px;
     position: relative;
@@ -659,6 +669,63 @@ display: none;
     padding: 10px 0;
     z-index: 1;
 }
+.filter-actions button {
+    /* Common styles for both buttons */
+    margin-right: 50px; /* Add spacing between buttons */
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid #f0f1e3;
+    font-size: 16px;
+    cursor: pointer;
+    gap: 3px;
+  }
+  
+  #selectAllBtn {
+    background-color: #ffffff; /* Green color for "Select All" */
+    color: rgb(0, 0, 0);
+    
+  }
+  
+  #deselectAllBtn {
+    background-color: #ffffff; /* Red color for "Deselect All" */
+    color: rgb(0, 0, 0);
+  }
+  
+  .filter-actions button:hover {
+    background-color: #fcf2f7; /* Darker green on hover for "Select All" */
+    color: rgb(0, 0, 0);
+    border-color: #4b003b;
+   
+  }
+  #selectAllBtn:hover {
+    background-color: #fcf2f7; /* Darker red on hover for "Deselect All" */
+    color: rgb(0, 0, 0);
+    border-color: #4b003b;
+   
+  }
+  #deselectAllBtn:hover {
+    background-color: #fcf2f7; /* Darker red on hover for "Deselect All" */
+    color: rgb(0, 0, 0);
+    border-color: #4b003b;
+    
+  }
+#filterMenu {
+    font-size: 16px;
+    font-weight: 600;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+   
+    margin-left: 1px;
+    background-color: transparent;
+    padding: 10px ;
+   
+
+
+}
+#filterMenu .filter-item {
+    background-color: transparent; /* Make the text area transparent */
+    padding: 5px ;
+    
+  }
 #partyList {
     border: 1px solid #ccc; /* Adjust border color and width as needed */
     border-radius: 20px; /* Adjust border radius for curvature */
@@ -685,6 +752,28 @@ display: none;
     align-items: center;
     padding-top: 20px;
 }
+#saveFilterBtn {
+    background-color: #ff32cc; /* Green color */
+    color: white;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+   
+  }
+  #selectionCount {
+    font-weight: bold;
+  }
+  #clearFiltersButton {
+    background-color: transparent ;
+    color: red;
+    border-color: transparent;
+    text-decoration: underline ;
+    font-size: 17px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+  
+  
 
 .message {
     position: fixed;
@@ -702,7 +791,7 @@ display: none;
 #filterButton.active {
     background-color: #b4eebe;
     color: #02300c;
-    min-width: 100px;
+    min-width: 120px;
     text-align: right;
     padding-left: 20px;
     letter-spacing: 3px;
@@ -713,12 +802,13 @@ display: none;
     display: flex; /* Use flexbox for centering */
     justify-content: center; /* Center the text horizontally */
     align-items: center;
+    transition: all ease 0.2s;
 
 }
 #filterButton {
     background-color: #b4eebe;
-    color: #02300c;
-    min-width: 95px;
+    color: #02300c; 
+    min-width: 120px;
     text-align: right;
     padding-left: 20px;
     letter-spacing: 3px;
@@ -729,6 +819,7 @@ display: none;
     display: flex; /* Use flexbox for centering */
     justify-content: center; /* Center the text horizontally */
     align-items: center;
+    transition: all ease 0.2s;
 
 }   
 #filterButton {
@@ -747,21 +838,21 @@ display: none;
 .party-name-btn.selected {
     border-color: #28a745;
 }
-/*
+
 .close4 {
-    color: #00ff00;
+    color: #000000;
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
-    text-shadow: 0 0 10px #00ff00;
+   
 }
 
 .close4:hover,
 .close4:focus {
-    color: #00cc00;
+    color: #000000;
     text-decoration: none;
     cursor: pointer;
-}*/
+}
 .color-containers {
     display: flex;
     flex-wrap: wrap;
@@ -1403,4 +1494,389 @@ project/
 }
 .sent-to-billing {
     background-color: #E6F3FF; /* Light blue color */
+}
+#purchaseorder .purchase-order-button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.purchase-order-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.purchase-order-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+}
+.purchase-order-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.purchase-order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.purchase-order-table th, 
+.purchase-order-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.purchase-order-table th {
+    background-color: #f2f2f2;
+}
+
+
+/* Purchase Order Section */
+#purchaseorder {
+    margin-bottom: 20px;
+}
+
+#purchaseorder h4 {
+    margin-bottom: 10px;
+}
+
+#purchaseFormatBtn,
+#placeOrderBtn {
+    padding: 10px 15px;
+    margin-right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#purchaseFormatBtn:hover,
+#placeOrderBtn:hover {
+    background-color: #45a049;
+}
+
+/* Modal Styles */
+#purchaseOrderModal,
+#placeOrderModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#purchaseOrderModal .purchase-order-modal-content,
+#placeOrderModal .place-order-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#purchaseOrderModal .purchase-order-close,
+#placeOrderModal .place-order-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+#purchaseOrderModal .purchase-order-close:hover,
+#purchaseOrderModal .purchase-order-close:focus,
+#placeOrderModal .place-order-close:hover,
+#placeOrderModal .place-order-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+/* Purchase Order Table */
+#purchaseOrderTableBody {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#purchaseOrderTableBody th,
+#purchaseOrderTableBody td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+#purchaseOrderTableBody th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#purchaseOrderTableBody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#purchaseOrderTableBody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Style Grid */
+#placeOrderModal #styleGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+#placeOrderModal #styleGrid .style-item {
+    background-color: #f0f0f0;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+#placeOrderModal #styleGrid .style-item:hover {
+    background-color: #e0e0e0;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+    #purchaseOrderModal .purchase-order-modal-content,
+    #placeOrderModal .place-order-modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+
+    #placeOrderModal #styleGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #purchaseOrderTableBody {
+        font-size: 14px;
+    }
+
+    #purchaseOrderTableBody th,
+    #purchaseOrderTableBody td {
+        padding: 8px;
+    }
+}
+
+#colorModal {
+    display: none;
+    position: fixed;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.color-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.color-modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.color-modal-close:hover,
+.color-modal-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+#colorGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.color-item {
+    background-color: #f0f0f0;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.color-item:hover {
+    background-color: #e0e0e0;
+}
+.po-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.po-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.po-modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.po-modal-close:hover,
+.po-modal-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+.po-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.po-grid-item {
+    background-color: #f0f0f0;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.po-grid-item:hover {
+    background-color: #e0e0e0;
+}
+
+.po-size-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.po-size-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.po-quantity-control {
+    display: flex;
+    align-items: center;
+}
+
+.po-quantity-control button {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    border: none;
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+.po-quantity-control input {
+    width: 40px;
+    height: 30px;
+    text-align: center;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    margin: 0 5px;
+}
+
+.po-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.po-cart-summary {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.po-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.po-table th,
+.po-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.po-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
 }
