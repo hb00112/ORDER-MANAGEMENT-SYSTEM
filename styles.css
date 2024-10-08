@@ -239,6 +239,7 @@ body {
     max-width: 800px;
     margin-top: 0px; /*HC TEXT HEIGHT*/
     padding-bottom: 350PX;
+    overflow: hidden;
 
     
 
