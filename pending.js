@@ -347,6 +347,7 @@ function displayDetailedOrders(orders, container) {
                     </button>
                     <div class="dropdown-menu" id="dropdown-${order.id}">
                         <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
+                        <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
                     </div>
                 </div>
             </div>
@@ -389,6 +390,16 @@ function displayDetailedOrders(orders, container) {
             dropdownMenu.style.display = 'none';
         });
 
+        // Add event listener for export action
+        const exportButton = orderDiv.querySelector('.export-order');
+        exportButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Export button clicked for order:', order.id);
+            exportOrderToExcel(order);
+            dropdownMenu.style.display = 'none';
+        });
+
         // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             dropdownMenu.style.display = 'none';
@@ -404,6 +415,98 @@ function displayDetailedOrders(orders, container) {
     initializeSRQInputs(container);
 }
 
+function exportOrderToExcel(order) {
+    console.log('Exporting order:', order);
+    const exportData = [];
+
+    order.items.forEach((item) => {
+        if (item.quantities && typeof item.quantities === 'object') {
+            Object.entries(item.quantities).forEach(([size, qty]) => {
+                if (qty > 0) {
+                    addExportDataRow(exportData, item.name, item.color, size, qty);
+                }
+            });
+        } else {
+            console.warn(`No quantities found for item: ${item.name}, color: ${item.color}`);
+        }
+    });
+
+    if (exportData.length === 0) {
+        console.error('No data to export');
+        alert('No data to export. Please check the order details.');
+        return;
+    }
+
+    // Create and download Excel file
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const colWidths = [
+        { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 10 },
+        { wch: 15 }, { wch: 15 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 10 }
+    ];
+    ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
+    XLSX.writeFile(wb, `purchase_order_${order.orderNumber || 'export'}.xlsx`);
+
+    setTimeout(() => {
+        const to = 'vishalkulkarni@modenik.in';
+        const cc = 'chandra.niwas@modenik.in,MANJUNATH.AVAROLKAR@modenik.in';
+        const subject = 'ENAMOR ORDER - KAMBESHWAR AGENCIES';
+        const body = `Dear Modenik Lifestyle Pvt Ltd (Enamor Division),
+
+I hope this email finds you well. Please find the attached Enamor order to this email.
+
+Thank you for your attention to this matter.
+
+Best regards,
+Kambeshwar Agencies`;
+
+        const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        window.open(gmailComposeUrl, '_blank');
+    }, 1000); // Delay of 1 second to ensure the file is downloaded before opening Gmail
+}
+
+function addExportDataRow(exportData, itemName, color, size, qty) {
+    console.log(`Attempting to match: Style=${itemName}, Color=${color}, Size=${size}`);
+    const matchingEntry = purchaseOrderData.find(entry => 
+        entry.style.trim().toLowerCase() === itemName.trim().toLowerCase() &&
+        entry.color.trim().toLowerCase() === color.trim().toLowerCase() &&
+        entry.size.trim().toLowerCase() === size.trim().toLowerCase()
+    );
+
+    if (matchingEntry) {
+        console.log('Matching entry found:', matchingEntry);
+        exportData.push({
+            'Material Code': matchingEntry.materialCode,
+            'Category': matchingEntry.category,
+            'Style': matchingEntry.style,
+            'Description': matchingEntry.description,
+            'Color': matchingEntry.color,
+            'Color Name': matchingEntry.colorName,
+            'Style-Color': matchingEntry.stylecol,
+            'Size': matchingEntry.size,
+            'MRP': matchingEntry.mrp,
+            'Pack Size': matchingEntry.packsize,
+            'Quantity': qty
+        });
+    } else {
+        console.log('No matching entry found. Adding new entry.');
+        exportData.push({
+            'Material Code': 'N/A',
+            'Category': 'N/A',
+            'Style': itemName,
+            'Description': 'N/A',
+            'Color': color,
+            'Color Name': 'N/A',
+            'Style-Color': 'N/A',
+            'Size': size,
+            'MRP': 'N/A',
+            'Pack Size': 'N/A',
+            'Quantity': qty
+        });
+    }
+}
 function generateOrderItemRows(items, orderId) {
     if (!items || !Array.isArray(items) || items.length === 0) {
         return '<tr><td colspan="3">No items found for this order</td></tr>';
