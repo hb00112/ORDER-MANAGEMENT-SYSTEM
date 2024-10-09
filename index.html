@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="https://i.postimg.cc/zBtj21zX/Untitled-design-6.png" type="image/png">
+    <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <meta name="theme-color" content="#4285f4">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -62,6 +62,8 @@
         <a href="#" data-section="userManagement">User Management</a>
         <a href="#" data-section="stockUpdation">Stock Updation</a>
         <a href="#" data-section="stock">Stock</a>
+        <a href="#" data-section="purchaseorder">Purchase Order</a>
+        
         
     </div>
     
@@ -92,7 +94,75 @@
             <strong>NOTE:</strong> Once the XLS file is uploaded, the current stock data will be completely reset and replaced with the new data from the file. This action cannot be undone, so please ensure that the file is accurate before proceeding. Any errors may result in incorrect stock levels. Upload the file carefully to avoid potential issues.
         </div>
     </div>
+    <div id="purchaseorder" class="section">
+        <h4>Purchase Orders</h4>
+        <p>Purchase orders will be displayed here.</p>
+        <button id="purchaseFormatBtn" class="purchase-order-button">Purchase Format</button>
+        <button id="placeOrderBtn" class="place-order-button">Place Order</button>
     
+        <!-- Place Order Modal -->
+        <div id="placeOrderModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2>Place Order</h2>
+                <div id="poStyleGrid" class="po-grid"></div>
+            </div>
+        </div>
+    
+        <!-- Color Modal -->
+        <div id="poColorModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2 id="poColorModalTitle">Colors for Style</h2>
+                <div id="poColorGrid" class="po-grid"></div>
+            </div>
+        </div>
+    
+        <!-- Size Modal -->
+        <div id="poSizeModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2 id="poSizeModalTitle">Sizes for Style</h2>
+                <h3 id="poSizeModalSubtitle">Color</h3>
+                <div id="poSizeGrid" class="po-size-grid"></div>
+                <button id="poSaveButton" class="po-button">Save to Cart</button>
+            </div>
+        </div>
+    
+        <!-- Cart Summary -->
+        <div id="poCartSummary" class="po-cart-summary">
+            <span id="poCartItemCount">Cart: 0 items</span>
+            <button id="poViewOrderBtn" class="po-button">View Order</button>
+        </div>
+    
+        <!-- Cart Modal -->
+        <div id="poCartModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2>Cart Summary</h2>
+                <table id="poCartTable" class="po-table">
+                    <thead>
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Category</th>
+                            <th>Style</th>
+                            <th>Description</th>
+                            <th>Color</th>
+                            <th>Color Name</th>
+                            <th>Stylecol</th>
+                            <th>Size</th>
+                            <th>MRP</th>
+                            <th>Pack Size</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poCartTableBody"></tbody>
+                </table>
+                <button id="poExportBtn" class="po-button">Export to Excel</button>
+            </div>
+        </div>
+    </div>
+
     <div id="stock" class="section">
         <h4>Stock</h4>
         <div id="stockList" class="stock-grid">
@@ -204,7 +274,7 @@
                     <span class="ms-2">Detailed</span>
                 </div>
             </div>
-            <button id="filterButton" class="btn btn-success" style="width: 95px; height: 28px;">Filter</button>
+            <button id="filterButton" class="btn btn-success" style="width: 100px; height: 30px;">Filter</button>
             <button id="clearFiltersButton" class="btn btn-secondary">Clear Filters</button>
             <table class="table table-sm">
                 <thead id="pendingOrdersHeadDetailed">
