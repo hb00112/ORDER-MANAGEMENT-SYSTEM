@@ -913,11 +913,7 @@ function getBackgroundColor(color) {
       'MNPP': 'url("https://www.enamor.co.in/cdn/shop/products/f097_midnight_peony_print_7.jpg?v=1700657442")0% 30% /  500% no-repeat',
       'LCR': 'url("https://www.enamor.co.in/cdn/shop/products/6_459_17.jpg?v=1676464469")100% 30% /  500% no-repeat',
       'NISH':'#372C3B',
-      'MCP': 'MULTI COLOR PRINT',
-      'MCS': 'MULTI COLOR SOLID',
-      'MCD': 'MULTI COLOR DARK',
-      'MCM': 'MULTI COLOR MEDIUM',
-      'MCR': 'MULTI COLORS',
+    
       'NAVY': '#242638',
       'GOBBLU': '#A5BBCF',
       'JETBLK': '#000000',
