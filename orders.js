@@ -2039,7 +2039,7 @@ function sendWebPushNotification(partyName) {
     title: 'KA OMS',
     message: `New Order for ${partyName}`,
     target_url: 'https://ka-oms.netlify.app', // Replace with your website URL
-    icon: 'https://i.postimg.cc/jdBp5rj2/Untitled-design-5.png'
+    icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
   };
 
   fetch('https://api.webpushr.com/v1/notification/send/all', {
