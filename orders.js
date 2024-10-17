@@ -913,7 +913,7 @@ function getBackgroundColor(color) {
       'MNPP': 'url("https://www.enamor.co.in/cdn/shop/products/f097_midnight_peony_print_7.jpg?v=1700657442")0% 30% /  500% no-repeat',
       'LCR': 'url("https://www.enamor.co.in/cdn/shop/products/6_459_17.jpg?v=1676464469")100% 30% /  500% no-repeat',
       'NISH':'#372C3B',
-    
+     
       'NAVY': '#242638',
       'GOBBLU': '#A5BBCF',
       'JETBLK': '#000000',
@@ -2025,11 +2025,18 @@ function showOrderConfirmationModal(order, imgData) {
 
   // Send notification to Telegram
   sendTelegramNotification(order.partyName, order.totalQuantity, order.orderNumber, imgData);
-
+  sendWebPushNotification(order.partyName);
   // Update pending orders list
   loadPendingOrders();
 }
-
+function sendWebPushNotification(partyName) {
+  webpushr('send', {
+    title: 'New Order',
+    message: `New Order: ${partyName}`,
+    icon: 'https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png',
+    // You can add more options here as needed
+  });
+}
 // Helper function to create the modal structure
 function createModal(partyName, dateTime, orderNumber) {
   const modal = document.createElement('div');
