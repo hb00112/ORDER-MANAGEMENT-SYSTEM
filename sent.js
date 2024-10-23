@@ -1,36 +1,63 @@
 function loadSentOrders() {
     const sentOrdersContainer = document.getElementById('sentOrdersContainer');
-    sentOrdersContainer.innerHTML = '';
+    if (!sentOrdersContainer) return;
+    
+    sentOrdersContainer.innerHTML = '<p>Loading orders...</p>';
+
+    // Add error handling for Firebase
+    if (!firebase?.database) {
+        sentOrdersContainer.innerHTML = '<p>Error: Firebase not initialized</p>';
+        return;
+    }
 
     firebase.database().ref('sentOrders').orderByChild('billingDate').limitToLast(10).once('value')
         .then(snapshot => {
             if (snapshot.exists()) {
                 const orders = [];
-                snapshot.forEach(childSnapshot => {
-                    orders.push({ key: childSnapshot.key, ...childSnapshot.val() });
-                });
-                
-                // Sort orders by billing date in descending order
-                orders.sort((a, b) => {
-                    const dateA = a.billingDate ? new Date(a.billingDate) : new Date(0);
-                    const dateB = b.billingDate ? new Date(b.billingDate) : new Date(0);
-                    return dateB - dateA;
-                });
-                
-                // Merge orders with same order number and bill date
-                const mergedOrders = mergeOrders(orders);
-                
-                mergedOrders.forEach((order, index) => {
-                    const orderElement = createSentOrderElement(order, index);
-                    sentOrdersContainer.appendChild(orderElement);
-                });
+                try {
+                    snapshot.forEach(childSnapshot => {
+                        const order = childSnapshot.val();
+                        if (order && typeof order === 'object') {
+                            orders.push({ 
+                                key: childSnapshot.key, 
+                                ...order,
+                                // Ensure partyName is always defined
+                                partyName: order.partyName || 'Unknown'
+                            });
+                        }
+                    });
+                    
+                    // Sort orders by billing date in descending order
+                    orders.sort((a, b) => {
+                        const dateA = a.billingDate ? new Date(a.billingDate) : new Date(0);
+                        const dateB = b.billingDate ? new Date(b.billingDate) : new Date(0);
+                        return dateB - dateA;
+                    });
+                    
+                    // Merge orders with same order number and bill date
+                    const mergedOrders = mergeOrders(orders);
+                    
+                    if (mergedOrders.length === 0) {
+                        sentOrdersContainer.innerHTML = '<p>No orders found</p>';
+                        return;
+                    }
+
+                    sentOrdersContainer.innerHTML = ''; // Clear loading message
+                    mergedOrders.forEach((order, index) => {
+                        const orderElement = createSentOrderElement(order, index);
+                        sentOrdersContainer.appendChild(orderElement);
+                    });
+                } catch (error) {
+                    console.error("Error processing orders: ", error);
+                    sentOrdersContainer.innerHTML = '<p>Error processing orders</p>';
+                }
             } else {
                 sentOrdersContainer.innerHTML = '<p>No sent orders</p>';
             }
         })
         .catch(error => {
             console.error("Error loading sent orders: ", error);
-            sentOrdersContainer.innerHTML = '<p>Error loading sent orders</p>';
+            sentOrdersContainer.innerHTML = '<p>Error loading sent orders: ' + error.message + '</p>';
         });
 }
 
@@ -38,32 +65,40 @@ function mergeOrders(orders) {
     const mergedOrdersMap = new Map();
 
     orders.forEach(order => {
-        const key = `${order.orderNumber}_${formatDateOnly(order.billingDate)}`;
-        if (!mergedOrdersMap.has(key)) {
-            mergedOrdersMap.set(key, { ...order, partyNames: new Set([order.partyName]) });
-        } else {
-            const existingOrder = mergedOrdersMap.get(key);
-            existingOrder.partyNames.add(order.partyName);
-            // Merge billedQuantities
-            Object.entries(order.billedQuantities || {}).forEach(([item, colors]) => {
-                if (!existingOrder.billedQuantities[item]) {
-                    existingOrder.billedQuantities[item] = colors;
-                } else {
-                    Object.entries(colors).forEach(([color, sizes]) => {
-                        if (!existingOrder.billedQuantities[item][color]) {
-                            existingOrder.billedQuantities[item][color] = sizes;
+        try {
+            const key = `${order.orderNumber || 'unknown'}_${formatDateOnly(order.billingDate)}`;
+            if (!mergedOrdersMap.has(key)) {
+                mergedOrdersMap.set(key, { 
+                    ...order, 
+                    partyNames: new Set([order.partyName]),
+                    billedQuantities: order.billedQuantities || {}
+                });
+            } else {
+                const existingOrder = mergedOrdersMap.get(key);
+                existingOrder.partyNames.add(order.partyName);
+                
+                // Safely merge billedQuantities
+                if (order.billedQuantities && typeof order.billedQuantities === 'object') {
+                    Object.entries(order.billedQuantities).forEach(([item, colors]) => {
+                        if (!existingOrder.billedQuantities[item]) {
+                            existingOrder.billedQuantities[item] = colors;
                         } else {
-                            Object.entries(sizes).forEach(([size, quantity]) => {
-                                if (!existingOrder.billedQuantities[item][color][size]) {
-                                    existingOrder.billedQuantities[item][color][size] = quantity;
+                            Object.entries(colors).forEach(([color, sizes]) => {
+                                if (!existingOrder.billedQuantities[item][color]) {
+                                    existingOrder.billedQuantities[item][color] = sizes;
                                 } else {
-                                    existingOrder.billedQuantities[item][color][size] += quantity;
+                                    Object.entries(sizes).forEach(([size, quantity]) => {
+                                        const existingQty = existingOrder.billedQuantities[item][color][size] || 0;
+                                        existingOrder.billedQuantities[item][color][size] = existingQty + (quantity || 0);
+                                    });
                                 }
                             });
                         }
                     });
                 }
-            });
+            }
+        } catch (error) {
+            console.error("Error merging order:", error, order);
         }
     });
 
