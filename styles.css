@@ -1939,3 +1939,11 @@ project/
     text-decoration: none;
     background-color: #f5f5f5;
 }
+
+.bg-warning-light {
+    background-color: rgba(85, 2, 2, 0.5) !important;
+}
+
+.bg-info-light {
+    background-color: rgba(85, 2, 2, 0.5) !important;
+}
