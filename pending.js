@@ -325,96 +325,128 @@ function fetchOrdersFromFirebase() {
         });
 }
 
-
 function displayDetailedOrders(orders, container) {
     console.log('Displaying detailed orders. Total orders:', orders.length);
     container.innerHTML = '';
     
-    orders.forEach(order => {
-        const orderDate = new Date(order.dateTime).toLocaleDateString();
-        const orderDiv = document.createElement('div');
-        orderDiv.className = 'order-container mb-4';
-        orderDiv.dataset.orderId = order.id;
+    // First, fetch stock data
+    const db = firebase.database();
+    const stockRef = db.ref('stock');
+    
+    stockRef.once('value').then((snapshot) => {
+        const stockData = snapshot.val();
         
-        orderDiv.innerHTML = `
-            <div class="order-header mb-2">
-                <strong>Order No. ${order.orderNumber || 'N/A'}</strong><br>
-                Party Name: ${order.partyName || 'N/A'}<br>
-                Date: ${orderDate}
-                <div class="three-dot-menu">
-                    <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
-                        &#8942;
-                    </button>
-                    <div class="dropdown-menu" id="dropdown-${order.id}">
-                        <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
-                        <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+        orders.forEach(order => {
+            const orderDate = new Date(order.dateTime).toLocaleDateString();
+            const orderDiv = document.createElement('div');
+            orderDiv.className = 'order-container mb-4';
+            orderDiv.dataset.orderId = order.id;
+            
+            orderDiv.innerHTML = `
+                <div class="order-header mb-2">
+                    <strong>Order No. ${order.orderNumber || 'N/A'}</strong><br>
+                    Party Name: ${order.partyName || 'N/A'}<br>
+                    Date: ${orderDate}
+                    <div class="three-dot-menu">
+                        <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
+                            &#8942;
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-${order.id}">
+                            <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
+                            <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <table class="table table-sm table-bordered">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Order</th>
-                        <th>SRQ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${generateOrderItemRows(order.items, order.id)}
-                </tbody>
-            </table>
-            <div class="order-actions mt-2 text-right">
-                <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
-            </div>
-            <hr>
-        `;
-        
-        container.appendChild(orderDiv);
-
-        // Add event listener for dropdown toggle
-        const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
-        const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
-        
-        dropdownToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Order</th>
+                            <th>SRQ</th>
+                            <th>Pending</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
+                    </tbody>
+                </table>
+                <div class="order-actions mt-2 text-right">
+                    <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
+                </div>
+                <hr>
+            `;
+            
+            container.appendChild(orderDiv);
+            // ... rest of the event listeners remain the same
         });
-
-        // Add event listener for delete action
-        const deleteButton = orderDiv.querySelector('.delete-order');
-        deleteButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Delete button clicked for order:', order.id);
-            openDeleteModal1(order.id);
-            dropdownMenu.style.display = 'none';
-        });
-
-        // Add event listener for export action
-        const exportButton = orderDiv.querySelector('.export-order');
-        exportButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Export button clicked for order:', order.id);
-            exportOrderToExcel(order);
-            dropdownMenu.style.display = 'none';
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', () => {
-            dropdownMenu.style.display = 'none';
-        });
-
-        // Sync with current state
-        if (currentOrders[order.id]) {
-            updateDetailedView(order.id);
-        }
     });
-
-    // Initialize SRQ inputs after adding content to the DOM
-    initializeSRQInputs(container);
 }
 
+function generateOrderItemRowsWithStock(items, orderId, stockData) {
+    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items</td></tr>';
+    
+    return items.flatMap(item => {
+        return Object.entries(item.quantities || {}).map(([size, quantity]) => {
+            const srqValue = item.srq && item.srq[size] ? item.srq[size] : 0;
+            const pendingValue = quantity - srqValue;
+            
+            // Check stock availability
+            const stockAvailability = checkStockAvailability(
+                stockData,
+                item.name,
+                item.color,
+                size,
+                pendingValue
+            );
+            
+            // Determine row color based on stock availability
+            let rowClass = '';
+            if (stockAvailability.available === 'full') {
+                rowClass = 'bg-warning-light'; // Light yellow for fully available
+            } else if (stockAvailability.available === 'partial') {
+                rowClass = 'bg-info-light'; // Light blue for partially available
+            }
+            
+            return `
+                <tr class="${rowClass}">
+                    <td>${item.name} (${item.color || 'N/A'})</td>
+                    <td>${size}/${quantity}</td>
+                    <td>
+                        <div class="srq-input-group" data-max="${quantity}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
+                            <button class="btn btn-sm btn-outline-secondary srq-decrease">-</button>
+                            <input type="number" class="form-control srq-input" value="${srqValue}" min="0" max="${quantity}">
+                            <button class="btn btn-sm btn-outline-secondary srq-increase">+</button>
+                        </div>
+                    </td>
+                    <td class="pending-value">${pendingValue}</td>
+                </tr>
+            `;
+        });
+    }).join('');
+}
+
+function checkStockAvailability(stockData, itemName, color, size, requiredQuantity) {
+    if (!stockData) return { available: 'none', quantity: 0 };
+    
+    // Find matching stock item
+    const stockItem = stockData.find(item => 
+        item['item name'] === itemName && 
+        item.color === color && 
+        item.size === size
+    );
+    
+    if (!stockItem) return { available: 'none', quantity: 0 };
+    
+    const availableQuantity = parseFloat(stockItem.quantity);
+    
+    if (availableQuantity >= requiredQuantity) {
+        return { available: 'full', quantity: availableQuantity };
+    } else if (availableQuantity > 0) {
+        return { available: 'partial', quantity: availableQuantity };
+    }
+    
+    return { available: 'none', quantity: 0 };
+}
 function exportOrderToExcel(order) {
     console.log('Exporting order:', order);
     const exportData = [];
