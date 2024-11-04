@@ -325,23 +325,31 @@ function fetchOrdersFromFirebase() {
         });
 }
 
+
 function displayDetailedOrders(orders, container) {
     console.log('Displaying detailed orders. Total orders:', orders.length);
     container.innerHTML = '';
-    
-    // First, fetch stock data
-    const db = firebase.database();
-    const stockRef = db.ref('stock');
-    
-    stockRef.once('value').then((snapshot) => {
-        const stockData = snapshot.val();
-        
+
+    // Add CSS styles for stock availability
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        .stock-full {
+            background-color: #FFFACD !important; /* Light yellow */
+        }
+        .stock-partial {
+            background-color: #E3F2FD !important; /* Light blue */
+        }
+    `;
+    document.head.appendChild(styleElement);
+
+    // Get stock data from IndexedDB
+    getStockData().then(stockData => {
         orders.forEach(order => {
             const orderDate = new Date(order.dateTime).toLocaleDateString();
             const orderDiv = document.createElement('div');
             orderDiv.className = 'order-container mb-4';
             orderDiv.dataset.orderId = order.id;
-            
+
             orderDiv.innerHTML = `
                 <div class="order-header mb-2">
                     <strong>Order No. ${order.orderNumber || 'N/A'}</strong><br>
@@ -363,7 +371,6 @@ function displayDetailedOrders(orders, container) {
                             <th>Item Name</th>
                             <th>Order</th>
                             <th>SRQ</th>
-                            <th>Pending</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -375,77 +382,114 @@ function displayDetailedOrders(orders, container) {
                 </div>
                 <hr>
             `;
-            
+
             container.appendChild(orderDiv);
-            // ... rest of the event listeners remain the same
+
+            // Add existing event listeners
+            const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
+            const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
+
+            dropdownToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            const deleteButton = orderDiv.querySelector('.delete-order');
+            deleteButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Delete button clicked for order:', order.id);
+                openDeleteModal1(order.id);
+                dropdownMenu.style.display = 'none';
+            });
+
+            const exportButton = orderDiv.querySelector('.export-order');
+            exportButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Export button clicked for order:', order.id);
+                exportOrderToExcel(order);
+                dropdownMenu.style.display = 'none';
+            });
+
+            document.addEventListener('click', () => {
+                dropdownMenu.style.display = 'none';
+            });
+
+            if (currentOrders[order.id]) {
+                updateDetailedView(order.id);
+            }
         });
+
+        // Initialize SRQ inputs after adding content to the DOM
+        initializeSRQInputs(container);
+    });
+}
+
+// Function to get stock data from IndexedDB
+function getStockData() {
+    return new Promise((resolve, reject) => {
+        const transaction = stockIndexedDB.transaction([STOCK_STORE_NAME], "readonly");
+        const objectStore = transaction.objectStore(STOCK_STORE_NAME);
+        const request = objectStore.getAll();
+
+        request.onsuccess = (event) => {
+            resolve(event.target.result);
+        };
+
+        request.onerror = (event) => {
+            console.error("Error fetching stock data:", event.target.error);
+            resolve([]); // Return empty array in case of error
+        };
     });
 }
 
 function generateOrderItemRowsWithStock(items, orderId, stockData) {
-    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items</td></tr>';
-    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return '<tr><td colspan="3">No items found for this order</td></tr>';
+    }
+
     return items.flatMap(item => {
-        return Object.entries(item.quantities || {}).map(([size, quantity]) => {
+        if (!item || !item.quantities || typeof item.quantities !== 'object') {
+            console.warn(`Invalid item structure for order ${orderId}:`, item);
+            return '';
+        }
+
+        return Object.entries(item.quantities).map(([size, quantity]) => {
             const srqValue = item.srq && item.srq[size] ? item.srq[size] : 0;
-            const pendingValue = quantity - srqValue;
             
             // Check stock availability
-            const stockAvailability = checkStockAvailability(
-                stockData,
-                item.name,
-                item.color,
-                size,
-                pendingValue
+            const stockItem = stockData.find(stock => 
+                stock['item name'] === item.name && 
+                stock.color === item.color && 
+                stock.size === size
             );
             
-            // Determine row color based on stock availability
-            let rowClass = '';
-            if (stockAvailability.available === 'full') {
-                rowClass = 'bg-warning-light'; // Light yellow for fully available
-            } else if (stockAvailability.available === 'partial') {
-                rowClass = 'bg-info-light'; // Light blue for partially available
-            }
+            const stockQuantity = stockItem ? parseFloat(stockItem.quantity) : 0;
+            let stockClass = '';
             
+            // Determine row color based on stock availability
+            if (stockQuantity >= quantity) {
+                stockClass = 'stock-full';
+            } else if (stockQuantity > 0) {
+                stockClass = 'stock-partial';
+            }
+
             return `
-                <tr class="${rowClass}">
-                    <td>${item.name} (${item.color || 'N/A'})</td>
+                <tr class="${stockClass}">
+                    <td>${item.name || 'Unknown'}(${item.color || 'N/A'})</td>
                     <td>${size}/${quantity}</td>
                     <td>
-                        <div class="srq-input-group" data-max="${quantity}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
+                        <div class="srq-input-group" data-max="${quantity}" data-item="${item.name || 'Unknown'}" data-color="${item.color || 'N/A'}" data-size="${size}">
                             <button class="btn btn-sm btn-outline-secondary srq-decrease">-</button>
                             <input type="number" class="form-control srq-input" value="${srqValue}" min="0" max="${quantity}">
                             <button class="btn btn-sm btn-outline-secondary srq-increase">+</button>
                         </div>
                     </td>
-                    <td class="pending-value">${pendingValue}</td>
                 </tr>
             `;
         });
     }).join('');
-}
-
-function checkStockAvailability(stockData, itemName, color, size, requiredQuantity) {
-    if (!stockData) return { available: 'none', quantity: 0 };
-    
-    // Find matching stock item
-    const stockItem = stockData.find(item => 
-        item['item name'] === itemName && 
-        item.color === color && 
-        item.size === size
-    );
-    
-    if (!stockItem) return { available: 'none', quantity: 0 };
-    
-    const availableQuantity = parseFloat(stockItem.quantity);
-    
-    if (availableQuantity >= requiredQuantity) {
-        return { available: 'full', quantity: availableQuantity };
-    } else if (availableQuantity > 0) {
-        return { available: 'partial', quantity: availableQuantity };
-    }
-    
-    return { available: 'none', quantity: 0 };
 }
 function exportOrderToExcel(order) {
     console.log('Exporting order:', order);
