@@ -374,126 +374,119 @@ function displayDetailedOrders(orders, container) {
 
     // Get stock data from IndexedDB
     getStockData().then(stockData => {
-        // Get export status data from Firebase
-        getExportStatusFromFirebase().then(exportStatus => {
-            orders.forEach(order => {
-                const orderDate = new Date(order.dateTime).toLocaleDateString();
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order-container mb-4';
-                orderDiv.dataset.orderId = order.id;
+        // Get export status data from local storage
+        const exportStatus = getExportStatusFromLocalStorage();
 
-                const isExported = exportStatus[order.id] || false;
-                const statusIcon = isExported ? '✓' : '✕';
-                const statusClass = isExported ? 'status-tick' : 'status-cross';
+        orders.forEach(order => {
+            const orderDate = new Date(order.dateTime).toLocaleDateString();
+            const orderDiv = document.createElement('div');
+            orderDiv.className = 'order-container mb-4';
+            orderDiv.dataset.orderId = order.id;
 
-                orderDiv.innerHTML = `
-                    <div class="order-header mb-2">
-                        <div class="order-number-line">
-                            <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
-                            <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
-                        </div>
-                        <div class="order-details">
-                            Party Name: ${order.partyName || 'N/A'}<br>
-                            Date: ${orderDate}
-                        </div>
-                        <div class="three-dot-menu">
-                            <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
-                                &#8942;
-                            </button>
-                            <div class="dropdown-menu" id="dropdown-${order.id}">
-                                <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
-                                <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
-                            </div>
+            const isExported = exportStatus[order.id] || false;
+            const statusIcon = isExported ? '✓' : '✕';
+            const statusClass = isExported ? 'status-tick' : 'status-cross';
+
+            orderDiv.innerHTML = `
+                <div class="order-header mb-2">
+                    <div class="order-number-line">
+                        <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
+                        <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
+                    </div>
+                    <div class="order-details">
+                        Party Name: ${order.partyName || 'N/A'}<br>
+                        Date: ${orderDate}
+                    </div>
+                    <div class="three-dot-menu">
+                        <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
+                            &#8942;
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-${order.id}">
+                            <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
+                            <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
                         </div>
                     </div>
-                    <table class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Order</th>
-                                <th>SRQ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
-                        </tbody>
-                    </table>
-                    <div class="order-actions mt-2 text-right">
-                        <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
-                    </div>
-                    <hr>
-                `;
+                </div>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Order</th>
+                            <th>SRQ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
+                    </tbody>
+                </table>
+                <div class="order-actions mt-2 text-right">
+                    <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
+                </div>
+                <hr>
+            `;
 
-                container.appendChild(orderDiv);
+            container.appendChild(orderDiv);
 
-                // Add existing event listeners
-                const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
-                const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
+            // Add event listeners
+            const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
+            const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
 
-                dropdownToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-                });
-
-                const deleteButton = orderDiv.querySelector('.delete-order');
-                deleteButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Delete button clicked for order:', order.id);
-                    openDeleteModal1(order.id);
-                    dropdownMenu.style.display = 'none';
-                });
-
-                const exportButton = orderDiv.querySelector('.export-order');
-                exportButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Export button clicked for order:', order.id);
-                    exportOrderToExcel(order);
-                    updateExportStatus(order.id, true);
-                    const statusIcon = orderDiv.querySelector(`#status-${order.id}`);
-                    statusIcon.textContent = '✓';
-                    statusIcon.classList.remove('status-cross');
-                    statusIcon.classList.add('status-tick');
-                    dropdownMenu.style.display = 'none';
-                });
-
-                document.addEventListener('click', () => {
-                    dropdownMenu.style.display = 'none';
-                });
-
-                if (currentOrders[order.id]) {
-                    updateDetailedView(order.id);
-                }
+            dropdownToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
             });
 
-            // Initialize SRQ inputs after adding content to the DOM
-            initializeSRQInputs(container);
+            const deleteButton = orderDiv.querySelector('.delete-order');
+            deleteButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Delete button clicked for order:', order.id);
+                openDeleteModal1(order.id);
+                dropdownMenu.style.display = 'none';
+            });
+
+            const exportButton = orderDiv.querySelector('.export-order');
+            exportButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Export button clicked for order:', order.id);
+                exportOrderToExcel(order);
+                updateExportStatus(order.id, true);
+                const statusIcon = orderDiv.querySelector(`#status-${order.id}`);
+                statusIcon.textContent = '✓';
+                statusIcon.classList.remove('status-cross');
+                statusIcon.classList.add('status-tick');
+                dropdownMenu.style.display = 'none';
+            });
+
+            document.addEventListener('click', () => {
+                dropdownMenu.style.display = 'none';
+            });
+
+            if (currentOrders[order.id]) {
+                updateDetailedView(order.id);
+            }
         });
+
+        // Initialize SRQ inputs after adding content to the DOM
+        initializeSRQInputs(container);
     });
 }
 
-// Firebase functions remain the same
-async function getExportStatusFromFirebase() {
-    try {
-        const exportStatusRef = ref(database, 'orderExportStatus');
-        const snapshot = await get(exportStatusRef);
-        return snapshot.exists() ? snapshot.val() : {};
-    } catch (error) {
-        console.error('Error getting export status:', error);
-        return {};
-    }
+// Local storage functions
+function getExportStatusFromLocalStorage() {
+    const exportStatusString = localStorage.getItem('exportStatus');
+    return exportStatusString ? JSON.parse(exportStatusString) : {};
 }
 
-async function updateExportStatus(orderId, isExported) {
-    try {
-        const exportStatusRef = ref(database, `orderExportStatus/${orderId}`);
-        await set(exportStatusRef, isExported);
-        console.log('Export status updated successfully');
-    } catch (error) {
-        console.error('Error updating export status:', error);
-    }
+function updateExportStatus(orderId, isExported) {
+    const exportStatus = getExportStatusFromLocalStorage();
+    exportStatus[orderId] = isExported;
+    localStorage.setItem('exportStatus', JSON.stringify(exportStatus));
+    console.log('Export status updated successfully');
 }
+
+// Remaining functions (getStockData, generateOrderItemRowsWithStock, openDeleteModal1, exportOrderToExcel, updateDetailedView, initializeSRQInputs) remain the same
 // Function to get stock data from IndexedDB
 function getStockData() {
     return new Promise((resolve, reject) => {
