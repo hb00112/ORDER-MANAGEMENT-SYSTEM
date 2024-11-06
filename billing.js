@@ -96,7 +96,7 @@ document.getElementById('billingOrders').addEventListener('click', function(e) {
 // Enhanced billing system functions
 async function billOrder(orderId) {
     try {
-        const orderContainer = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-container');
+        const orderContainer = document.querySelector(`.order-container:has([data-order-id="${orderId}"])`);
         if (!orderContainer) {
             throw new Error("Order container not found");
         }
@@ -108,39 +108,76 @@ async function billOrder(orderId) {
             throw new Error("Order not found in database");
         }
 
-        // Collect billed quantities
+        // Collect billed quantities with enhanced validation
         const billQuantities = {};
         const billedItems = [];
-        orderContainer.querySelectorAll('.bill-quantity').forEach(input => {
-            const item = input.getAttribute('data-item');
-            const color = input.getAttribute('data-color');
-            const size = input.getAttribute('data-size');
-            const billedQty = parseInt(input.value);
-            
-            if (billedQty > 0) {
-                if (!billQuantities[item]) billQuantities[item] = {};
-                if (!billQuantities[item][color]) billQuantities[item][color] = {};
-                billQuantities[item][color][size] = billedQty;
-
-                billedItems.push({
-                    name: item,
-                    color: color,
-                    size: size,
-                    quantity: billedQty
-                });
-            }
-        });
-
-        if (Object.keys(billQuantities).length === 0) {
-            throw new Error("No items selected for billing");
+        let hasValidBilledItems = false;
+        
+        // Process each item in the order
+        if (originalOrder.items && Array.isArray(originalOrder.items)) {
+            originalOrder.items.forEach(item => {
+                const itemName = item.name;
+                if (item.colors) {
+                    Object.entries(item.colors).forEach(([color, sizes]) => {
+                        Object.entries(sizes).forEach(([size, maxQty]) => {
+                            // Find corresponding input in the DOM
+                            const input = orderContainer.querySelector(
+                                `.bill-quantity[data-item="${itemName}"][data-color="${color}"][data-size="${size}"]`
+                            );
+                            
+                            if (input) {
+                                const billedQty = parseInt(input.value) || 0;
+                                if (billedQty > 0 && billedQty <= maxQty) {
+                                    hasValidBilledItems = true;
+                                    
+                                    // Initialize nested objects if they don't exist
+                                    if (!billQuantities[itemName]) billQuantities[itemName] = {};
+                                    if (!billQuantities[itemName][color]) billQuantities[itemName][color] = {};
+                                    
+                                    // Store the billed quantity
+                                    billQuantities[itemName][color][size] = billedQty;
+                                    
+                                    // Add to billedItems array
+                                    billedItems.push({
+                                        name: itemName,
+                                        color: color,
+                                        size: size,
+                                        quantity: billedQty
+                                    });
+                                }
+                            }
+                        });
+                    });
+                }
+            });
         }
 
-        // Create sent order object
+        if (!hasValidBilledItems) {
+            throw new Error("Please enter valid billing quantities for at least one item");
+        }
+
+        // Get the existing sent order, if any
+        const sentOrderSnapshot = await firebase.database().ref('sentOrders').orderByChild('orderNumber')
+            .equalTo(originalOrder.orderNumber)
+            .limitToFirst(1)
+            .once('value');
+        let existingSentOrder = null;
+        if (sentOrderSnapshot.exists()) {
+            existingSentOrder = sentOrderSnapshot.val();
+            existingSentOrder = Object.values(existingSentOrder)[0];
+        }
+
+        // Create new or update existing sent order object
         const sentOrder = {
             ...originalOrder,
-            billedItems: billedItems,
+            billedItems: existingSentOrder?.billedItems
+                ? mergeOrderItems(existingSentOrder.billedItems, billedItems)
+                : billedItems,
             billingDate: new Date().toISOString(),
-            status: 'completed'
+            status: 'completed',
+            orderNumber: originalOrder.orderNumber,
+            partyName: originalOrder.partyName,
+            date: originalOrder.date || new Date().toLocaleDateString()
         };
 
         // Start Firebase operations
@@ -149,7 +186,7 @@ async function billOrder(orderId) {
         // 1. Update stock quantities
         await updateStockQuantities(billQuantities);
 
-        // 2. Move order to sent orders (changed from completedOrders to sentOrders)
+        // 2. Move order to sent orders
         await db.ref('sentOrders').child(orderId).set(sentOrder);
 
         // 3. Remove from billing orders
@@ -159,17 +196,72 @@ async function billOrder(orderId) {
         await Promise.all([
             loadStockItemsFromFirebase(),
             loadBillingOrders(),
-            loadSentOrders() // Changed from loadCompletedOrders to loadSentOrders
+            loadSentOrders()
         ]);
 
-        alert('Order billed successfully!');
+        // Show success message
+        const successMessage = `Order ${sentOrder.orderNumber} billed successfully!`;
+        alert(successMessage);
 
     } catch (error) {
         console.error("Error in billOrder:", error);
-        alert(`Error processing order: ${error.message}`);
+        // Show more user-friendly error message
+        let errorMessage = "Error processing order: ";
+        if (error.message.includes("No items selected")) {
+            errorMessage += "Please select items to bill.";
+        } else if (error.message.includes("Order container not found")) {
+            errorMessage += "Could not find the order details. Please refresh the page.";
+        } else {
+            errorMessage += error.message;
+        }
+        alert(errorMessage);
     }
 }
 
+// Helper function to merge billed items
+function mergeOrderItems(existingItems, newItems) {
+    const mergedItems = [...existingItems];
+
+    newItems.forEach(newItem => {
+        const existingItemIndex = mergedItems.findIndex(item =>
+            item.name === newItem.name &&
+            item.color === newItem.color &&
+            item.size === newItem.size
+        );
+
+        if (existingItemIndex >= 0) {
+            mergedItems[existingItemIndex].quantity += newItem.quantity;
+        } else {
+            mergedItems.push({ ...newItem });
+        }
+    });
+
+    return mergedItems;
+}
+
+// Helper function to validate billing quantities
+function validateBillingQuantity(quantity, maxQuantity) {
+    const qty = parseInt(quantity);
+    return qty > 0 && qty <= maxQuantity;
+}
+
+// Event listener for quantity input validation
+function setupQuantityInputListeners() {
+    document.querySelectorAll('.bill-quantity').forEach(input => {
+        input.addEventListener('input', function(e) {
+            const value = parseInt(this.value);
+            const max = parseInt(this.getAttribute('max'));
+            
+            if (value < 0) this.value = 0;
+            if (value > max) this.value = max;
+        });
+    });
+}
+
+// Call this when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    setupQuantityInputListeners();
+});
 // Helper function to normalize order data
 
 // Updated normalizeOrderData function to properly handle billedItems
