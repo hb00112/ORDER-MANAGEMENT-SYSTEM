@@ -1,4 +1,4 @@
-/// Party data array - Add parties with either coordinates OR location link
+// Enhanced party data array with same structure
 const partyData = [
     {
         partyName: "ABC Company - Station A",
@@ -23,13 +23,11 @@ const partyData = [
     }
 ];
 
-// Function to parse party name and station
 function parsePartyString(partyString) {
     const [name, station] = partyString.split(' - ');
     return { name, station };
 }
 
-// Function to open map
 function openMap(index) {
     const party = partyData[index];
     if (party.locationLink) {
@@ -43,13 +41,15 @@ function getCurrentLocationAndSendMessage(partyName) {
     let map = null;
     let marker = null;
     let selectedPosition = null;
+    let mapInitialized = false;
 
-    // Create modal elements
+    // Create modal with loading state
     const modalHTML = `
         <div class="location-picker-modal-overlay">
             <div class="location-picker-modal-container">
                 <h3 class="location-picker-modal-title">Select Location</h3>
                 <div class="location-picker-loading">
+                    <div class="spinner"></div>
                     Getting your current location...
                 </div>
             </div>
@@ -57,24 +57,26 @@ function getCurrentLocationAndSendMessage(partyName) {
     `;
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-
     const modal = document.querySelector('.location-picker-modal-container');
 
+    // Enhanced custom icon with better visibility
     function createCustomIcon() {
         return L.divIcon({
             className: 'custom-map-marker',
             html: `
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="20" cy="20" r="8" fill="#2563eb"/>
-                    <circle cx="20" cy="20" r="6" fill="white"/>
-                    <circle cx="20" cy="20" r="4" fill="#2563eb"/>
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="10" fill="#2563eb"/>
+                    <circle cx="24" cy="24" r="8" fill="white"/>
+                    <circle cx="24" cy="24" r="6" fill="#2563eb"/>
+                    <circle cx="24" cy="24" r="2" fill="white"/>
                 </svg>
             `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
+            iconSize: [48, 48],
+            iconAnchor: [24, 24]
         });
     }
 
+    // Enhanced map initialization with better mobile handling
     function initializeMap(position) {
         modal.innerHTML = `
             <h3 class="location-picker-modal-title">Select Location</h3>
@@ -84,7 +86,7 @@ function getCurrentLocationAndSendMessage(partyName) {
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
-                    Drag the marker or click on the map to adjust location
+                    Drag marker or tap map to set location
                 </div>
             </div>
             <div class="location-picker-content">
@@ -96,82 +98,119 @@ function getCurrentLocationAndSendMessage(partyName) {
             </div>
         `;
 
-        // Initialize map
-        map = L.map('location-picker-map', {
-            zoomControl: false
-        }).setView([position.lat, position.lng], 17);
-
-        // Add tile layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 19
-        }).addTo(map);
-
-        // Add custom marker
-        marker = L.marker([position.lat, position.lng], {
-            draggable: true,
-            icon: createCustomIcon()
-        }).addTo(map);
-
-        selectedPosition = position;
-
-        // Handle marker drag
-        marker.on('dragend', function(event) {
-            const pos = marker.getLatLng();
-            selectedPosition = {
-                lat: pos.lat,
-                lng: pos.lng
-            };
-        });
-
-        // Handle map click
-        map.on('click', function(event) {
-            const pos = event.latlng;
-            marker.setLatLng(pos);
-            selectedPosition = {
-                lat: pos.lat,
-                lng: pos.lng
-            };
-        });
-
-        // Add zoom controls
-        L.control.zoom({
-            position: 'bottomright'
-        }).addTo(map);
-
-        // Add recenter button
-        const locationButton = L.control({position: 'bottomright'});
-        locationButton.onAdd = function(map) {
-            const btn = L.DomUtil.create('button', 'custom-map-button');
-            btn.innerHTML = '📍';
-            btn.style.cssText = `
-                width: 34px;
-                height: 34px;
-                background: white;
-                border: 2px solid rgba(0,0,0,0.2);
-                border-radius: 4px;
-                cursor: pointer;
-                margin-bottom: 10px;
-                font-size: 16px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            `;
-            
-            btn.onclick = function() {
-                map.setView([position.lat, position.lng], 17);
-                marker.setLatLng([position.lat, position.lng]);
-                selectedPosition = position;
-            };
-            
-            return btn;
+        // Initialize map with mobile-optimized options
+        const mapOptions = {
+            zoomControl: false,
+            tap: true, // Enable tap for mobile
+            touchZoom: true,
+            dragging: true,
+            maxZoom: 19,
+            minZoom: 3
         };
-        locationButton.addTo(map);
 
-        // Force map to update its size
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
+        try {
+            map = L.map('location-picker-map', mapOptions).setView([position.lat, position.lng], 17);
+
+            // Add detailed tile layer with satellite option
+            const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19,
+                crossOrigin: true
+            }).addTo(map);
+
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 19,
+                crossOrigin: true
+            });
+
+            // Add layer control
+            const baseMaps = {
+                "Streets": streets,
+                "Satellite": satellite
+            };
+
+            L.control.layers(baseMaps).addTo(map);
+
+            // Add marker with enhanced visibility
+            marker = L.marker([position.lat, position.lng], {
+                draggable: true,
+                icon: createCustomIcon()
+            }).addTo(map);
+
+            selectedPosition = position;
+
+            // Enhanced marker drag handling
+            marker.on('dragstart', function() {
+                map.removeEventListener('click');
+            });
+
+            marker.on('dragend', function(event) {
+                const pos = marker.getLatLng();
+                selectedPosition = {
+                    lat: pos.lat,
+                    lng: pos.lng
+                };
+                map.on('click', handleMapClick);
+            });
+
+            // Enhanced map click handling
+            function handleMapClick(event) {
+                const pos = event.latlng;
+                marker.setLatLng(pos);
+                selectedPosition = {
+                    lat: pos.lat,
+                    lng: pos.lng
+                };
+            }
+
+            map.on('click', handleMapClick);
+
+            // Add custom zoom controls
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(map);
+
+            // Add enhanced location button
+            const locationButton = L.control({position: 'bottomright'});
+            locationButton.onAdd = function(map) {
+                const btn = L.DomUtil.create('button', 'custom-map-button');
+                btn.innerHTML = '📍';
+                btn.style.cssText = `
+                    width: 40px;
+                    height: 40px;
+                    background: white;
+                    border: 2px solid rgba(0,0,0,0.2);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                `;
+                
+                btn.onclick = function() {
+                    map.setView([position.lat, position.lng], 17);
+                    marker.setLatLng([position.lat, position.lng]);
+                    selectedPosition = position;
+                };
+                
+                return btn;
+            };
+            locationButton.addTo(map);
+
+            // Force map to update its size
+            setTimeout(() => {
+                map.invalidateSize();
+                mapInitialized = true;
+            }, 250);
+
+        } catch (error) {
+            console.error('Map initialization error:', error);
+            showError('Failed to initialize map. Please try again.');
+        }
     }
 
     function showError(message) {
@@ -192,6 +231,7 @@ function getCurrentLocationAndSendMessage(partyName) {
         `;
     }
 
+    // Enhanced geolocation handling
     function getLocation() {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
@@ -221,7 +261,7 @@ function getCurrentLocationAndSendMessage(partyName) {
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 15000,
                     maximumAge: 0
                 }
             );
@@ -233,18 +273,22 @@ function getCurrentLocationAndSendMessage(partyName) {
     // Start getting location
     getLocation();
 
-    // Global functions
+    // Global functions with enhanced error handling
     window.closeLocationPicker = function() {
-        if (map) {
+        if (map && mapInitialized) {
             map.remove();
         }
-        document.querySelector('.location-picker-modal-overlay').remove();
+        const overlay = document.querySelector('.location-picker-modal-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
     };
 
     window.retryGeolocation = function() {
         modal.innerHTML = `
             <h3 class="location-picker-modal-title">Select Location</h3>
             <div class="location-picker-loading">
+                <div class="spinner"></div>
                 Getting your current location...
             </div>
         `;
@@ -268,7 +312,7 @@ function getCurrentLocationAndSendMessage(partyName) {
     };
 }
 
-// Function to create table rows
+// Table population function remains the same
 function populateTable() {
     const tableBody = document.getElementById('partyTableBody');
     tableBody.innerHTML = '';
@@ -304,17 +348,341 @@ function populateTable() {
     });
 }
 
-// Initial population of table
+// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
     populateTable();
 });
 
+function handleModalOpen() {
+    document.body.classList.add('modal-open');
+}
 
+function handleModalClose() {
+    document.body.classList.remove('modal-open');
+}
 
+function getCurrentLocationAndSendMessage(partyName) {
+    let map = null;
+    let marker = null;
+    let selectedPosition = null;
+    let mapInitialized = false;
 
+    // Handle body scroll
+    document.body.classList.add('modal-open');
 
+    // Create enhanced modal with loading state
+    const modalHTML = `
+        <div class="location-picker-modal-overlay">
+            <div class="location-picker-modal-container">
+                <h3 class="location-picker-modal-title">Select Location</h3>
+                <div class="location-picker-loading">
+                    <div class="spinner"></div>
+                    <div>Getting your current location...</div>
+                    <div style="font-size: 0.875em; color: #6b7280; margin-top: 8px;">
+                        Please allow location access if prompted
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = document.querySelector('.location-picker-modal-container');
 
+    // Enhanced custom icon creation
+    function createCustomIcon() {
+        return L.divIcon({
+            className: 'custom-map-marker',
+            html: `
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="10" fill="#2563eb"/>
+                    <circle cx="24" cy="24" r="8" fill="white"/>
+                    <circle cx="24" cy="24" r="6" fill="#2563eb"/>
+                    <circle cx="24" cy="24" r="2" fill="white"/>
+                </svg>
+            `,
+            iconSize: [48, 48],
+            iconAnchor: [24, 24]
+        });
+    }
+
+    // Enhanced map initialization with better mobile support
+    function initializeMap(position) {
+        modal.innerHTML = `
+            <h3 class="location-picker-modal-title">Select Location</h3>
+            <div class="location-picker-accuracy-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>Drag marker or tap map to set location</span>
+                </div>
+            </div>
+            <div class="location-picker-content">
+                <div id="location-picker-map" class="location-picker-map-canvas"></div>
+            </div>
+            <div class="location-picker-button-wrapper">
+                <button class="location-picker-button location-picker-button-cancel" onclick="window.closeLocationPicker()">Cancel</button>
+                <button class="location-picker-button location-picker-button-confirm" onclick="window.sendSelectedLocation()">Send Location</button>
+            </div>
+        `;
+
+        // Enhanced map options for better mobile performance
+        const mapOptions = {
+            zoomControl: false,
+            tap: true,
+            touchZoom: true,
+            dragging: true,
+            maxZoom: 19,
+            minZoom: 3,
+            bounceAtZoomLimits: false,
+            wheelDebounceTime: 100,
+            wheelPxPerZoomLevel: 100,
+            tapTolerance: 15,
+            touchZoomRotate: false
+        };
+
+        try {
+            // Initialize map with error handling
+            map = L.map('location-picker-map', mapOptions).setView([position.lat, position.lng], 17);
+
+            // Add detailed street map layer
+            const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19,
+                crossOrigin: true,
+                maxNativeZoom: 18,
+                detectRetina: true
+            }).addTo(map);
+
+            // Add satellite layer option
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 19,
+                crossOrigin: true,
+                maxNativeZoom: 18,
+                detectRetina: true
+            });
+
+            // Add layer control with enhanced styling
+            const baseMaps = {
+                "Streets": streets,
+                "Satellite": satellite
+            };
+
+            L.control.layers(baseMaps, null, {
+                position: 'bottomleft',
+                collapsed: true
+            }).addTo(map);
+
+            // Add enhanced marker
+            marker = L.marker([position.lat, position.lng], {
+                draggable: true,
+                icon: createCustomIcon()
+            }).addTo(map);
+
+            selectedPosition = position;
+
+            // Enhanced marker drag handling
+            let isDragging = false;
+            
+            marker.on('dragstart', function() {
+                isDragging = true;
+                map.removeEventListener('click');
+            });
+
+            marker.on('dragend', function(event) {
+                isDragging = false;
+                const pos = marker.getLatLng();
+                selectedPosition = {
+                    lat: pos.lat,
+                    lng: pos.lng
+                };
+                setTimeout(() => {
+                    map.on('click', handleMapClick);
+                }, 10);
+            });
+
+            // Enhanced map click handling with touch support
+            function handleMapClick(event) {
+                if (!isDragging) {
+                    const pos = event.latlng;
+                    marker.setLatLng(pos);
+                    selectedPosition = {
+                        lat: pos.lat,
+                        lng: pos.lng
+                    };
+                }
+            }
+
+            map.on('click', handleMapClick);
+
+            // Add custom zoom controls
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(map);
+
+            // Add enhanced location button
+            const locationButton = L.control({position: 'bottomright'});
+            locationButton.onAdd = function(map) {
+                const btn = L.DomUtil.create('button', 'custom-map-button');
+                btn.innerHTML = '📍';
+                btn.style.cssText = `
+                    width: 40px;
+                    height: 40px;
+                    background: white;
+                    border: 2px solid rgba(0,0,0,0.2);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                `;
+                
+                // Prevent default behaviors
+                L.DomEvent.disableClickPropagation(btn);
+                L.DomEvent.on(btn, 'touchstart', L.DomEvent.preventDefault);
+                
+                btn.onclick = function() {
+                    map.setView([position.lat, position.lng], 17, {
+                        animate: true,
+                        duration: 1
+                    });
+                    marker.setLatLng([position.lat, position.lng]);
+                    selectedPosition = position;
+                };
+                
+                return btn;
+            };
+            locationButton.addTo(map);
+
+            // Force map to update its size with retry mechanism
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            function tryInvalidateSize() {
+                if (map && document.getElementById('location-picker-map')) {
+                    map.invalidateSize();
+                    mapInitialized = true;
+                } else if (retryCount < maxRetries) {
+                    retryCount++;
+                    setTimeout(tryInvalidateSize, 100);
+                }
+            }
+
+            setTimeout(tryInvalidateSize, 250);
+
+        } catch (error) {
+            console.error('Map initialization error:', error);
+            showError('Failed to initialize map. Please try again.');
+        }
+    }
+
+    // Enhanced error display
+    function showError(message) {
+        modal.innerHTML = `
+            <h3 class="location-picker-modal-title">Location Error</h3>
+            <div class="location-picker-error">
+                <div style="margin-bottom: 12px;">${message}</div>
+                <button onclick="window.retryGeolocation()" class="location-picker-retry-button">
+                    Try Again
+                </button>
+            </div>
+            <div class="location-picker-button-wrapper">
+                <button class="location-picker-button location-picker-button-cancel" onclick="window.closeLocationPicker()">
+                    Cancel
+                </button>
+            </div>
+        `;
+    }
+
+    // Enhanced geolocation handling
+    function getLocation() {
+        if ("geolocation" in navigator) {
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    initializeMap(pos);
+                },
+                function(error) {
+                    let errorMsg = "Could not get your location. ";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += "Please enable location access in your browser settings.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += "Location information is unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += "Location request timed out.";
+                            break;
+                        default:
+                            errorMsg += "An unknown error occurred.";
+                    }
+                    showError(errorMsg);
+                },
+                options
+            );
+        } else {
+            showError("Geolocation is not supported by your browser.");
+        }
+    }
+
+    // Start getting location
+    getLocation();
+
+    // Global functions with enhanced error handling and cleanup
+    window.closeLocationPicker = function() {
+        if (map && mapInitialized) {
+            map.remove();
+        }
+        const overlay = document.querySelector('.location-picker-modal-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+        document.body.classList.remove('modal-open');
+    };
+
+    window.retryGeolocation = function() {
+        modal.innerHTML = `
+            <h3 class="location-picker-modal-title">Select Location</h3>
+            <div class="location-picker-loading">
+                <div class="spinner"></div>
+                <div>Getting your current location...</div>
+            </div>
+        `;
+        getLocation();
+    };
+
+    window.sendSelectedLocation = function() {
+        if (selectedPosition) {
+            const mapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedPosition.lat},${selectedPosition.lng}`;
+            const message = `Dear Sir,\n\n`
+                + `kindly add the below location for ${partyName}\n\n`
+                + `Location Link: ${mapsLink}\n\n`
+                + `thank you`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+            closeLocationPicker();
+        } else {
+            alert("Please select a location first");
+        }
+    };
+}
 
 
 
