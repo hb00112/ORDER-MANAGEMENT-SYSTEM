@@ -18,10 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loadApprovalRequests();
     });
     
-    document.getElementById('itemMasterBtn').addEventListener('click', function () {
-        showSection('itemMaster');
-        loadItemMaster();
-    });
+    
 
     const itemSearch = document.getElementById('itemSearch');
     itemSearch.addEventListener('input', function() {
@@ -145,11 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    document.getElementById('partyMasterBtn').addEventListener('click', function () {
-        showSection('partyMaster');
-        loadPartyMaster();
-    });
-
+   
     window.addEventListener('resize', adjustForMobileView);
     adjustForMobileView();
 
