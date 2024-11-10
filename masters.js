@@ -1,4 +1,4 @@
-// Party data array - Add parties with either coordinates OR location link
+/// Party data array - Add parties with either coordinates OR location link
 const partyData = [
     {
         partyName: "ABC Company - Station A",
@@ -10,8 +10,10 @@ const partyData = [
     },
     {
         partyName: "Baron - Panjim",
-        coordinates: {lat:15.498072678766361 , 
-            lng:73.82542972334339},
+        coordinates: {
+            lat: 15.498072678766361,
+            lng: 73.82542972334339
+        },
         locationLink: null
     },
     {
@@ -33,7 +35,6 @@ function openMap(index) {
     if (party.locationLink) {
         window.open(party.locationLink, '_blank');
     } else if (party.coordinates) {
-        // Using a simpler Google Maps URL format
         window.open(`https://www.google.com/maps/search/?api=1&query=${party.coordinates.lat},${party.coordinates.lng}`, '_blank');
     }
 }
@@ -42,26 +43,40 @@ function getCurrentLocationAndSendMessage(partyName) {
     let map = null;
     let marker = null;
     let selectedPosition = null;
-    
+
     // Create modal elements
-    const overlay = document.createElement('div');
-    overlay.className = 'location-picker-modal-overlay';
-    
-    const mapContainer = document.createElement('div');
-    mapContainer.className = 'location-picker-modal-container';
-    
-    mapContainer.innerHTML = `
-        <h3 class="location-picker-modal-title">Select Location</h3>
-        <div class="location-picker-loading">
-            Getting your current location...
+    const modalHTML = `
+        <div class="location-picker-modal-overlay">
+            <div class="location-picker-modal-container">
+                <h3 class="location-picker-modal-title">Select Location</h3>
+                <div class="location-picker-loading">
+                    Getting your current location...
+                </div>
+            </div>
         </div>
     `;
-    
-    document.body.appendChild(overlay);
-    document.body.appendChild(mapContainer);
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    const modal = document.querySelector('.location-picker-modal-container');
+
+    function createCustomIcon() {
+        return L.divIcon({
+            className: 'custom-map-marker',
+            html: `
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="8" fill="#2563eb"/>
+                    <circle cx="20" cy="20" r="6" fill="white"/>
+                    <circle cx="20" cy="20" r="4" fill="#2563eb"/>
+                </svg>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
+    }
 
     function initializeMap(position) {
-        mapContainer.innerHTML = `
+        modal.innerHTML = `
             <h3 class="location-picker-modal-title">Select Location</h3>
             <div class="location-picker-accuracy-banner">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -72,46 +87,30 @@ function getCurrentLocationAndSendMessage(partyName) {
                     Drag the marker or click on the map to adjust location
                 </div>
             </div>
-            <div id="location-picker-map" style="height: 400px; border-radius: 8px; margin-bottom: 20px;"></div>
+            <div class="location-picker-content">
+                <div id="location-picker-map" class="location-picker-map-canvas"></div>
+            </div>
             <div class="location-picker-button-wrapper">
-                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">Cancel</button>
-                <button class="location-picker-button location-picker-button-confirm" onclick="sendSelectedLocation()">Send Location</button>
+                <button class="location-picker-button location-picker-button-cancel" onclick="window.closeLocationPicker()">Cancel</button>
+                <button class="location-picker-button location-picker-button-confirm" onclick="window.sendSelectedLocation()">Send Location</button>
             </div>
         `;
 
-        // Initialize map with a different tile layer for better quality
-        map = L.map('location-picker-map').setView([position.lat, position.lng], 17);
-        
-        // Add a high-quality tile layer
+        // Initialize map
+        map = L.map('location-picker-map', {
+            zoomControl: false
+        }).setView([position.lat, position.lng], 17);
+
+        // Add tile layer
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-            subdomains: 'abcd'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
         }).addTo(map);
 
-        // Create a custom icon for better visibility
-        const customIcon = L.divIcon({
-            className: 'custom-marker',
-            html: `
-                <div style="
-                    width: 24px;
-                    height: 24px;
-                    background-color: #2563eb;
-                    border-radius: 50%;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    position: relative;
-                    left: -12px;
-                    top: -12px;
-                "></div>
-            `,
-            iconSize: [24, 24]
-        });
-
-        // Add marker with custom icon
+        // Add custom marker
         marker = L.marker([position.lat, position.lng], {
             draggable: true,
-            icon: customIcon
+            icon: createCustomIcon()
         }).addTo(map);
 
         selectedPosition = position;
@@ -135,10 +134,12 @@ function getCurrentLocationAndSendMessage(partyName) {
             };
         });
 
-        // Add zoom controls to a better position
-        map.zoomControl.setPosition('bottomright');
+        // Add zoom controls
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
 
-        // Add a "center on my location" button
+        // Add recenter button
         const locationButton = L.control({position: 'bottomright'});
         locationButton.onAdd = function(map) {
             const btn = L.DomUtil.create('button', 'custom-map-button');
@@ -152,6 +153,9 @@ function getCurrentLocationAndSendMessage(partyName) {
                 cursor: pointer;
                 margin-bottom: 10px;
                 font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             `;
             
             btn.onclick = function() {
@@ -171,17 +175,17 @@ function getCurrentLocationAndSendMessage(partyName) {
     }
 
     function showError(message) {
-        mapContainer.innerHTML = `
+        modal.innerHTML = `
             <h3 class="location-picker-modal-title">Location Error</h3>
             <div class="location-picker-error">
                 ${message}
                 <br>
-                <button onclick="retryGeolocation()" class="location-picker-retry-button">
+                <button onclick="window.retryGeolocation()" class="location-picker-retry-button">
                     Try Again
                 </button>
             </div>
             <div class="location-picker-button-wrapper">
-                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">
+                <button class="location-picker-button location-picker-button-cancel" onclick="window.closeLocationPicker()">
                     Cancel
                 </button>
             </div>
@@ -234,12 +238,11 @@ function getCurrentLocationAndSendMessage(partyName) {
         if (map) {
             map.remove();
         }
-        overlay.remove();
-        mapContainer.remove();
+        document.querySelector('.location-picker-modal-overlay').remove();
     };
 
     window.retryGeolocation = function() {
-        mapContainer.innerHTML = `
+        modal.innerHTML = `
             <h3 class="location-picker-modal-title">Select Location</h3>
             <div class="location-picker-loading">
                 Getting your current location...
@@ -305,12 +308,6 @@ function populateTable() {
 document.addEventListener('DOMContentLoaded', () => {
     populateTable();
 });
-
-
-
-
-
-
 
 
 
