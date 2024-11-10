@@ -11,7 +11,12 @@ const partyData = [
     {
         partyName: "Baron - Panjim",
         coordinates: null,
-        locationLink: "https://www.google.com/maps/place/Baron+Showroom/@15.4979591,73.8254615,17z/data=!3m1!4b1!4m6!3m5!1s0x3bbfc08e9bfa0741:0xa725970726a8fa32!8m2!3d15.4979591!4d73.8254615!16s%2Fg%2F11b6lll03y?entry=ttu&g_ep=EgoyMDI0MTEwNi4wIKXMDSoASAFQAw%3D%3D"
+        locationLink: "https://www.google.com/maps/place/Baron+Showroom/@15.4979591,73.8254615,17z/data=!3m1!4b1!4m6!3m5!1s0x3bbfc08e9bfa0741:0xa725970726a8fa32!8m2!3d15.4979591!4d73.8254615"
+    },
+    {
+        partyName: "XYZ Company - Station B",
+        coordinates: null,
+        locationLink: null
     }
 ];
 
@@ -31,6 +36,29 @@ function openMap(index) {
     }
 }
 
+// Function to get current location and send WhatsApp message
+function getCurrentLocationAndSendMessage(partyName) {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Prepare WhatsApp message
+            const message = `Dear Sir,\n\nkindly add the below location coordinates for ${partyName}\n\ncoordinates: (${lat}, ${lng})\n\nthank you`;
+            
+            // Encode message for URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Open WhatsApp with the message
+            window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+        }, function(error) {
+            alert("Error getting location: " + error.message);
+        });
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
+
 // Function to create table rows
 function populateTable() {
     const tableBody = document.getElementById('partyTableBody');
@@ -40,24 +68,27 @@ function populateTable() {
         const { name, station } = parsePartyString(party.partyName);
         const row = document.createElement('tr');
         
-        let locationText = '';
-        if (party.coordinates) {
-            locationText = `${party.coordinates.lat}, ${party.coordinates.lng}`;
-        } else if (party.locationLink) {
-            locationText = party.locationLink.substring(0, 50) + '...';
-        }
+        // Check if both coordinates and locationLink are null
+        const hasNoLocation = !party.coordinates && !party.locationLink;
         
         row.innerHTML = `
             <td>${name}</td>
             <td>${station}</td>
-           
             <td>
-                <span class="location-icon" 
-                      onclick="openMap(${index})"
-                      style="cursor: pointer;"
-                      title="Click to open map">
-                    📍
-                </span>
+                ${hasNoLocation ? 
+                    `<span class="current-location-text" 
+                           onclick="getCurrentLocationAndSendMessage('${party.partyName}')"
+                           style="cursor: pointer; color: blue; text-decoration: underline;"
+                           title="Click to send current location">
+                        Current location as party location
+                    </span>` : 
+                    `<span class="location-icon" 
+                           onclick="openMap(${index})"
+                           style="cursor: pointer;"
+                           title="Click to open map">
+                        📍
+                    </span>`
+                }
             </td>
         `;
         
@@ -71,6 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// unwanted but impt code
 function loadItemMaster() {
     const itemMasterBody = document.getElementById('itemMasterBody');
     itemMasterBody.innerHTML = '';
