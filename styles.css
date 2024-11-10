@@ -1947,3 +1947,29 @@ project/
 .bg-info-light {
     background-color: rgba(85, 2, 2, 0.5) !important;
 }
+.party-master-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.party-master-table th, 
+.party-master-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.party-master-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.location-icon {
+    cursor: pointer;
+    color: #2196F3;
+}
+
+.location-icon:hover {
+    color: #0b7dda;
+}
