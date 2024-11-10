@@ -39,124 +39,123 @@ function openMap(index) {
 }
 
 function getCurrentLocationAndSendMessage(partyName) {
+    // Create overlay and map container
+    const overlay = document.createElement('div');
+    overlay.className = 'location-picker-modal-overlay';
+    
+    const mapContainer = document.createElement('div');
+    mapContainer.className = 'location-picker-modal-container';
+    mapContainer.innerHTML = `
+        <h3 class="location-picker-modal-title">Select Location</h3>
+        <div class="location-picker-accuracy-banner">Drag the marker or click on the map to select location</div>
+        <div id="location-picker-map" class="location-picker-map-canvas"></div>
+        <div class="location-picker-button-wrapper">
+            <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">Cancel</button>
+            <button class="location-picker-button location-picker-button-confirm" onclick="sendSelectedLocation()">Send Location</button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(mapContainer);
+    
+    let marker;
+    let map;
+    let selectedPosition;
+
     if ("geolocation" in navigator) {
-        // Show loading indicator
-        const loadingElement = document.createElement('div');
-        loadingElement.textContent = "Getting accurate location...";
-        loadingElement.style.position = 'fixed';
-        loadingElement.style.top = '50%';
-        loadingElement.style.left = '50%';
-        loadingElement.style.transform = 'translate(-50%, -50%)';
-        loadingElement.style.padding = '20px';
-        loadingElement.style.background = 'white';
-        loadingElement.style.border = '1px solid #ccc';
-        loadingElement.style.borderRadius = '5px';
-        loadingElement.style.zIndex = '1000';
-        document.body.appendChild(loadingElement);
-
-        let bestAccuracy = Infinity;
-        let bestReading = null;
-        let readings = 0;
-        const maxReadings = 20; // Increased maximum readings to get better accuracy
-        const minAccuracy = 10; // Minimum accuracy in meters
-        const maxAccuracy = 100; // Maximum accuracy in meters
-        const timeout = 45000; // Extended timeout to 45 seconds
-
-        const watchId = navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             function(position) {
-                readings++;
-                const accuracy = position.coords.accuracy;
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
                 
-                // Update loading message with current accuracy
-                loadingElement.textContent = `Getting location... Accuracy: ±${Math.round(accuracy)}m`;
-
-                // Only update best reading if accuracy is within our acceptable range
-                if (accuracy < bestAccuracy && accuracy >= minAccuracy && accuracy <= maxAccuracy) {
-                    bestAccuracy = accuracy;
-                    bestReading = position;
-                    
-                    // If we get a reading with excellent accuracy, use it immediately
-                    if (accuracy <= 20) {
-                        completeLocationProcess();
-                    }
-                }
-
-                // Stop if we've reached max readings
-                if (readings >= maxReadings) {
-                    completeLocationProcess();
-                }
+                initializeLocationPicker(pos);
             },
             function(error) {
-                loadingElement.remove();
-                let errorMessage;
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = "Location permission denied. Please allow location access.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = "Location information unavailable. Please try again outdoors.";
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = "Location request timed out. Please try again.";
-                        break;
-                    default:
-                        errorMessage = "Error getting location: " + error.message;
-                }
-                alert(errorMessage);
+                const defaultPos = { lat: 20.5937, lng: 78.9629 }; // India center
+                initializeLocationPicker(defaultPos);
+                alert("Could not get your location. Please select your location on the map.");
             },
             {
                 enableHighAccuracy: true,
-                timeout: timeout,
+                timeout: 10000,
                 maximumAge: 0
             }
         );
-
-        function completeLocationProcess() {
-            navigator.geolocation.clearWatch(watchId);
-            loadingElement.remove();
-
-            if (bestReading && bestAccuracy <= maxAccuracy && bestAccuracy >= minAccuracy) {
-                const lat = bestReading.coords.latitude;
-                const lng = bestReading.coords.longitude;
-                
-                // Create a direct Google Maps link
-                const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                
-                // Create message with the maps link and accuracy information
-                const message = `Dear Sir,\n\n`
-                    + `kindly add the below location for ${partyName}\n\n`
-                    + `Location Link: ${mapsLink}\n`
-                    + `Location Accuracy: ±${Math.round(bestAccuracy)}m\n\n`
-                    + `thank you`;
-                
-                const encodedMessage = encodeURIComponent(message);
-                window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
-            } else {
-                alert(`Could not get location with required accuracy (between ${minAccuracy}m and ${maxAccuracy}m). Please try again in an open area.`);
-            }
-        }
-
-        // Set timeout to prevent indefinite waiting
-        setTimeout(() => {
-            if (readings > 0) {
-                completeLocationProcess();
-            }
-        }, timeout);
-    } else {
-        alert("Geolocation is not supported by this browser.");
     }
+
+    function initializeLocationPicker(position) {
+        map = L.map('location-picker-map').setView([position.lat, position.lng], 17);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add marker
+        marker = L.marker([position.lat, position.lng], {
+            draggable: true
+        }).addTo(map);
+
+        selectedPosition = position;
+
+        // Handle marker drag
+        marker.on('dragend', function(event) {
+            const pos = marker.getLatLng();
+            selectedPosition = {
+                lat: pos.lat,
+                lng: pos.lng
+            };
+        });
+
+        // Handle map click
+        map.on('click', function(event) {
+            const pos = event.latlng;
+            marker.setLatLng(pos);
+            selectedPosition = {
+                lat: pos.lat,
+                lng: pos.lng
+            };
+        });
+    }
+
+    // Make functions available globally
+    window.closeLocationPicker = function() {
+        if (map) {
+            map.remove();
+        }
+        overlay.remove();
+        mapContainer.remove();
+    };
+
+    window.sendSelectedLocation = function() {
+        if (selectedPosition) {
+            const mapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedPosition.lat},${selectedPosition.lng}`;
+            const message = `Dear Sir,\n\n`
+                + `kindly add the below location for ${partyName}\n\n`
+                + `Location Link: ${mapsLink}\n\n`
+                + `thank you`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+            closeLocationPicker();
+        } else {
+            alert("Please select a location first");
+        }
+    };
 }
+
 
 // Function to create table rows
 function populateTable() {
     const tableBody = document.getElementById('partyTableBody');
-    tableBody.innerHTML = ''; // Clear existing content
+    tableBody.innerHTML = '';
 
     partyData.forEach((party, index) => {
         const { name, station } = parsePartyString(party.partyName);
         const row = document.createElement('tr');
         
-        // Check if both coordinates and locationLink are null
         const hasNoLocation = !party.coordinates && !party.locationLink;
         
         row.innerHTML = `
@@ -164,13 +163,13 @@ function populateTable() {
             <td>${station}</td>
             <td>
                 ${hasNoLocation ? 
-                    `<span class="current-location-text" 
+                    `<span class="party-location-picker-trigger" 
                            onclick="getCurrentLocationAndSendMessage('${party.partyName}')"
-                           style="cursor: pointer; color: blue; text-decoration: underline;"
-                           title="Click to send current location">
-                        Current location as party location
+                           style="cursor: pointer; color: #2563eb; text-decoration: underline;"
+                           title="Click to pick location">
+                        Select location on map
                     </span>` : 
-                    `<span class="location-icon" 
+                    `<span class="party-location-view-trigger" 
                            onclick="openMap(${index})"
                            style="cursor: pointer;"
                            title="Click to open map">
