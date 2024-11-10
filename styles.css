@@ -2439,3 +2439,16 @@ body.modal-open {
         font-size: 16px;
     }
 }
+.marquee-container {
+    background-color: #87044c;
+    padding: 5px 0;
+   
+    margin-top: -120px;
+    margin-bottom: 170px;
+}
+
+.announcement {
+    color: #ffffff;
+    font-weight: bold;
+}
+
