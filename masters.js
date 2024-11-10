@@ -50,7 +50,6 @@ function getCurrentLocationAndSendMessage(partyName) {
     const mapContainer = document.createElement('div');
     mapContainer.className = 'location-picker-modal-container';
     
-    // Initially show loading state
     mapContainer.innerHTML = `
         <h3 class="location-picker-modal-title">Select Location</h3>
         <div class="location-picker-loading">
@@ -61,45 +60,58 @@ function getCurrentLocationAndSendMessage(partyName) {
     document.body.appendChild(overlay);
     document.body.appendChild(mapContainer);
 
-    function showError(message) {
-        mapContainer.innerHTML = `
-            <h3 class="location-picker-modal-title">Location Error</h3>
-            <div class="location-picker-error">
-                ${message}
-                <br>
-                <button onclick="retryGeolocation()" class="location-picker-retry-button">
-                    Try Again
-                </button>
-            </div>
-            <div class="location-picker-button-wrapper">
-                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">
-                    Cancel
-                </button>
-            </div>
-        `;
-    }
-
     function initializeMap(position) {
         mapContainer.innerHTML = `
             <h3 class="location-picker-modal-title">Select Location</h3>
-            <div class="location-picker-accuracy-banner">Drag the marker or click on the map to adjust location</div>
-            <div id="location-picker-map" class="location-picker-map-canvas"></div>
+            <div class="location-picker-accuracy-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Drag the marker or click on the map to adjust location
+                </div>
+            </div>
+            <div id="location-picker-map" style="height: 400px; border-radius: 8px; margin-bottom: 20px;"></div>
             <div class="location-picker-button-wrapper">
                 <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">Cancel</button>
                 <button class="location-picker-button location-picker-button-confirm" onclick="sendSelectedLocation()">Send Location</button>
             </div>
         `;
 
-        // Create map
+        // Initialize map with a different tile layer for better quality
         map = L.map('location-picker-map').setView([position.lat, position.lng], 17);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        // Add a high-quality tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+            subdomains: 'abcd'
         }).addTo(map);
 
-        // Add marker
+        // Create a custom icon for better visibility
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+                <div style="
+                    width: 24px;
+                    height: 24px;
+                    background-color: #2563eb;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    position: relative;
+                    left: -12px;
+                    top: -12px;
+                "></div>
+            `,
+            iconSize: [24, 24]
+        });
+
+        // Add marker with custom icon
         marker = L.marker([position.lat, position.lng], {
-            draggable: true
+            draggable: true,
+            icon: customIcon
         }).addTo(map);
 
         selectedPosition = position;
@@ -123,10 +135,57 @@ function getCurrentLocationAndSendMessage(partyName) {
             };
         });
 
+        // Add zoom controls to a better position
+        map.zoomControl.setPosition('bottomright');
+
+        // Add a "center on my location" button
+        const locationButton = L.control({position: 'bottomright'});
+        locationButton.onAdd = function(map) {
+            const btn = L.DomUtil.create('button', 'custom-map-button');
+            btn.innerHTML = '📍';
+            btn.style.cssText = `
+                width: 34px;
+                height: 34px;
+                background: white;
+                border: 2px solid rgba(0,0,0,0.2);
+                border-radius: 4px;
+                cursor: pointer;
+                margin-bottom: 10px;
+                font-size: 16px;
+            `;
+            
+            btn.onclick = function() {
+                map.setView([position.lat, position.lng], 17);
+                marker.setLatLng([position.lat, position.lng]);
+                selectedPosition = position;
+            };
+            
+            return btn;
+        };
+        locationButton.addTo(map);
+
         // Force map to update its size
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
+    }
+
+    function showError(message) {
+        mapContainer.innerHTML = `
+            <h3 class="location-picker-modal-title">Location Error</h3>
+            <div class="location-picker-error">
+                ${message}
+                <br>
+                <button onclick="retryGeolocation()" class="location-picker-retry-button">
+                    Try Again
+                </button>
+            </div>
+            <div class="location-picker-button-wrapper">
+                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">
+                    Cancel
+                </button>
+            </div>
+        `;
     }
 
     function getLocation() {
@@ -167,10 +226,10 @@ function getCurrentLocationAndSendMessage(partyName) {
         }
     }
 
-    // Start getting location immediately
+    // Start getting location
     getLocation();
 
-    // Make functions available globally
+    // Global functions
     window.closeLocationPicker = function() {
         if (map) {
             map.remove();
@@ -205,7 +264,6 @@ function getCurrentLocationAndSendMessage(partyName) {
         }
     };
 }
-
 
 // Function to create table rows
 function populateTable() {
