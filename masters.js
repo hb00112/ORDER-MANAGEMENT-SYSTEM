@@ -39,56 +39,60 @@ function openMap(index) {
 }
 
 function getCurrentLocationAndSendMessage(partyName) {
-    // Create overlay and map container
+    let map = null;
+    let marker = null;
+    let selectedPosition = null;
+    
+    // Create modal elements
     const overlay = document.createElement('div');
     overlay.className = 'location-picker-modal-overlay';
     
     const mapContainer = document.createElement('div');
     mapContainer.className = 'location-picker-modal-container';
+    
+    // Initially show loading state
     mapContainer.innerHTML = `
         <h3 class="location-picker-modal-title">Select Location</h3>
-        <div class="location-picker-accuracy-banner">Drag the marker or click on the map to select location</div>
-        <div id="location-picker-map" class="location-picker-map-canvas"></div>
-        <div class="location-picker-button-wrapper">
-            <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">Cancel</button>
-            <button class="location-picker-button location-picker-button-confirm" onclick="sendSelectedLocation()">Send Location</button>
+        <div class="location-picker-loading">
+            Getting your current location...
         </div>
     `;
     
     document.body.appendChild(overlay);
     document.body.appendChild(mapContainer);
-    
-    let marker;
-    let map;
-    let selectedPosition;
 
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                const pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                
-                initializeLocationPicker(pos);
-            },
-            function(error) {
-                const defaultPos = { lat: 20.5937, lng: 78.9629 }; // India center
-                initializeLocationPicker(defaultPos);
-                alert("Could not get your location. Please select your location on the map.");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
+    function showError(message) {
+        mapContainer.innerHTML = `
+            <h3 class="location-picker-modal-title">Location Error</h3>
+            <div class="location-picker-error">
+                ${message}
+                <br>
+                <button onclick="retryGeolocation()" class="location-picker-retry-button">
+                    Try Again
+                </button>
+            </div>
+            <div class="location-picker-button-wrapper">
+                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">
+                    Cancel
+                </button>
+            </div>
+        `;
     }
 
-    function initializeLocationPicker(position) {
+    function initializeMap(position) {
+        mapContainer.innerHTML = `
+            <h3 class="location-picker-modal-title">Select Location</h3>
+            <div class="location-picker-accuracy-banner">Drag the marker or click on the map to adjust location</div>
+            <div id="location-picker-map" class="location-picker-map-canvas"></div>
+            <div class="location-picker-button-wrapper">
+                <button class="location-picker-button location-picker-button-cancel" onclick="closeLocationPicker()">Cancel</button>
+                <button class="location-picker-button location-picker-button-confirm" onclick="sendSelectedLocation()">Send Location</button>
+            </div>
+        `;
+
+        // Create map
         map = L.map('location-picker-map').setView([position.lat, position.lng], 17);
         
-        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -118,7 +122,53 @@ function getCurrentLocationAndSendMessage(partyName) {
                 lng: pos.lng
             };
         });
+
+        // Force map to update its size
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
     }
+
+    function getLocation() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    initializeMap(pos);
+                },
+                function(error) {
+                    let errorMsg = "Could not get your location. ";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += "Please enable location access in your browser settings.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += "Location information is unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += "Location request timed out.";
+                            break;
+                        default:
+                            errorMsg += "An unknown error occurred.";
+                    }
+                    showError(errorMsg);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            showError("Geolocation is not supported by your browser.");
+        }
+    }
+
+    // Start getting location immediately
+    getLocation();
 
     // Make functions available globally
     window.closeLocationPicker = function() {
@@ -127,6 +177,16 @@ function getCurrentLocationAndSendMessage(partyName) {
         }
         overlay.remove();
         mapContainer.remove();
+    };
+
+    window.retryGeolocation = function() {
+        mapContainer.innerHTML = `
+            <h3 class="location-picker-modal-title">Select Location</h3>
+            <div class="location-picker-loading">
+                Getting your current location...
+            </div>
+        `;
+        getLocation();
     };
 
     window.sendSelectedLocation = function() {
