@@ -1306,7 +1306,7 @@ function getTotalQuantity(cartItems) {
 
 function updateCartButtonText(totalQuantity) {
   const cartButton = document.getElementById("saveOrderBtn");
-  cartButton.textContent = `Process Cart Order`;
+  cartButton.textContent = `Process Order`;
 }
 
 function addToCart() {
