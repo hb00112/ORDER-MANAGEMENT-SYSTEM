@@ -2209,3 +2209,233 @@ project/
         padding: 6px 10px;
     }
 }
+
+/* Enhanced map controls continued */
+.leaflet-control-layers {
+    border: none !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.leaflet-control-layers-toggle {
+    width: 40px !important;
+    height: 40px !important;
+    background-size: 20px 20px !important;
+}
+
+.leaflet-control-layers-expanded {
+    padding: 10px !important;
+    background: white !important;
+    border-radius: 4px !important;
+}
+
+/* Enhanced marker styles */
+.custom-map-marker {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.custom-map-marker::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: rgba(37, 99, 235, 0.2);
+    border-radius: 50%;
+    animation: markerPulse 2s ease-out infinite;
+}
+
+@keyframes markerPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Enhanced modal styles for better mobile experience */
+.location-picker-modal-overlay {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    touch-action: none;
+}
+
+.location-picker-modal-container {
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0); /* Force GPU acceleration */
+    -webkit-overflow-scrolling: touch;
+}
+
+.location-picker-content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Prevent scroll on body when modal is open */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* Enhanced button styles */
+.location-picker-button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    overflow: hidden;
+}
+
+.location-picker-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: inherit;
+    transition: transform 0.2s;
+}
+
+.location-picker-button:active::after {
+    transform: translate(-50%, -50%) scale(2);
+}
+
+/* Loading state enhancement */
+.location-picker-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    color: #4b5563;
+}
+
+/* Error state enhancement */
+.location-picker-error {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced accuracy banner */
+.location-picker-accuracy-banner {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Safe area insets for modern mobile devices */
+@supports (padding: max(0px)) {
+    .location-picker-modal-container {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        padding-top: max(12px, env(safe-area-inset-top));
+    }
+}
+
+/* Better touch handling for map controls */
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+    border: none !important;
+}
+
+/* Prevent text selection during map interaction */
+.location-picker-map-canvas {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Optimized scrolling for iOS */
+.location-picker-modal-container,
+.location-picker-content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+    .location-picker-button {
+        border: 2px solid ButtonText;
+    }
+    
+    .custom-map-marker svg circle {
+        forced-color-adjust: none;
+    }
+}
+/* Spinner animation */
+.spinner {
+    width: 40px;
+    height: 40px;
+    margin: 10px auto;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .location-picker-modal-container {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        padding: 12px;
+    }
+
+    .location-picker-map-canvas {
+        height: calc(100vh - 200px);
+    }
+
+    .custom-map-button {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .leaflet-control-zoom a {
+        width: 40px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+    }
+
+    .location-picker-button {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}
