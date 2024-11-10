@@ -1,11 +1,108 @@
 // Enhanced party data array with same structure
 const partyData = [
+    // Bicholim
     {
-        partyName: "ABC Company - Station A",
-        coordinates: {
-            lat: 18.5204,
-            lng: 73.8567
-        },
+        partyName: "Roop Darpan - Bicholim",
+        coordinates: {lat: 15.587945583060277, 
+            lng: 73.94766136230967},
+        locationLink: null
+    },
+    {
+        partyName: "Mahamay Cosmetics - Bicholim",
+        coordinates: {lat:15.587211516066104, lng:73.94797331535224},
+        locationLink: null
+    },
+    {
+        partyName: "Advait Enterprises - Bicholim",
+        coordinates: null,
+        locationLink: null
+    },
+    // Canacona
+    {
+        partyName: "Callicas - Canacona",
+        coordinates: {lat:15.006606552890053, lng:74.0463952938426},
+        locationLink: null
+    },
+    // Mapusa
+    {
+        partyName: "Falari Enterpries - Mapusa",
+        coordinates: {lat:15.589365247224864, lng:73.8118954616089},
+        locationLink: null
+    },
+    {
+        partyName: "Deepak Store - Mapusa",
+        coordinates: {lat:15.588641830696005, lng:73.81127494630533},
+        locationLink: null
+    },
+    {
+        partyName: "Goswami Gift - Mapusa",
+        coordinates: null,
+        locationLink: null
+    },
+    {
+        partyName: "G D Kalekar - Mapusa",
+        coordinates: {lat:15.588557509558795, lng:73.81151139521666},
+        locationLink: null
+    },
+    {
+        partyName: "MS Dangui - Mapusa",
+        coordinates: {lat:15.588928018799352,lng: 73.81211117427368},
+        locationLink: null
+    },
+    {
+        partyName: "Jagannath Kavlekar LLP - Mapusa",
+        coordinates: {lat:15.585820445990006,lng: 73.81233290735419},
+        locationLink: null
+    },
+    {
+        partyName: "Siddhivinayak - Mapusa",
+        coordinates: {lat:15.587586260033774,lng: 73.81229355926534},
+        locationLink: null
+    },
+    {
+        partyName: "Femiline Collection - Margaon",
+        coordinates: {lat:15.273099814366223,lng: 73.97284791765553},
+        locationLink: null
+    },
+    {
+        partyName: "Visnu Fancy Stores - Margao",
+        coordinates: {lat:15.271282819800955,lng: 73.96030743849607},
+        locationLink: null
+    },
+    {
+        partyName: "Krishna Fancy - Margao",
+        coordinates: {lat:15.271619041983532,lng: 73.95953185225159},
+        locationLink: null
+    },
+    {
+        partyName: "Caro Center - Margoa",
+        coordinates: {lat:15.272311775037739,lng: 73.95780725263138},
+        locationLink: null
+    },
+    // Panjim
+    {
+        partyName: "Bharne Retail Trends - Panjim",
+        coordinates: {lat:15.500477485323938,lng: 73.8281064230195},
+        locationLink: null
+    },
+    {
+        partyName: "Lovely Collection - Panjim",
+        coordinates: {lat:15.479218929400968,lng: 73.81219215767942},
+        locationLink: null
+    },
+    {
+        partyName: "Shetye Enterprises - Panjim",
+        coordinates: {lat:15.485509477728389,lng: 73.82070095136504},
+        locationLink: null
+    },
+    {
+        partyName: "M S Dangui - Panjim",
+        coordinates: {lat:15.500652759036013,lng: 73.82898800924747},
+        locationLink: null
+    },
+    {
+        partyName: "Par Excellence - Panjim",
+        coordinates: null,
         locationLink: null
     },
     {
@@ -17,12 +114,49 @@ const partyData = [
         locationLink: null
     },
     {
-        partyName: "XYZ Company - Station B",
+        partyName: "Chirag Bag House - Panjim",
+        coordinates: {lat:15.498822395506862,lng: 73.8222645373662},
+        locationLink: null
+    },
+    {
+        partyName: "J.V Manerkar - Panjim",
+        coordinates: {lat:15.500795472416964,lng: 73.82931163566691},
+        locationLink: null
+    },
+   
+    // Parvorim
+    {
+        partyName: "Poshak Retail - Parvorim",
+        coordinates: {lat:15.533518139367382,lng: 73.82225221849463},
+        locationLink: null
+    },
+    // Phonda/Ponda
+    {
+        partyName: "Avni Traders - Phonda",
         coordinates: null,
         locationLink: null
-    }
+    },
+    {
+        partyName: "Feelings - Ponda",
+        coordinates: {lat:15.400735367795287,lng: 74.00605617523317},
+        locationLink: null
+    },
+    // Sanvordem
+    {
+        partyName: "Santosh Shopping - Sanvordem",
+        coordinates: null,
+        locationLink: null
+    },
+    // Vasco
+    {
+        partyName: "Puja Cosmetics - Vasco",
+        coordinates: {lat:15.397243286508294,lng: 73.81096095551894},
+        locationLink: null
+    },
+    
+  
+   
 ];
-
 function parsePartyString(partyString) {
     const [name, station] = partyString.split(' - ');
     return { name, station };
@@ -37,7 +171,7 @@ function openMap(index) {
     }
 }
 
-function getCurrentLocationAndSendMessage(partyName) {
+/*function getCurrentLocationAndSendMessage(partyName) {
     let map = null;
     let marker = null;
     let selectedPosition = null;
@@ -311,7 +445,7 @@ function getCurrentLocationAndSendMessage(partyName) {
         }
     };
 }
-
+*/
 // Table population function remains the same
 function populateTable() {
     const tableBody = document.getElementById('partyTableBody');
@@ -416,7 +550,7 @@ function getCurrentLocationAndSendMessage(partyName) {
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
-                    <span>Drag marker or tap map to set location</span>
+                    <span>Drag marker or tap map to set precise location</span>
                 </div>
             </div>
             <div class="location-picker-content">
@@ -427,103 +561,140 @@ function getCurrentLocationAndSendMessage(partyName) {
                 <button class="location-picker-button location-picker-button-confirm" onclick="window.sendSelectedLocation()">Send Location</button>
             </div>
         `;
-
-        // Enhanced map options for better mobile performance
+    
+        // Enhanced map options for better detail and performance
         const mapOptions = {
             zoomControl: false,
             tap: true,
             touchZoom: true,
             dragging: true,
-            maxZoom: 19,
+            maxZoom: 20,              // Increased max zoom for more detail
             minZoom: 3,
-            bounceAtZoomLimits: false,
+            zoomSnap: 0.5,           // Allow finer zoom levels
+            zoomDelta: 0.5,          // Smaller zoom increments
             wheelDebounceTime: 100,
             wheelPxPerZoomLevel: 100,
             tapTolerance: 15,
-            touchZoomRotate: false
+            bounceAtZoomLimits: true
         };
-
+    
         try {
-            // Initialize map with error handling
-            map = L.map('location-picker-map', mapOptions).setView([position.lat, position.lng], 17);
-
-            // Add detailed street map layer
+            map = L.map('location-picker-map', mapOptions).setView([position.lat, position.lng], 18); // Higher initial zoom
+    
+            // Primary detailed street map layer
             const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 19,
-                crossOrigin: true,
-                maxNativeZoom: 18,
-                detectRetina: true
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                detectRetina: true,
+                subdomains: 'abcd',
+                className: 'detailed-map-tiles'
             }).addTo(map);
-
-            // Add satellite layer option
+    
+            // Enhanced satellite layer
             const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-                maxZoom: 19,
-                crossOrigin: true,
-                maxNativeZoom: 18,
+                maxZoom: 20,
+                maxNativeZoom: 19,
                 detectRetina: true
             });
-
-            // Add layer control with enhanced styling
+    
+            // Detailed terrain/topography layer
+            const terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                maxZoom: 20,
+                maxNativeZoom: 17,
+                detectRetina: true
+            });
+    
+            // Layer control with all options
             const baseMaps = {
-                "Streets": streets,
-                "Satellite": satellite
+                "Detailed Streets": streets,
+                "Satellite": satellite,
+                "Terrain": terrain
             };
-
+    
             L.control.layers(baseMaps, null, {
                 position: 'bottomleft',
-                collapsed: true
+                collapsed: true,
+                hideSingleBase: false
             }).addTo(map);
-
-            // Add enhanced marker
+    
+            // Enhanced marker with better visibility
             marker = L.marker([position.lat, position.lng], {
                 draggable: true,
-                icon: createCustomIcon()
+                icon: createCustomIcon(),
+                autoPan: true,
+                autoPanSpeed: 10,
+                autoPanPadding: [50, 50]
             }).addTo(map);
-
+    
             selectedPosition = position;
-
-            // Enhanced marker drag handling
+    
+            // Enhanced drag handling with smoother updates
             let isDragging = false;
             
             marker.on('dragstart', function() {
                 isDragging = true;
                 map.removeEventListener('click');
             });
-
-            marker.on('dragend', function(event) {
+    
+            marker.on('drag', function() {
+                const pos = marker.getLatLng();
+                selectedPosition = {
+                    lat: pos.lat,
+                    lng: pos.lng
+                };
+            });
+    
+            marker.on('dragend', function() {
                 isDragging = false;
                 const pos = marker.getLatLng();
                 selectedPosition = {
                     lat: pos.lat,
                     lng: pos.lng
                 };
+                // Smooth pan to marker position
+                map.panTo(pos, {
+                    animate: true,
+                    duration: 0.5,
+                    easeLinearity: 0.5
+                });
                 setTimeout(() => {
                     map.on('click', handleMapClick);
                 }, 10);
             });
-
-            // Enhanced map click handling with touch support
+    
+            // Enhanced map click handling with smooth animations
             function handleMapClick(event) {
                 if (!isDragging) {
                     const pos = event.latlng;
-                    marker.setLatLng(pos);
+                    marker.setLatLng(pos, {
+                        animate: true,
+                        duration: 0.5
+                    });
                     selectedPosition = {
                         lat: pos.lat,
                         lng: pos.lng
                     };
+                    map.panTo(pos, {
+                        animate: true,
+                        duration: 0.5,
+                        easeLinearity: 0.5
+                    });
                 }
             }
-
+    
             map.on('click', handleMapClick);
-
-            // Add custom zoom controls
+    
+            // Enhanced zoom controls
             L.control.zoom({
-                position: 'bottomright'
+                position: 'bottomright',
+                zoomInTitle: 'Zoom in for more detail',
+                zoomOutTitle: 'Zoom out for overview'
             }).addTo(map);
-
-            // Add enhanced location button
+    
+            // Enhanced location button with animation
             const locationButton = L.control({position: 'bottomright'});
             locationButton.onAdd = function(map) {
                 const btn = L.DomUtil.create('button', 'custom-map-button');
@@ -541,25 +712,33 @@ function getCurrentLocationAndSendMessage(partyName) {
                     align-items: center;
                     justify-content: center;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    transition: transform 0.2s ease;
                 `;
                 
-                // Prevent default behaviors
-                L.DomEvent.disableClickPropagation(btn);
-                L.DomEvent.on(btn, 'touchstart', L.DomEvent.preventDefault);
+                btn.onmouseover = function() {
+                    btn.style.transform = 'scale(1.1)';
+                };
+                
+                btn.onmouseout = function() {
+                    btn.style.transform = 'scale(1)';
+                };
                 
                 btn.onclick = function() {
-                    map.setView([position.lat, position.lng], 17, {
+                    map.flyTo([position.lat, position.lng], 18, {
                         animate: true,
                         duration: 1
                     });
-                    marker.setLatLng([position.lat, position.lng]);
+                    marker.setLatLng([position.lat, position.lng], {
+                        animate: true,
+                        duration: 0.5
+                    });
                     selectedPosition = position;
                 };
                 
                 return btn;
             };
             locationButton.addTo(map);
-
+    
             // Force map to update its size with retry mechanism
             let retryCount = 0;
             const maxRetries = 3;
@@ -573,9 +752,9 @@ function getCurrentLocationAndSendMessage(partyName) {
                     setTimeout(tryInvalidateSize, 100);
                 }
             }
-
+    
             setTimeout(tryInvalidateSize, 250);
-
+    
         } catch (error) {
             console.error('Map initialization error:', error);
             showError('Failed to initialize map. Please try again.');
