@@ -10,8 +10,9 @@ const partyData = [
     },
     {
         partyName: "Baron - Panjim",
-        coordinates: null,
-        locationLink: "https://www.google.com/maps/place/Baron+Showroom/@15.4979591,73.8254615,17z/data=!3m1!4b1!4m6!3m5!1s0x3bbfc08e9bfa0741:0xa725970726a8fa32!8m2!3d15.4979591!4d73.8254615"
+        coordinates: {lat:15.498072678766361 , 
+            lng:73.82542972334339},
+        locationLink: null
     },
     {
         partyName: "XYZ Company - Station B",
@@ -32,28 +33,113 @@ function openMap(index) {
     if (party.locationLink) {
         window.open(party.locationLink, '_blank');
     } else if (party.coordinates) {
-        window.open(`https://www.google.com/maps?q=${party.coordinates.lat},${party.coordinates.lng}`, '_blank');
+        // Using a simpler Google Maps URL format
+        window.open(`https://www.google.com/maps/search/?api=1&query=${party.coordinates.lat},${party.coordinates.lng}`, '_blank');
     }
 }
 
-// Function to get current location and send WhatsApp message
 function getCurrentLocationAndSendMessage(partyName) {
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            // Prepare WhatsApp message
-            const message = `Dear Sir,\n\nkindly add the below location coordinates for ${partyName}\n\ncoordinates: (${lat}, ${lng})\n\nthank you`;
-            
-            // Encode message for URL
-            const encodedMessage = encodeURIComponent(message);
-            
-            // Open WhatsApp with the message
-            window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
-        }, function(error) {
-            alert("Error getting location: " + error.message);
-        });
+        // Show loading indicator
+        const loadingMessage = "Getting accurate location...";
+        const loadingElement = document.createElement('div');
+        loadingElement.textContent = loadingMessage;
+        loadingElement.style.position = 'fixed';
+        loadingElement.style.top = '50%';
+        loadingElement.style.left = '50%';
+        loadingElement.style.transform = 'translate(-50%, -50%)';
+        loadingElement.style.padding = '20px';
+        loadingElement.style.background = 'white';
+        loadingElement.style.border = '1px solid #ccc';
+        loadingElement.style.borderRadius = '5px';
+        loadingElement.style.zIndex = '1000';
+        document.body.appendChild(loadingElement);
+
+        let bestAccuracy = Infinity;
+        let bestReading = null;
+        let readings = 0;
+
+        const watchId = navigator.geolocation.watchPosition(
+            function(position) {
+                readings++;
+                if (position.coords.accuracy < bestAccuracy) {
+                    bestAccuracy = position.coords.accuracy;
+                    bestReading = position;
+                }
+
+                // Update loading message
+                loadingElement.textContent = `Getting location... Accuracy: ±${Math.round(bestAccuracy)}m`;
+
+                // If we have a good reading or have tried enough times
+                if (bestAccuracy < 20 || readings > 10) {
+                    navigator.geolocation.clearWatch(watchId);
+                    loadingElement.remove();
+                    
+                    const lat = bestReading.coords.latitude;
+                    const lng = bestReading.coords.longitude;
+                    
+                    // Create a direct Google Maps link
+                    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                    
+                    // Create message with the maps link
+                    const message = `Dear Sir,\n\n`
+                        + `kindly add the below location for ${partyName}\n\n`
+                        + `Location Link: ${mapsLink}\n\n`
+                        + `thank you`;
+                    
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+                }
+            },
+            function(error) {
+                loadingElement.remove();
+                let errorMessage;
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = "Location permission denied. Please allow location access.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = "Location information unavailable. Please try again outdoors.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = "Location request timed out. Please try again.";
+                        break;
+                    default:
+                        errorMessage = "Error getting location: " + error.message;
+                }
+                alert(errorMessage);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 30000,
+                maximumAge: 0
+            }
+        );
+
+        // Allow user to cancel if it's taking too long
+        setTimeout(() => {
+            if (readings > 0) {
+                navigator.geolocation.clearWatch(watchId);
+                loadingElement.remove();
+                
+                if (bestReading) {
+                    const lat = bestReading.coords.latitude;
+                    const lng = bestReading.coords.longitude;
+                    
+                    // Create a direct Google Maps link
+                    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                    
+                    // Create message with the maps link
+                    const message = `Dear Sir,\n\n`
+                        + `kindly add the below location for ${partyName}\n\n`
+                        + `Location Link: ${mapsLink}\n\n`
+                        + `thank you`;
+                    
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+                }
+            }
+        }, 30000);
     } else {
         alert("Geolocation is not supported by this browser.");
     }
