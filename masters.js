@@ -41,9 +41,8 @@ function openMap(index) {
 function getCurrentLocationAndSendMessage(partyName) {
     if ("geolocation" in navigator) {
         // Show loading indicator
-        const loadingMessage = "Getting accurate location...";
         const loadingElement = document.createElement('div');
-        loadingElement.textContent = loadingMessage;
+        loadingElement.textContent = "Getting accurate location...";
         loadingElement.style.position = 'fixed';
         loadingElement.style.top = '50%';
         loadingElement.style.left = '50%';
@@ -58,37 +57,33 @@ function getCurrentLocationAndSendMessage(partyName) {
         let bestAccuracy = Infinity;
         let bestReading = null;
         let readings = 0;
+        const maxReadings = 20; // Increased maximum readings to get better accuracy
+        const minAccuracy = 10; // Minimum accuracy in meters
+        const maxAccuracy = 100; // Maximum accuracy in meters
+        const timeout = 45000; // Extended timeout to 45 seconds
 
         const watchId = navigator.geolocation.watchPosition(
             function(position) {
                 readings++;
-                if (position.coords.accuracy < bestAccuracy) {
-                    bestAccuracy = position.coords.accuracy;
+                const accuracy = position.coords.accuracy;
+                
+                // Update loading message with current accuracy
+                loadingElement.textContent = `Getting location... Accuracy: ±${Math.round(accuracy)}m`;
+
+                // Only update best reading if accuracy is within our acceptable range
+                if (accuracy < bestAccuracy && accuracy >= minAccuracy && accuracy <= maxAccuracy) {
+                    bestAccuracy = accuracy;
                     bestReading = position;
+                    
+                    // If we get a reading with excellent accuracy, use it immediately
+                    if (accuracy <= 20) {
+                        completeLocationProcess();
+                    }
                 }
 
-                // Update loading message
-                loadingElement.textContent = `Getting location... Accuracy: ±${Math.round(bestAccuracy)}m`;
-
-                // If we have a good reading or have tried enough times
-                if (bestAccuracy < 20 || readings > 10) {
-                    navigator.geolocation.clearWatch(watchId);
-                    loadingElement.remove();
-                    
-                    const lat = bestReading.coords.latitude;
-                    const lng = bestReading.coords.longitude;
-                    
-                    // Create a direct Google Maps link
-                    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                    
-                    // Create message with the maps link
-                    const message = `Dear Sir,\n\n`
-                        + `kindly add the below location for ${partyName}\n\n`
-                        + `Location Link: ${mapsLink}\n\n`
-                        + `thank you`;
-                    
-                    const encodedMessage = encodeURIComponent(message);
-                    window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+                // Stop if we've reached max readings
+                if (readings >= maxReadings) {
+                    completeLocationProcess();
                 }
             },
             function(error) {
@@ -111,35 +106,42 @@ function getCurrentLocationAndSendMessage(partyName) {
             },
             {
                 enableHighAccuracy: true,
-                timeout: 30000,
+                timeout: timeout,
                 maximumAge: 0
             }
         );
 
-        // Allow user to cancel if it's taking too long
+        function completeLocationProcess() {
+            navigator.geolocation.clearWatch(watchId);
+            loadingElement.remove();
+
+            if (bestReading && bestAccuracy <= maxAccuracy && bestAccuracy >= minAccuracy) {
+                const lat = bestReading.coords.latitude;
+                const lng = bestReading.coords.longitude;
+                
+                // Create a direct Google Maps link
+                const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                
+                // Create message with the maps link and accuracy information
+                const message = `Dear Sir,\n\n`
+                    + `kindly add the below location for ${partyName}\n\n`
+                    + `Location Link: ${mapsLink}\n`
+                    + `Location Accuracy: ±${Math.round(bestAccuracy)}m\n\n`
+                    + `thank you`;
+                
+                const encodedMessage = encodeURIComponent(message);
+                window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
+            } else {
+                alert(`Could not get location with required accuracy (between ${minAccuracy}m and ${maxAccuracy}m). Please try again in an open area.`);
+            }
+        }
+
+        // Set timeout to prevent indefinite waiting
         setTimeout(() => {
             if (readings > 0) {
-                navigator.geolocation.clearWatch(watchId);
-                loadingElement.remove();
-                
-                if (bestReading) {
-                    const lat = bestReading.coords.latitude;
-                    const lng = bestReading.coords.longitude;
-                    
-                    // Create a direct Google Maps link
-                    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                    
-                    // Create message with the maps link
-                    const message = `Dear Sir,\n\n`
-                        + `kindly add the below location for ${partyName}\n\n`
-                        + `Location Link: ${mapsLink}\n\n`
-                        + `thank you`;
-                    
-                    const encodedMessage = encodeURIComponent(message);
-                    window.open(`https://wa.me/919284494154?text=${encodedMessage}`, '_blank');
-                }
+                completeLocationProcess();
             }
-        }, 30000);
+        }, timeout);
     } else {
         alert("Geolocation is not supported by this browser.");
     }
