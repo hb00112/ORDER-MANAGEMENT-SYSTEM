@@ -315,7 +315,7 @@ function createSentOrderElement(order, index) {
                     buttonsContainer.style.display = 'none';
                 }, 10000); // Hide after 10 seconds
             }
-        }, 4000); // Show after 4 seconds press
+        }, 3000); // Show after 4 seconds press
     };
 
     const endPress = () => {
