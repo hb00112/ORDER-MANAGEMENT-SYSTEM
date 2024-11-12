@@ -365,28 +365,119 @@ function downloadAsImage(element, filename) {
 // Function to download as PDF
 // Function to download as PDF
 function downloadAsPDF(element, filename) {
+    // First, create a wrapper div that will contain our clone
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '0';
+    wrapper.style.left = '0';
+    wrapper.style.width = '100%';
+    wrapper.style.height = '100%';
+    wrapper.style.background = '#fff';
+    wrapper.style.zIndex = '-9999';
+    document.body.appendChild(wrapper);
+
+    // Create a clone of the element
+    const clone = element.cloneNode(true);
+    
+    // Reset any transformations and ensure visibility
+    clone.style.transform = 'none';
+    clone.style.position = 'relative';
+    clone.style.left = '0';
+    clone.style.top = '0';
+    clone.style.width = element.offsetWidth + 'px';
+    clone.style.margin = '20px';
+    clone.style.background = '#fff';
+    
+    // Ensure all table cells have proper padding and borders
+    const cells = clone.querySelectorAll('td, th');
+    cells.forEach(cell => {
+        cell.style.padding = '8px';
+        cell.style.border = '1px solid #000';
+    });
+
+    // Add clone to wrapper
+    wrapper.appendChild(clone);
+
+    // Setup html2canvas options
     const options = {
-        scale: 2, // Increase quality
+        scale: 2,
         useCORS: true,
+        allowTaint: true,
+        scrollY: 0,
         scrollX: 0,
-        scrollY: -window.scrollY, // Ensure full capture
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight
+        windowWidth: clone.offsetWidth + 40, // Add margin
+        windowHeight: clone.offsetHeight + 40,
+        background: '#fff',
+        onclone: (clonedDoc) => {
+            const clonedElement = clonedDoc.querySelector('.order-container');
+            if (clonedElement) {
+                // Ensure table is properly styled in the clone
+                const tables = clonedElement.querySelectorAll('table');
+                tables.forEach(table => {
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.marginBottom = '10px';
+                });
+
+                // Ensure text is black and visible
+                clonedElement.style.color = '#000';
+                const textElements = clonedElement.querySelectorAll('*');
+                textElements.forEach(el => {
+                    if (window.getComputedStyle(el).color === 'rgba(0, 0, 0, 0)') {
+                        el.style.color = '#000';
+                    }
+                });
+            }
+        }
     };
 
-    html2canvas(element, options).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Create PDF using jsPDF
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`${filename}.pdf`);
+    // Create PDF
+    html2canvas(clone, options).then(canvas => {
+        try {
+            const imgData = canvas.toDataURL('image/png', 1.0);
+            const { jsPDF } = window.jspdf;
+            
+            // Calculate dimensions
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // Create PDF with proper margins
+            const pdf = new jsPDF({
+                orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            // Add margins
+            const margin = 10; // 10mm margins
+            const availableWidth = imgWidth - (2 * margin);
+            const availableHeight = pageHeight - (2 * margin);
+            
+            // Calculate scaling to fit within margins
+            const scale = Math.min(
+                availableWidth / imgWidth,
+                availableHeight / imgHeight
+            );
+            
+            // Center the image
+            const xOffset = margin + (availableWidth - (imgWidth * scale)) / 2;
+            const yOffset = margin + (availableHeight - (imgHeight * scale)) / 2;
+            
+            // Add the image
+            pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth * scale, imgHeight * scale);
+            
+            // Save the PDF
+            pdf.save(`${filename}.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+        } finally {
+            // Clean up
+            document.body.removeChild(wrapper);
+        }
+    }).catch(error => {
+        console.error('Error capturing element:', error);
+        document.body.removeChild(wrapper);
     });
 }
 
