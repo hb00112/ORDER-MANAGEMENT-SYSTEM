@@ -219,8 +219,9 @@ function mergeOrders(orders) {
 }*/
 function createSentOrderElement(order, index) {
     const orderDiv = document.createElement('div');
-    orderDiv.className = 'order-container mb-4 p-3 bg-pink-100 rounded';
-    
+    orderDiv.style.backgroundColor = index % 2 === 0 ? '#ffebee' : '#e3f2fd';  // Light pink and light blue
+    orderDiv.className = 'order-container mb-4 p-3 rounded';
+   
     // Calculate total quantity
     const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
     
