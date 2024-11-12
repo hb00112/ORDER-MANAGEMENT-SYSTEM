@@ -218,10 +218,44 @@ function mergeOrders(orders) {
     return Array.from(mergedOrdersMap.values());
 }*/
 function createSentOrderElement(order, index) {
+    // Create wrapper div to hold both buttons and order container
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.className = 'order-wrapper position-relative mb-4';
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'buttons-container position-absolute w-full';
+    buttonsContainer.style.cssText = `
+        display: none;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 10px;
+        z-index: 100;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        background: transparent;
+    `;
+    
+    // Create download buttons
+    const imgButton = document.createElement('button');
+    imgButton.className = 'btn btn-primary btn-sm';
+    imgButton.innerHTML = 'Download as Image';
+    imgButton.onclick = () => downloadAsImage(orderDiv, `${order.partyName}_${formatDateForFile(order.billingDate)}`);
+
+    const pdfButton = document.createElement('button');
+    pdfButton.className = 'btn btn-secondary btn-sm';
+    pdfButton.innerHTML = 'Download as PDF';
+    pdfButton.onclick = () => downloadAsPDF(orderDiv, `${order.partyName}_${formatDateForFile(order.billingDate)}`);
+
+    buttonsContainer.appendChild(imgButton);
+    buttonsContainer.appendChild(pdfButton);
+
+    // Create order container
     const orderDiv = document.createElement('div');
-    orderDiv.style.backgroundColor = index % 2 === 0 ? '#ffebee' : '#e3f2fd';  // Light pink and light blue
-    orderDiv.className = 'order-container mb-4 p-3 rounded';
-   
+    orderDiv.style.backgroundColor = index % 2 === 0 ? '#ffebee' : '#e3f2fd';
+    orderDiv.className = 'order-container p-3 rounded';
+
     // Calculate total quantity
     const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
     
@@ -254,8 +288,106 @@ function createSentOrderElement(order, index) {
             </table>
         </div>
     `;
+
+    // Add elements to wrapper
+    wrapperDiv.appendChild(buttonsContainer);
+    wrapperDiv.appendChild(orderDiv);
+
+    // Add press/touch handling
+    let pressTimer;
+    let hideTimer;
+    let isPressing = false;
+
+    const startPress = () => {
+        isPressing = true;
+        pressTimer = setTimeout(() => {
+            if (isPressing) {
+                // Show buttons
+                buttonsContainer.style.display = 'flex';
+                
+                // Clear any existing hide timer
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                }
+                
+                // Set new hide timer
+                hideTimer = setTimeout(() => {
+                    buttonsContainer.style.display = 'none';
+                }, 10000); // Hide after 10 seconds
+            }
+        }, 4000); // Show after 4 seconds press
+    };
+
+    const endPress = () => {
+        isPressing = false;
+        clearTimeout(pressTimer);
+    };
+
+    // Mouse events
+    orderDiv.addEventListener('mousedown', startPress);
+    orderDiv.addEventListener('mouseup', endPress);
+    orderDiv.addEventListener('mouseleave', endPress);
+
+    // Touch events
+    orderDiv.addEventListener('touchstart', startPress);
+    orderDiv.addEventListener('touchend', endPress);
+    orderDiv.addEventListener('touchcancel', endPress);
+
+    return wrapperDiv;
+}
+
+// Helper function to format date for filename
+function formatDateForFile(dateString) {
+    if (!dateString) return 'NA';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+}
+
+// Function to download as image
+function downloadAsImage(element, filename) {
+    const options = {
+        scale: 2, // Increase quality
+        useCORS: true,
+        scrollX: 0,
+        scrollY: -window.scrollY, // Ensure full capture
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
+    };
     
-    return orderDiv;
+    html2canvas(element, options).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `${filename}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+
+// Function to download as PDF
+// Function to download as PDF
+function downloadAsPDF(element, filename) {
+    const options = {
+        scale: 2, // Increase quality
+        useCORS: true,
+        scrollX: 0,
+        scrollY: -window.scrollY, // Ensure full capture
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
+    };
+
+    html2canvas(element, options).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Create PDF using jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${filename}.pdf`);
+    });
 }
 
 function createSentOrderItemRows(items) {
