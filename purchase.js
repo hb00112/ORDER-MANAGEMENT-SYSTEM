@@ -76045,47 +76045,284 @@ function renderCartTable() {
     });
 }
 
-function exportToExcel() {
-    // Check if cart is empty
-    if (poCart.length === 0) {
-        alert('Cart is empty. Please add items before exporting.');
-        return;
-    }
-
+function exportToExcelWithSheetJS() {
     try {
+        // Check if cart is empty
+        if (poCart.length === 0) {
+            alert('Cart is empty. Please add items before exporting.');
+            return;
+        }
+
+        // Check if XLSX is available
+        if (typeof XLSX === 'undefined') {
+            console.error('SheetJS (XLSX) is not loaded');
+            return exportToExcel(); // Fallback to basic CSV export
+        }
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Prepare data in simplified format
+        const excelData = poCart.map(item => ({
+            'Item Name': item.style,
+            'Color': item.color,
+            'Size': item.size,
+            'Quantity': item.quantity
+        }));
+        
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        
+        // Set column widths
+        const colWidths = [
+            { wch: 30 }, // Item Name
+            { wch: 15 }, // Color
+            { wch: 10 }, // Size
+            { wch: 10 }  // Quantity
+        ];
+        ws['!cols'] = colWidths;
+
+        // Calculate the last row of data
+        const lastRow = excelData.length + 1; // +1 for header row
+
+        // Add empty row for spacing
+        XLSX.utils.sheet_add_json(ws, [{}], { origin: lastRow + 1 });
+
+        // Add instructions
+        const instructions = [
+            ["COPY THE ABOVE DATA (DONT COPY HEADER) AND PASTE IT IN THE MAIN ORDER FORMAT OF COMPANY FROM A5838"],
+            ["THEN PRESS (Alt + F11) AND CREATE NEW MODULE AND PASTE THE BELOW CODE THERE AND RUN IT"],
+            ["CODE:"],
+            [`Sub UpdateQuantities()
+    Dim lastRow As Long
+    Dim formLastRow As Long
+    Dim inputRow As Long
+    Dim formRow As Long
+    Dim ws As Worksheet
+    Dim found As Boolean
+    Dim unmatchedCount As Long
+    
+    Set ws = ActiveSheet
+    
+    ' Find last row of the form (searching up to row 5836)
+    formLastRow = 5836
+    
+    ' Find last row of input data (starting from row 5838)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Clear any previous highlighting in the input area
+    ws.Range("A5838:D" & lastRow).Interior.ColorIndex = xlNone
+    
+    unmatchedCount = 0
+    
+    ' Loop through each input row starting from 5838
+    For inputRow = 5838 To lastRow
+        found = False
+        
+        ' Get input values
+        Dim inputStyle As String
+        Dim inputColor As String
+        Dim inputSize As String
+        Dim inputQty As Variant
+        
+        inputStyle = ws.Cells(inputRow, 1).Value  ' Column A
+        inputColor = ws.Cells(inputRow, 2).Value  ' Column B
+        inputSize = ws.Cells(inputRow, 3).Value   ' Column C
+        inputQty = ws.Cells(inputRow, 4).Value    ' Column D
+        
+        ' Skip empty rows
+        If Trim(inputStyle) <> "" Then
+            ' Loop through form rows to find matching entry
+            For formRow = 1 To formLastRow
+                ' Get form values
+                Dim formStyle As String
+                Dim formColor As String
+                Dim formSize As String
+                
+                formStyle = ws.Cells(formRow, "C").Value   ' Style column
+                formColor = ws.Cells(formRow, "E").Value   ' Color column
+                formSize = ws.Cells(formRow, "I").Value    ' Size column
+                
+                ' Check if all criteria match
+                If formStyle = inputStyle And _
+                   formColor = inputColor And _
+                   formSize = inputSize Then
+                    
+                    ' Update quantity in column M
+                    ws.Cells(formRow, "M").Value = inputQty
+                    found = True
+                    Exit For
+                End If
+            Next formRow
+            
+            ' Highlight unmatched entries in red
+            If Not found Then
+                ' Highlight entire row in light red
+                With ws.Range("A" & inputRow & ":D" & inputRow).Interior
+                    .Color = RGB(255, 200, 200)  ' Light red color
+                End With
+                unmatchedCount = unmatchedCount + 1
+                
+                ' Log unmatched entry details
+                Debug.Print "No match found for: Style=" & inputStyle & _
+                           ", Color=" & inputColor & _
+                           ", Size=" & inputSize
+            End If
+        End If
+    Next inputRow
+    
+    ' Show completion message with count of unmatched entries
+    If unmatchedCount > 0 Then
+        MsgBox "Update complete!" & vbNewLine & _
+               unmatchedCount & " unmatched entries were found and highlighted in red.", _
+               vbInformation
+    Else
+        MsgBox "Update complete! All entries were successfully matched.", _
+               vbInformation
+    End If
+End Sub`]
+        ];
+
+        // Add instructions to worksheet starting from the row after the data plus spacing
+        instructions.forEach((row, index) => {
+            XLSX.utils.sheet_add_json(ws, [{ 'Item Name': row[0] }], {
+                origin: lastRow + 2 + index,
+                skipHeader: true
+            });
+        });
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Purchase Order');
+        
+        // Generate Excel file and trigger download
+        XLSX.writeFile(wb, `purchase_order_${getCurrentDateTime()}.xlsx`);
+        
+    } catch (error) {
+        console.error('Error exporting to Excel with SheetJS:', error);
+        exportToExcel(); // Fallback to basic CSV export
+    }
+}
+
+// Keep the getCurrentDateTime helper function
+function getCurrentDateTime() {
+    const now = new Date();
+    return now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+}
+
+// Modify the basic CSV export function as fallback
+function exportToExcel() {
+    try {
+        // Check if cart is empty
+        if (poCart.length === 0) {
+            alert('Cart is empty. Please add items before exporting.');
+            return;
+        }
+
         // Create CSV content
         let csvContent = 'data:text/csv;charset=utf-8,';
         
-        // Add headers
-        const headers = [
-            'Material Code',
-            'Category',
-            'Style',
-            'Description',
-            'Color',
-            'Color Name',
-            'Style-Color',
-            'Size',
-            'MRP',
-            'Pack Size',
-            'Quantity'
-        ];
+        // Add headers (simplified format)
+        const headers = ['Item Name', 'Color', 'Size', 'Quantity', 'VBA Code'];
         csvContent += headers.join(',') + '\n';
         
-        // Add data rows
-        poCart.forEach(item => {
+        // Prepare VBA code as a single string with proper escaping
+        const vbaCode = `"Sub UpdateQuantities()
+    Dim lastRow As Long
+    Dim formLastRow As Long
+    Dim inputRow As Long
+    Dim formRow As Long
+    Dim ws As Worksheet
+    Dim found As Boolean
+    Dim unmatchedCount As Long
+    
+    Set ws = ActiveSheet
+    
+    ' Find last row of the form (searching up to row 5836)
+    formLastRow = 5836
+    
+    ' Find last row of input data (starting from row 5838)
+    lastRow = ws.Cells(ws.Rows.Count, ""A"").End(xlUp).Row
+    
+    ' Clear any previous highlighting in the input area
+    ws.Range(""A5838:D"" & lastRow).Interior.ColorIndex = xlNone
+    
+    unmatchedCount = 0
+    
+    ' Loop through each input row starting from 5838
+    For inputRow = 5838 To lastRow
+        found = False
+        
+        ' Get input values
+        Dim inputStyle As String
+        Dim inputColor As String
+        Dim inputSize As String
+        Dim inputQty As Variant
+        
+        inputStyle = ws.Cells(inputRow, 1).Value  ' Column A
+        inputColor = ws.Cells(inputRow, 2).Value  ' Column B
+        inputSize = ws.Cells(inputRow, 3).Value   ' Column C
+        inputQty = ws.Cells(inputRow, 4).Value    ' Column D
+        
+        ' Skip empty rows
+        If Trim(inputStyle) <> """" Then
+            ' Loop through form rows to find matching entry
+            For formRow = 1 To formLastRow
+                ' Get form values
+                Dim formStyle As String
+                Dim formColor As String
+                Dim formSize As String
+                
+                formStyle = ws.Cells(formRow, ""C"").Value   ' Style column
+                formColor = ws.Cells(formRow, ""E"").Value   ' Color column
+                formSize = ws.Cells(formRow, ""I"").Value    ' Size column
+                
+                ' Check if all criteria match
+                If formStyle = inputStyle And _
+                   formColor = inputColor And _
+                   formSize = inputSize Then
+                    
+                    ' Update quantity in column M
+                    ws.Cells(formRow, ""M"").Value = inputQty
+                    found = True
+                    Exit For
+                End If
+            Next formRow
+            
+            ' Highlight unmatched entries in red
+            If Not found Then
+                ' Highlight entire row in light red
+                With ws.Range(""A"" & inputRow & "":D"" & inputRow).Interior
+                    .Color = RGB(255, 200, 200)  ' Light red color
+                End With
+                unmatchedCount = unmatchedCount + 1
+                
+                ' Log unmatched entry details
+                Debug.Print ""No match found for: Style="" & inputStyle & _
+                           "", Color="" & inputColor & _
+                           "", Size="" & inputSize
+            End If
+        End If
+    Next inputRow
+    
+    ' Show completion message with count of unmatched entries
+    If unmatchedCount > 0 Then
+        MsgBox ""Update complete!"" & vbNewLine & _
+               unmatchedCount & "" unmatched entries were found and highlighted in red."", _
+               vbInformation
+    Else
+        MsgBox ""Update complete! All entries were successfully matched."", _
+               vbInformation
+    End If
+End Sub"`;
+
+        // Add data rows with VBA code in the last column of first row only
+        poCart.forEach((item, index) => {
             const row = [
-                item.materialCode,
-                item.category,
-                item.style,
-                `"${item.description.replace(/"/g, '""')}"`, // Escape quotes in description
-                item.color,
-                item.colorName,
-                item.stylecol,
-                item.size,
-                item.mrp,
-                item.packsize,
-                item.quantity
+                `"${item.style}"`,
+                `"${item.color}"`,
+                `"${item.size}"`,
+                item.quantity,
+                index === 0 ? vbaCode : '' // Add VBA code only to first row
             ];
             csvContent += row.join(',') + '\n';
         });
@@ -76103,64 +76340,8 @@ function exportToExcel() {
         // Cleanup
         document.body.removeChild(link);
     } catch (error) {
-        console.error('Error exporting to Excel:', error);
-        alert('An error occurred while exporting to Excel. Please try again.');
-    }
-}
-
-// Helper function to get current date and time for filename
-function getCurrentDateTime() {
-    const now = new Date();
-    return now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-}
-
-// Optional: More sophisticated version using SheetJS library
-function exportToExcelWithSheetJS() {
-    try {
-        // Check if XLSX is available
-        if (typeof XLSX === 'undefined') {
-            console.error('SheetJS (XLSX) is not loaded');
-            return exportToExcel(); // Fallback to basic CSV export
-        }
-
-        // Create workbook
-        const wb = XLSX.utils.book_new();
-        
-        // Prepare data
-        const excelData = poCart.map(item => ({
-            'Material Code': item.materialCode,
-            'Category': item.category,
-            'Style': item.style,
-            'Description': item.description,
-            'Color': item.color,
-            'Color Name': item.colorName,
-            'Style-Color': item.stylecol,
-            'Size': item.size,
-            'MRP': item.mrp,
-            'Pack Size': item.packsize,
-            'Quantity': item.quantity
-        }));
-        
-        // Create worksheet
-        const ws = XLSX.utils.json_to_sheet(excelData);
-        
-        // Auto-size columns
-        const colWidths = Object.keys(excelData[0]).map(key => ({
-            wch: Math.max(key.length, ...excelData.map(item => 
-                String(item[key]).length
-            ))
-        }));
-        ws['!cols'] = colWidths;
-        
-        // Add worksheet to workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Purchase Order');
-        
-        // Generate Excel file and trigger download
-        XLSX.writeFile(wb, `purchase_order_${getCurrentDateTime()}.xlsx`);
-        
-    } catch (error) {
-        console.error('Error exporting to Excel with SheetJS:', error);
-        exportToExcel(); // Fallback to basic CSV export
+        console.error('Error exporting to CSV:', error);
+        alert('An error occurred while exporting. Please try again.');
     }
 }
 
