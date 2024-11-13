@@ -571,7 +571,12 @@ function exportOrderToExcel(order) {
         if (item.quantities && typeof item.quantities === 'object') {
             Object.entries(item.quantities).forEach(([size, qty]) => {
                 if (qty > 0) {
-                    addExportDataRow(exportData, item.name, item.color, size, qty);
+                    exportData.push({
+                        'Item Name': item.name,
+                        'Color': item.color,
+                        'Size': size,
+                        'Quantity': qty
+                    });
                 }
             });
         } else {
@@ -588,14 +593,129 @@ function exportOrderToExcel(order) {
     // Create and download Excel file
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Set column widths
     const colWidths = [
-        { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 10 },
-        { wch: 15 }, { wch: 15 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 10 }
+        { wch: 30 }, // Item Name
+        { wch: 15 }, // Color
+        { wch: 10 }, // Size
+        { wch: 10 }  // Quantity
     ];
     ws['!cols'] = colWidths;
+
+    // Calculate the last row of data
+    const lastRow = exportData.length + 1; // +1 for header row
+
+    // Add empty row for spacing
+    XLSX.utils.sheet_add_json(ws, [{}], { origin: lastRow + 1 });
+
+    // Add instructions
+    const instructions = [
+        ["COPY THE ABOVE DATA (DONT COPY HEADER) AND PASTE IT IN THE MAIN ORDER FORMAT OF COMPANY FROM A5838"],
+        ["THEN PRESS (Alt + F11) AND CREATE NEW MODULE AND PASTE THE BELOW CODE THERE AND RUN IT"],
+        ["CODE:"],
+        [`Sub UpdateQuantities()
+    Dim lastRow As Long
+    Dim formLastRow As Long
+    Dim inputRow As Long
+    Dim formRow As Long
+    Dim ws As Worksheet
+    Dim found As Boolean
+    Dim unmatchedCount As Long
+    
+    Set ws = ActiveSheet
+    
+    ' Find last row of the form (searching up to row 5836)
+    formLastRow = 5836
+    
+    ' Find last row of input data (starting from row 5838)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Clear any previous highlighting in the input area
+    ws.Range("A5838:D" & lastRow).Interior.ColorIndex = xlNone
+    
+    unmatchedCount = 0
+    
+    ' Loop through each input row starting from 5838
+    For inputRow = 5838 To lastRow
+        found = False
+        
+        ' Get input values
+        Dim inputStyle As String
+        Dim inputColor As String
+        Dim inputSize As String
+        Dim inputQty As Variant
+        
+        inputStyle = ws.Cells(inputRow, 1).Value  ' Column A
+        inputColor = ws.Cells(inputRow, 2).Value  ' Column B
+        inputSize = ws.Cells(inputRow, 3).Value   ' Column C
+        inputQty = ws.Cells(inputRow, 4).Value    ' Column D
+        
+        ' Skip empty rows
+        If Trim(inputStyle) <> "" Then
+            ' Loop through form rows to find matching entry
+            For formRow = 1 To formLastRow
+                ' Get form values
+                Dim formStyle As String
+                Dim formColor As String
+                Dim formSize As String
+                
+                formStyle = ws.Cells(formRow, "C").Value   ' Style column
+                formColor = ws.Cells(formRow, "E").Value   ' Color column
+                formSize = ws.Cells(formRow, "I").Value    ' Size column
+                
+                ' Check if all criteria match
+                If formStyle = inputStyle And _
+                   formColor = inputColor And _
+                   formSize = inputSize Then
+                    
+                    ' Update quantity in column M
+                    ws.Cells(formRow, "M").Value = inputQty
+                    found = True
+                    Exit For
+                End If
+            Next formRow
+            
+            ' Highlight unmatched entries in red
+            If Not found Then
+                ' Highlight entire row in light red
+                With ws.Range("A" & inputRow & ":D" & inputRow).Interior
+                    .Color = RGB(255, 200, 200)  ' Light red color
+                End With
+                unmatchedCount = unmatchedCount + 1
+                
+                ' Log unmatched entry details
+                Debug.Print "No match found for: Style=" & inputStyle & _
+                           ", Color=" & inputColor & _
+                           ", Size=" & inputSize
+            End If
+        End If
+    Next inputRow
+    
+    ' Show completion message with count of unmatched entries
+    If unmatchedCount > 0 Then
+        MsgBox "Update complete!" & vbNewLine & _
+               unmatchedCount & " unmatched entries were found and highlighted in red.", _
+               vbInformation
+    Else
+        MsgBox "Update complete! All entries were successfully matched.", _
+               vbInformation
+    End If
+End Sub`]
+    ];
+
+    // Add instructions to worksheet starting from the row after the data plus spacing
+    instructions.forEach((row, index) => {
+        XLSX.utils.sheet_add_json(ws, [{ 'Item Name': row[0] }], {
+            origin: lastRow + 2 + index,
+            skipHeader: true
+        });
+    });
+    
     XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
     XLSX.writeFile(wb, `purchase_order_${order.orderNumber || 'export'}.xlsx`);
 
+    // Email functionality remains the same
     setTimeout(() => {
         const to = 'vishalkulkarni@modenik.in';
         const cc = 'chandra.niwas@modenik.in,MANJUNATH.AVAROLKAR@modenik.in';
@@ -612,7 +732,7 @@ Kambeshwar Agencies`;
         const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         
         window.open(gmailComposeUrl, '_blank');
-    }, 1000); // Delay of 1 second to ensure the file is downloaded before opening Gmail
+    }, 1000);
 }
 
 function addExportDataRow(exportData, itemName, color, size, qty) {
