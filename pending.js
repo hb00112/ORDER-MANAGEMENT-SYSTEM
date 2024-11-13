@@ -625,19 +625,19 @@ function exportOrderToExcel(order) {
     
     Set ws = ActiveSheet
     
-    ' Find last row of the form (searching up to row 5836)
-    formLastRow = 5836
+    ' Find last row of the form (searching up to row 5840)
+    formLastRow = 5840
     
-    ' Find last row of input data (starting from row 5838)
+    ' Find last row of input data (starting from row 5842)
     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     
     ' Clear any previous highlighting in the input area
-    ws.Range("A5838:D" & lastRow).Interior.ColorIndex = xlNone
+    ws.Range("A5842:D" & lastRow).Interior.ColorIndex = xlNone
     
     unmatchedCount = 0
     
-    ' Loop through each input row starting from 5838
-    For inputRow = 5838 To lastRow
+    ' Loop through each input row starting from 5842
+    For inputRow = 5842 To lastRow
         found = False
         
         ' Get input values
@@ -660,9 +660,9 @@ function exportOrderToExcel(order) {
                 Dim formColor As String
                 Dim formSize As String
                 
-                formStyle = ws.Cells(formRow, "C").Value   ' Style column
-                formColor = ws.Cells(formRow, "E").Value   ' Color column
-                formSize = ws.Cells(formRow, "I").Value    ' Size column
+                formStyle = ws.Cells(formRow, "D").Value   ' Style column (changed from C to D)
+                formColor = ws.Cells(formRow, "F").Value   ' Color column (changed from E to F)
+                formSize = ws.Cells(formRow, "J").Value    ' Size column (changed from I to J)
                 
                 ' Check if all criteria match
                 If formStyle = inputStyle And _
