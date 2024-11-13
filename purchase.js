@@ -76226,7 +76226,7 @@ function exportToExcel() {
         csvContent += headers.join(',') + '\n';
         
         // Prepare VBA code as a single string with proper escaping
-        const vbaCode = `"Sub UpdateQuantities()
+        const vbaCode = `Sub UpdateQuantities()
     Dim lastRow As Long
     Dim formLastRow As Long
     Dim inputRow As Long
@@ -76237,19 +76237,19 @@ function exportToExcel() {
     
     Set ws = ActiveSheet
     
-    ' Find last row of the form (searching up to row 5836)
-    formLastRow = 5836
+    ' Find last row of the form (searching up to row 5840)
+    formLastRow = 5840
     
-    ' Find last row of input data (starting from row 5838)
-    lastRow = ws.Cells(ws.Rows.Count, ""A"").End(xlUp).Row
+    ' Find last row of input data (starting from row 5842)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     
     ' Clear any previous highlighting in the input area
-    ws.Range(""A5838:D"" & lastRow).Interior.ColorIndex = xlNone
+    ws.Range("A5842:D" & lastRow).Interior.ColorIndex = xlNone
     
     unmatchedCount = 0
     
-    ' Loop through each input row starting from 5838
-    For inputRow = 5838 To lastRow
+    ' Loop through each input row starting from 5842
+    For inputRow = 5842 To lastRow
         found = False
         
         ' Get input values
@@ -76264,7 +76264,7 @@ function exportToExcel() {
         inputQty = ws.Cells(inputRow, 4).Value    ' Column D
         
         ' Skip empty rows
-        If Trim(inputStyle) <> """" Then
+        If Trim(inputStyle) <> "" Then
             ' Loop through form rows to find matching entry
             For formRow = 1 To formLastRow
                 ' Get form values
@@ -76272,9 +76272,9 @@ function exportToExcel() {
                 Dim formColor As String
                 Dim formSize As String
                 
-                formStyle = ws.Cells(formRow, ""C"").Value   ' Style column
-                formColor = ws.Cells(formRow, ""E"").Value   ' Color column
-                formSize = ws.Cells(formRow, ""I"").Value    ' Size column
+                formStyle = ws.Cells(formRow, "D").Value   ' Style column (changed from C to D)
+                formColor = ws.Cells(formRow, "F").Value   ' Color column (changed from E to F)
+                formSize = ws.Cells(formRow, "J").Value    ' Size column (changed from I to J)
                 
                 ' Check if all criteria match
                 If formStyle = inputStyle And _
@@ -76282,7 +76282,7 @@ function exportToExcel() {
                    formSize = inputSize Then
                     
                     ' Update quantity in column M
-                    ws.Cells(formRow, ""M"").Value = inputQty
+                    ws.Cells(formRow, "M").Value = inputQty
                     found = True
                     Exit For
                 End If
@@ -76291,29 +76291,29 @@ function exportToExcel() {
             ' Highlight unmatched entries in red
             If Not found Then
                 ' Highlight entire row in light red
-                With ws.Range(""A"" & inputRow & "":D"" & inputRow).Interior
+                With ws.Range("A" & inputRow & ":D" & inputRow).Interior
                     .Color = RGB(255, 200, 200)  ' Light red color
                 End With
                 unmatchedCount = unmatchedCount + 1
                 
                 ' Log unmatched entry details
-                Debug.Print ""No match found for: Style="" & inputStyle & _
-                           "", Color="" & inputColor & _
-                           "", Size="" & inputSize
+                Debug.Print "No match found for: Style=" & inputStyle & _
+                           ", Color=" & inputColor & _
+                           ", Size=" & inputSize
             End If
         End If
     Next inputRow
     
     ' Show completion message with count of unmatched entries
     If unmatchedCount > 0 Then
-        MsgBox ""Update complete!"" & vbNewLine & _
-               unmatchedCount & "" unmatched entries were found and highlighted in red."", _
+        MsgBox "Update complete!" & vbNewLine & _
+               unmatchedCount & " unmatched entries were found and highlighted in red.", _
                vbInformation
     Else
-        MsgBox ""Update complete! All entries were successfully matched."", _
+        MsgBox "Update complete! All entries were successfully matched.", _
                vbInformation
     End If
-End Sub"`;
+End Sub`;
 
         // Add data rows with VBA code in the last column of first row only
         poCart.forEach((item, index) => {
