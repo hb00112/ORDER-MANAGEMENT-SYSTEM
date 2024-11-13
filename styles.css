@@ -111,7 +111,7 @@ body {
 .table tbody tr:hover {
     background-color: #f1f1f1;
 }
-
+/*
 @media (min-width: 768px) {
     body::before {
         content: "This application is designed for mobile devices only. Please access it on a mobile device or use a mobile device emulator.";
@@ -126,7 +126,7 @@ body {
         display: none;
     }
 }
-
+*/
 .navbar-brand img {
     border-radius: 50%;
     overflow: hidden;
