@@ -171,7 +171,7 @@ function convertItemsArrayFormat(items) {
     
     return converted;
 }
-/*
+
 function mergeOrders(orders) {
     const mergedOrdersMap = new Map();
 
@@ -216,7 +216,7 @@ function mergeOrders(orders) {
     });
 
     return Array.from(mergedOrdersMap.values());
-}*/
+}
 function createSentOrderElement(order, index) {
     // Create wrapper div to hold both buttons and order container
     const wrapperDiv = document.createElement('div');
