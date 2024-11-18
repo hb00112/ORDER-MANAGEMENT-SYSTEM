@@ -2492,3 +2492,51 @@ body.modal-open {
 .notification-dot.has-notifications::after {
     display: block;
 }
+.undelivered-marquee-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 8px 12px;
+    overflow: hidden;
+}
+
+.undelivered-label {
+    color: #d32f2f;
+    font-weight: 600;
+    font-size: 14px;
+    padding-right: 12px;
+    border-right: 1px solid #ffcdd2;
+    flex-shrink: 0;
+}
+
+.orders-scroll-container {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    margin-left: 12px;
+    height: 20px;
+}
+
+.orders-scroll-content {
+    position: absolute;
+    white-space: nowrap;
+    animation: orders-scroll-animation 20s linear infinite;
+    color: #333;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+@keyframes orders-scroll-animation {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.orders-scroll-content:hover {
+    animation-play-state: paused;
+}
