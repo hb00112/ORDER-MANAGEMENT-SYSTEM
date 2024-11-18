@@ -334,7 +334,7 @@ function initializeDailyNotification() {
     
     // Set notification times
     morning.setHours(8, 0, 0, 0);
-    afternoon.setHours(20, 48, 0, 0);
+    afternoon.setHours(21, 4, 0, 0);
     
     // Calculate delays for both notifications
     let morningDelay = morning.getTime() - now.getTime();
