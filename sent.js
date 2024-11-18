@@ -19,7 +19,6 @@ function loadSentOrders() {
                         try {
                             const order = childSnapshot.val();
                             if (order && typeof order === 'object') {
-                                // Normalize the order data to handle different formats
                                 const normalizedOrder = normalizeOrderData(order, childSnapshot.key);
                                 if (normalizedOrder) {
                                     orders.push(normalizedOrder);
@@ -30,14 +29,12 @@ function loadSentOrders() {
                         }
                     });
                     
-                    // Sort orders by billing date in descending order
                     orders.sort((a, b) => {
                         const dateA = a.billingDate ? new Date(a.billingDate) : new Date(0);
                         const dateB = b.billingDate ? new Date(b.billingDate) : new Date(0);
                         return dateB - dateA;
                     });
                     
-                    // Merge orders with same order number and bill date
                     const mergedOrders = mergeOrders(orders);
                     
                     if (mergedOrders.length === 0) {
@@ -45,7 +42,7 @@ function loadSentOrders() {
                         return;
                     }
 
-                    sentOrdersContainer.innerHTML = ''; // Clear loading message
+                    sentOrdersContainer.innerHTML = '';
                     mergedOrders.forEach((order, index) => {
                         const orderElement = createSentOrderElement(order, index);
                         sentOrdersContainer.appendChild(orderElement);
@@ -135,11 +132,9 @@ function convertItemsArrayFormat(items) {
 
 
 function createSentOrderElement(order, index) {
-    // Create wrapper div to hold both buttons and order container
     const wrapperDiv = document.createElement('div');
     wrapperDiv.className = 'order-wrapper position-relative mb-4';
     
-    // Create buttons container
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'buttons-container position-absolute w-full';
     buttonsContainer.style.cssText = `
@@ -154,7 +149,6 @@ function createSentOrderElement(order, index) {
         background: transparent;
     `;
     
-    // Create download buttons
     const imgButton = document.createElement('button');
     imgButton.className = 'btn btn-primary btn-sm';
     imgButton.innerHTML = 'Download as Image';
@@ -168,21 +162,27 @@ function createSentOrderElement(order, index) {
     buttonsContainer.appendChild(imgButton);
     buttonsContainer.appendChild(pdfButton);
 
-    // Create order container
     const orderDiv = document.createElement('div');
     orderDiv.style.backgroundColor = index % 2 === 0 ? '#ffebee' : '#e3f2fd';
     orderDiv.className = 'order-container p-3 rounded';
+    orderDiv.setAttribute('data-order-id', order.id);
+    orderDiv.setAttribute('data-delivery-status', order.deliveryStatus);
 
-    // Calculate total quantity
     const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const statusClass = order.deliveryStatus === 'Delivered' ? 'text-success' : 'text-danger';
     
     orderDiv.innerHTML = `
         <div class="order-header">
-            <h5 class="font-bold">Order No: ${order.orderNumber}</h5>
+            <h5 class="font-bold">Order No: ${order.orderNumber} 
+                <span class="${statusClass}">
+                    (${order.deliveryStatus})
+                </span>
+            </h5>
             <p>Order Date: ${formatDate(order.date)}</p>
             <p>Bill Date: ${formatDate(order.billingDate)}</p>
             <p>Party Name(s): ${order.partyName}</p>
         </div>
+
         <div class="table-responsive mt-3">
             <table class="table table-bordered">
                 <thead class="bg-pink-200">
@@ -206,11 +206,38 @@ function createSentOrderElement(order, index) {
         </div>
     `;
 
-    // Add elements to wrapper
-    wrapperDiv.appendChild(buttonsContainer);
-    wrapperDiv.appendChild(orderDiv);
+    // New click handler implementation
+    let clickTimeout;
+    let clickCount = 0;
+    
+    orderDiv.addEventListener('click', function(e) {
+        clickCount++;
+        
+        if (clickCount === 1) {
+            clickTimeout = setTimeout(() => {
+                clickCount = 0;
+            }, 500);
+        }
+        
+        if (clickCount === 3) {
+            clearTimeout(clickTimeout);
+            clickCount = 0;
+            
+            const currentStatus = this.getAttribute('data-delivery-status');
+            const newStatus = currentStatus === 'Delivered' ? 'Undelivered' : 'Delivered';
+            
+            updateDeliveryStatus(order.id, newStatus)
+                .then(() => {
+                    this.setAttribute('data-delivery-status', newStatus);
+                    const statusSpan = this.querySelector('.order-header h5 span');
+                    statusSpan.textContent = `(${newStatus})`;
+                    statusSpan.className = newStatus === 'Delivered' ? 'text-success' : 'text-danger';
+                })
+                .catch(error => console.error('Error updating delivery status:', error));
+        }
+    });
 
-    // Add press/touch handling
+    // Press/touch handling for download buttons
     let pressTimer;
     let hideTimer;
     let isPressing = false;
@@ -219,20 +246,15 @@ function createSentOrderElement(order, index) {
         isPressing = true;
         pressTimer = setTimeout(() => {
             if (isPressing) {
-                // Show buttons
                 buttonsContainer.style.display = 'flex';
-                
-                // Clear any existing hide timer
                 if (hideTimer) {
                     clearTimeout(hideTimer);
                 }
-                
-                // Set new hide timer
                 hideTimer = setTimeout(() => {
                     buttonsContainer.style.display = 'none';
-                }, 10000); // Hide after 10 seconds
+                }, 10000);
             }
-        }, 3000); // Show after 4 seconds press
+        }, 3000);
     };
 
     const endPress = () => {
@@ -240,18 +262,135 @@ function createSentOrderElement(order, index) {
         clearTimeout(pressTimer);
     };
 
-    // Mouse events
     orderDiv.addEventListener('mousedown', startPress);
     orderDiv.addEventListener('mouseup', endPress);
     orderDiv.addEventListener('mouseleave', endPress);
-
-    // Touch events
     orderDiv.addEventListener('touchstart', startPress);
     orderDiv.addEventListener('touchend', endPress);
     orderDiv.addEventListener('touchcancel', endPress);
 
+    wrapperDiv.appendChild(buttonsContainer);
+    wrapperDiv.appendChild(orderDiv);
+
     return wrapperDiv;
 }
+
+// Function to send daily undelivered orders notification
+
+function getUndeliveredOrders() {
+    return firebase.database().ref('sentOrders').once('value')
+        .then(snapshot => {
+            const undeliveredOrders = [];
+            
+            snapshot.forEach(childSnapshot => {
+                const order = normalizeOrderData(childSnapshot.val(), childSnapshot.key);
+                if (order && order.deliveryStatus === 'Undelivered') {
+                    const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
+                    undeliveredOrders.push({
+                        partyName: order.partyName,
+                        totalQuantity: totalQuantity
+                    });
+                }
+            });
+            
+            return undeliveredOrders;
+        });
+}
+function sendDailyUndeliveredNotification() {
+    getUndeliveredOrders()
+        .then(undeliveredOrders => {
+            if (undeliveredOrders.length > 0) {
+                const message = undeliveredOrders
+                    .map(order => `${order.partyName}-${order.totalQuantity}`)
+                    .join('\n');
+                
+                const payload = {
+                    badge: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png',
+                    title: 'Dispatch Pending',
+                    message: message,
+                    target_url: 'https://ka-oms.netlify.app',
+                    icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
+                };
+
+                return fetch('https://api.webpushr.com/v1/notification/send/all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'webpushrKey': 'b285a62d89f9a1576f806016b692f5b4',
+                        'webpushrAuthToken': '98413'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
+        })
+        .then(response => response && response.json())
+        .then(data => data && console.log('Notification sent:', data))
+        .catch(error => console.error('Error in notification process:', error));
+}
+// Schedule daily notification at 8 AM
+function initializeDailyNotification() {
+    const now = new Date();
+    const scheduledTime = new Date(now);
+    scheduledTime.setHours(8, 0, 0, 0);
+    
+    if (now > scheduledTime) {
+        scheduledTime.setDate(scheduledTime.getDate() + 1);
+    }
+    
+    const timeUntilNext = scheduledTime.getTime() - now.getTime();
+    
+    // Schedule first notification
+    setTimeout(() => {
+        sendDailyUndeliveredNotification();
+        // Schedule subsequent notifications every 24 hours
+        setInterval(sendDailyUndeliveredNotification, 24 * 60 * 60 * 1000);
+    }, timeUntilNext);
+}
+function loadUndeliveredOrdersScroll() {
+    const scrollContent = document.querySelector('.orders-scroll-content');
+    if (!scrollContent) return;
+
+    firebase.database().ref('sentOrders').once('value')
+        .then(snapshot => {
+            const undeliveredOrders = [];
+            
+            snapshot.forEach(childSnapshot => {
+                const order = childSnapshot.val();
+                if (order && order.deliveryStatus === 'Undelivered') {
+                    const totalQuantity = order.billedItems?.reduce((sum, item) => 
+                        sum + (parseInt(item.quantity) || 0), 0) || 0;
+                    
+                    undeliveredOrders.push({
+                        partyName: order.partyName || 'Unknown Party',
+                        totalQuantity: totalQuantity
+                    });
+                }
+            });
+
+            if (undeliveredOrders.length === 0) {
+                scrollContent.textContent = 'No undelivered orders';
+                return;
+            }
+
+            const scrollText = undeliveredOrders
+                .map(order => `${order.partyName} (${order.totalQuantity})`)
+                .join(' | ');
+                
+            scrollContent.textContent = `${scrollText} | 'Triple Tap on Order to Change Delivery Status'`;
+            
+            // Adjust animation duration based on content length
+            const textLength = scrollText.length;
+            const duration = Math.max(10, textLength * 0.2);
+            scrollContent.style.animationDuration = `${duration}s`;
+        })
+        .catch(error => {
+            console.error('Error loading undelivered orders for scroll:', error);
+            scrollContent.textContent = 'Error loading undelivered orders';
+        });
+}
+
+loadUndeliveredOrdersScroll();
+setInterval(loadUndeliveredOrdersScroll, 60000);
 
 // Helper function to format date for filename
 function formatDateForFile(dateString) {
@@ -485,9 +624,11 @@ function formatDateOnly(dateString) {
     return date.toLocaleDateString(); // This will return only the date part
 }
 
-// Load sent orders when the page loads
-document.addEventListener('DOMContentLoaded', loadSentOrders);
-
+document.addEventListener('DOMContentLoaded', () => {
+    loadSentOrders();
+    initializeDailyNotification();
+   
+});
 function getNestedValue(obj, ...args) {
     return args.reduce((obj, level) => obj && obj[level], obj);
 }
