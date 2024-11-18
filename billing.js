@@ -303,8 +303,19 @@ function normalizeOrderData(order, orderId) {
         date: order.date || null,
         billingDate: order.billingDate || null,
         billedItems: billedItems,
-        status: order.status || 'completed'
+        status: order.status || 'completed',
+        deliveryStatus: order.deliveryStatus || 'Delivered' // Add delivery status with default value
     };
+}
+
+// Helper function to update delivery status in Firebase
+function updateDeliveryStatus(orderId, newStatus) {
+    return firebase.database().ref(`sentOrders/${orderId}`).update({
+        deliveryStatus: newStatus
+    }).catch(error => {
+        console.error('Error updating delivery status:', error);
+        throw error;
+    });
 }
 
 function mergeOrders(orders) {
