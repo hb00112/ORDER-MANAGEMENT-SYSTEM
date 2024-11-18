@@ -376,7 +376,7 @@ function loadUndeliveredOrdersScroll() {
                 .map(order => `${order.partyName} (${order.totalQuantity})`)
                 .join(' | ');
                 
-            scrollContent.textContent = `${scrollText} | 'Triple Tap on Order to Change Delivery Status'`;
+            scrollContent.textContent = `${scrollText} | Triple Tap on Order to Change Delivery Status`;
             
             // Adjust animation duration based on content length
             const textLength = scrollText.length;
