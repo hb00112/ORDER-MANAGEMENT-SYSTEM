@@ -328,23 +328,75 @@ function sendDailyUndeliveredNotification() {
         .catch(error => console.error('Error in notification process:', error));
 }
 // Schedule daily notification at 8 AM
-function initializeDailyNotification() {
+function checkAndSendNotification() {
     const now = new Date();
-    const scheduledTime = new Date(now);
-    scheduledTime.setHours(7, 30, 0, 0);
-    
-    if (now > scheduledTime) {
-        scheduledTime.setDate(scheduledTime.getDate() + 1);
-    }
-    
-    const timeUntilNext = scheduledTime.getTime() - now.getTime();
-    
-    // Schedule first notification
-    setTimeout(() => {
-        sendDailyUndeliveredNotification();
-        // Schedule subsequent notifications every 24 hours
-        setInterval(sendDailyUndeliveredNotification, 24 * 60 * 60 * 1000);
-    }, timeUntilNext);
+    const today7AM = new Date(now);
+    today7AM.setHours(7, 30, 0, 0);
+
+    // Reference to store last notification time
+    const notificationRef = firebase.database().ref('system/lastNotification');
+
+    notificationRef.once('value')
+        .then(snapshot => {
+            const lastNotification = snapshot.val();
+            const lastNotificationDate = lastNotification ? new Date(lastNotification.timestamp) : null;
+            
+            // Check if we need to send notification
+            const shouldSendNotification = () => {
+                if (!lastNotificationDate) return true;
+                
+                // Check if last notification was before today 7:30 AM
+                // and current time is after 7:30 AM
+                return lastNotificationDate < today7AM && now >= today7AM;
+            };
+
+            if (shouldSendNotification()) {
+                return getUndeliveredOrders()
+                    .then(undeliveredOrders => {
+                        if (undeliveredOrders.length > 0) {
+                            const message = undeliveredOrders
+                                .map(order => `${order.partyName}-${order.totalQuantity}`)
+                                .join('\n');
+                            
+                            const payload = {
+                                badge: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png',
+                                title: 'Dispatch Pending',
+                                message: message,
+                                target_url: 'https://ka-oms.netlify.app',
+                                icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
+                            };
+
+                            // Send notification
+                            return fetch('https://api.webpushr.com/v1/notification/send/all', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'webpushrKey': 'b285a62d89f9a1576f806016b692f5b4',
+                                    'webpushrAuthToken': '98413'
+                                },
+                                body: JSON.stringify(payload)
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                // Update last notification timestamp
+                                return notificationRef.set({
+                                    timestamp: now.toISOString(),
+                                    status: 'success',
+                                    ordersCount: undeliveredOrders.length
+                                });
+                            });
+                        }
+                    });
+            }
+        })
+        .catch(error => {
+            console.error('Error in notification process:', error);
+            // Optionally store the error in Firebase
+            notificationRef.child('lastError').set({
+                timestamp: now.toISOString(),
+                error: error.message
+            });
+        });
 }
 function loadUndeliveredOrdersScroll() {
     const scrollContent = document.querySelector('.orders-scroll-content');
@@ -623,12 +675,26 @@ function formatDateOnly(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString(); // This will return only the date part
 }
+function initializeNotificationSystem() {
+    // Check immediately when page loads
+    checkAndSendNotification();
+    
+    // Check every hour in case the page stays open
+    setInterval(checkAndSendNotification, 60 * 60 * 1000);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadSentOrders();
-    initializeDailyNotification();
+    initializeNotificationSystem();
    
 });
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        checkAndSendNotification();
+    }
+});
+
 function getNestedValue(obj, ...args) {
     return args.reduce((obj, level) => obj && obj[level], obj);
 }
