@@ -331,7 +331,7 @@ function sendDailyUndeliveredNotification() {
 function checkAndSendNotification() {
     const now = new Date();
     const today7AM = new Date(now);
-    today7AM.setHours(7, 30, 0, 0);
+    today7AM.setHours(8, 0, 0, 0);
 
     // Reference to store last notification time
     const notificationRef = firebase.database().ref('system/lastNotification');
