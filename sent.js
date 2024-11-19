@@ -327,43 +327,24 @@ function sendDailyUndeliveredNotification() {
         .then(data => data && console.log('Notification sent:', data))
         .catch(error => console.error('Error in notification process:', error));
 }
+// Schedule daily notification at 8 AM
 function initializeDailyNotification() {
     const now = new Date();
-    const morning = new Date(now);
-    const afternoon = new Date(now);
+    const scheduledTime = new Date(now);
+    scheduledTime.setHours(7, 30, 0, 0);
     
-    // Set notification times
-    morning.setHours(8, 0, 0, 0);
-    afternoon.setHours(21, 4, 0, 0);
-    
-    // Calculate delays for both notifications
-    let morningDelay = morning.getTime() - now.getTime();
-    let afternoonDelay = afternoon.getTime() - now.getTime();
-    
-    // If time has passed for today, schedule for next day
-    if (morningDelay < 0) {
-        morning.setDate(morning.getDate() + 1);
-        morningDelay = morning.getTime() - now.getTime();
+    if (now > scheduledTime) {
+        scheduledTime.setDate(scheduledTime.getDate() + 1);
     }
     
-    if (afternoonDelay < 0) {
-        afternoon.setDate(afternoon.getDate() + 1);
-        afternoonDelay = afternoon.getTime() - now.getTime();
-    }
+    const timeUntilNext = scheduledTime.getTime() - now.getTime();
     
-    // Schedule morning notification
+    // Schedule first notification
     setTimeout(() => {
         sendDailyUndeliveredNotification();
-        // Schedule subsequent morning notifications every 24 hours
+        // Schedule subsequent notifications every 24 hours
         setInterval(sendDailyUndeliveredNotification, 24 * 60 * 60 * 1000);
-    }, morningDelay);
-    
-    // Schedule afternoon notification
-    setTimeout(() => {
-        sendDailyUndeliveredNotification();
-        // Schedule subsequent afternoon notifications every 24 hours
-        setInterval(sendDailyUndeliveredNotification, 24 * 60 * 60 * 1000);
-    }, afternoonDelay);
+    }, timeUntilNext);
 }
 function loadUndeliveredOrdersScroll() {
     const scrollContent = document.querySelector('.orders-scroll-content');
@@ -395,7 +376,7 @@ function loadUndeliveredOrdersScroll() {
                 .map(order => `${order.partyName} (${order.totalQuantity})`)
                 .join(' | ');
                 
-            scrollContent.textContent = `${scrollText} | Triple Tap on Order to Change Delivery Status`;
+            scrollContent.textContent = `${scrollText} | 'Triple Tap on Order to Change Delivery Status'`;
             
             // Adjust animation duration based on content length
             const textLength = scrollText.length;
