@@ -66,6 +66,139 @@ const brandStockData = {
             '36B': 4, '36C': 4, '36D': 2,
             '38B': 3, '38C': 3, '38D': 2
         }
+    },
+    'A042': {
+        'BLACK': {
+            '32B': 3, '32C': 3, '32D': 2, '32Z': 2,
+            '34B': 3, '34C': 3, '34D': 2, '34Z': 2,
+            '36B': 3, '36C': 3, '36D': 2, '36Z': 2,
+            '38B': 2, '38C': 2, '38D': 2, '38Z': 1,
+            '40B': 2, '40C': 2, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'CHIVIO': {
+            '32B': 0, '32C': 0, '32D': 0, '32Z': 0,
+            '34B': 0, '34C': 0, '34D': 0, '34Z': 0,
+            '36B': 0, '36C': 0, '36D': 0, '36Z': 0,
+            '38B': 0, '38C': 0, '38D': 0, '38Z': 0,
+            '40B': 0, '40C': 0, '40D': 0,
+            '42B': 0, '42C': 0
+        },
+        'CMG': {
+            '32B': 2, '32C': 2, '32D': 1, '32Z': 1,
+            '34B': 2, '34C': 2, '34D': 1, '34Z': 1,
+            '36B': 2, '36C': 2, '36D': 1, '36Z': 1,
+            '38B': 2, '38C': 2, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'DDO': {
+            '32B': 0, '32C': 0, '32D': 0, '32Z': 0,
+            '34B': 0, '34C': 0, '34D': 0, '34Z': 0,
+            '36B': 0, '36C': 0, '36D': 0, '36Z': 0,
+            '38B': 0, '38C': 0, '38D': 0, '38Z': 0,
+            '40B': 0, '40C': 0, '40D': 0,
+            '42B': 0, '42C': 0
+        },
+        'GSP': {
+            '32B': 1, '32C': 1, '32D': 1, '32Z': 1,
+            '34B': 1, '34C': 1, '34D': 1, '34Z': 1,
+            '36B': 1, '36C': 1, '36D': 1, '36Z': 1,
+            '38B': 1, '38C': 1, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'ODM': {
+            '32B': 2, '32C': 2, '32D': 1, '32Z': 1,
+            '34B': 2, '34C': 2, '34D': 1, '34Z': 1,
+            '36B': 2, '36C': 2, '36D': 1, '36Z': 1,
+            '38B': 2, '38C': 2, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'PEARL': {
+            '32B': 3, '32C': 3, '32D': 2, '32Z': 2,
+            '34B': 3, '34C': 3, '34D': 2, '34Z': 2,
+            '36B': 3, '36C': 3, '36D': 2, '36Z': 2,
+            '38B': 2, '38C': 2, '38D': 2, '38Z': 1,
+            '40B': 2, '40C': 2, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'PURPLE': {
+            '32B': 2, '32C': 2, '32D': 1, '32Z': 1,
+            '34B': 2, '34C': 2, '34D': 1, '34Z': 1,
+            '36B': 2, '36C': 2, '36D': 1, '36Z': 1,
+            '38B': 2, '38C': 2, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'RVL': {
+            '32B': 1, '32C': 1, '32D': 1, '32Z': 1,
+            '34B': 1, '34C': 1, '34D': 1, '34Z': 1,
+            '36B': 1, '36C': 1, '36D': 1, '36Z': 1,
+            '38B': 1, '38C': 1, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'SKIN': {
+            '32B': 3, '32C': 3, '32D': 2, '32Z': 2,
+            '34B': 3, '34C': 3, '34D': 2, '34Z': 2,
+            '36B': 3, '36C': 3, '36D': 2, '36Z': 2,
+            '38B': 2, '38C': 2, '38D': 2, '38Z': 1,
+            '40B': 2, '40C': 2, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'TMG': {
+            '32B': 1, '32C': 1, '32D': 1, '32Z': 1,
+            '34B': 1, '34C': 1, '34D': 1, '34Z': 1,
+            '36B': 1, '36C': 1, '36D': 1, '36Z': 1,
+            '38B': 1, '38C': 1, '38D': 1, '38Z': 1,
+            '40B': 1, '40C': 1, '40D': 1,
+            '42B': 1, '42C': 1
+        },
+        'WHITE': {
+            '32B': 3, '32C': 3, '32D': 2, '32Z': 2,
+            '34B': 3, '34C': 3, '34D': 2, '34Z': 2,
+            '36B': 3, '36C': 3, '36D': 2, '36Z': 2,
+            '38B': 2, '38C': 2, '38D': 2, '38Z': 1,
+            '40B': 2, '40C': 2, '40D': 1,
+            '42B': 1, '42C': 1
+        }
+    },
+    'SB06': {
+        'BLACK': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'CAMPT': {
+            'XS': 0
+        },
+        'CPM': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'DHP': {
+            'S': 0, 'M': 0, 'L': 0, 'XL': 0, 'XS': 0
+        },
+        'GRW': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'GRYMRL': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'MFL': {
+            'S': 0, 'M': 0, 'L': 0, 'XL': 0, 'XS': 0
+        },
+        'PEARL': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'SKIN': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        },
+        'TMG': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 0
+        },
+        'WHITE': {
+            'S': 5, 'M': 5, 'L': 5, 'XL': 5, 'XS': 5
+        }
     }
 };
 
@@ -93,9 +226,15 @@ async function fetchStockData() {
 
         // Fetch stock data
         const stockSnapshot = await database.ref('stock').once('value');
-        const stockData = stockSnapshot.val();
+        const stockData = stockSnapshot.val() || {};
 
         specificItems.forEach(itemName => {
+            // Ensure brand stock data exists for the item
+            if (!brandStockData[itemName]) {
+                console.warn(`No brand stock data found for item: ${itemName}`);
+                return;
+            }
+
             // Get all possible color and size combinations for the item from Brand Stock
             const brandStockCombinations = Object.entries(brandStockData[itemName] || {})
                 .flatMap(([color, sizes]) => 
@@ -135,13 +274,13 @@ async function fetchStockData() {
                     itemSection = document.createElement('div');
                     itemSection.className = 'bso-item-section';
                     itemSection.setAttribute('data-item-name', itemName);
-
+            
                     // Item Name Header
                     const itemNameDiv = document.createElement('div');
                     itemNameDiv.className = 'bso-item-name';
                     itemNameDiv.textContent = itemName;
                     itemSection.appendChild(itemNameDiv);
-
+            
                     // Create Table
                     const table = document.createElement('table');
                     table.className = 'bso-table';
@@ -160,28 +299,46 @@ async function fetchStockData() {
                     itemSection.appendChild(table);
                     bsoContainer.appendChild(itemSection);
                 }
-
+            
                 const tbody = itemSection.querySelector('tbody');
                 const row = tbody.insertRow();
                 const color = stockItem.color;
                 const size = stockItem.size;
                 const stockQuantity = stockItem.quantity || 0;
-
+            
                 // Get Brand Stock (BS) quantity, default to 0 if not found
-                const brandStock = itemName === 'A039' && brandStockData[itemName] && 
+                const brandStock = itemName in brandStockData && 
                                    brandStockData[itemName][color] && 
                                    brandStockData[itemName][color][size] 
                                    ? brandStockData[itemName][color][size] 
                                    : 0;
-
+            
                 row.insertCell(0).textContent = color;
                 row.insertCell(1).textContent = size;
                 row.insertCell(2).textContent = stockQuantity;
                 row.insertCell(3).textContent = Math.max(brandStock, 0);
                 
-                // BSO Cell with +/- buttons and default value
+                // BSO Cell calculation
                 const bsoCell = row.insertCell(4);
-                const defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
+                let defaultBSOValue;
+                
+                // Specific rule for SB06
+                if (itemName === 'SB06') {
+                    if (brandStock === 0) {
+                        // If Brand Stock is zero, BSO is zero
+                        defaultBSOValue = 0;
+                    } else if (brandStock <= 2) {
+                        // If Brand Stock is 2 or less, BSO is 1
+                        defaultBSOValue = 1;
+                    } else {
+                        // Default to existing logic
+                        defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
+                    }
+                } else {
+                    // Existing logic for other items
+                    defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
+                }
+                
                 bsoCell.innerHTML = `
                     <div class="bso-quantity-control">
                         <button class="bso-quantity-btn minus-btn">-</button>
