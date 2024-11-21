@@ -323,21 +323,26 @@ async function fetchStockData() {
                 let defaultBSOValue;
                 
                 // Specific rule for SB06
-                if (itemName === 'SB06') {
-                    if (brandStock === 0) {
-                        // If Brand Stock is zero, BSO is zero
-                        defaultBSOValue = 0;
-                    } else if (brandStock <= 2) {
-                        // If Brand Stock is 2 or less, BSO is 1
-                        defaultBSOValue = 1;
-                    } else {
-                        // Default to existing logic
-                        defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
-                    }
-                } else {
-                    // Existing logic for other items
-                    defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
-                }
+                // Specific rule for SB06
+// Specific rule for SB06
+if (itemName === 'SB06') {
+    if (brandStock === 0) {
+        // If Brand Stock is zero, BSO is zero
+        defaultBSOValue = 0;
+    } else {
+        // If Brand Stock is not zero
+        if (stockQuantity <= 2) {
+            // If Stock is 2 or less, BSO is 1
+            defaultBSOValue = 1;
+        } else {
+            // If Stock is greater than 2, BSO is 0
+            defaultBSOValue = 0;
+        }
+    }
+} else {
+    // Existing logic for other items
+    defaultBSOValue = Math.max(brandStock - stockQuantity, 0);
+}
                 
                 bsoCell.innerHTML = `
                     <div class="bso-quantity-control">
