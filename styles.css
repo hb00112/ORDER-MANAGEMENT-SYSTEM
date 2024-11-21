@@ -2540,3 +2540,127 @@ body.modal-open {
 .orders-scroll-content:hover {
     animation-play-state: paused;
 }
+/* BSO Section Overall Layout */
+.section#bso {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section#bso h4 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+/* Loading Indicator */
+#loading-indicator {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* BSO Container */
+.bso-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Item Section Styles */
+.bso-item-section {
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+/* Item Name Header */
+.bso-item-name {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Table Styles */
+.bso-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bso-table thead {
+    background-color: #f1f3f4;
+}
+
+.bso-table th, .bso-table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    text-align: center;
+}
+
+.bso-table th {
+    background-color: #f1f3f4;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Quantity Control Styles */
+.bso-quantity-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.bso-quantity-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.bso-quantity-btn:hover {
+    background-color: #2980b9;
+}
+
+.bso-quantity-btn.minus-btn {
+    background-color: #e74c3c;
+}
+
+.bso-quantity-btn.minus-btn:hover {
+    background-color: #c0392b;
+}
+
+.bso-quantity {
+    font-weight: bold;
+    min-width: 30px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 600px) {
+    .section#bso {
+        padding: 10px;
+    }
+
+    .bso-table th, .bso-table td {
+        padding: 6px;
+        font-size: 0.9em;
+    }
+
+    .bso-quantity-btn {
+        width: 25px;
+        height: 25px;
+    }
+}
