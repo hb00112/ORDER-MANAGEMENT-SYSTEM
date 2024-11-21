@@ -81,16 +81,40 @@
         <a href="#" data-section="stockUpdation">Stock Updation</a>
         <a href="#" data-section="stock">Stock</a>
         <a href="#" data-section="purchaseorder">Purchase Order</a>
+        <a href="#" data-section="bso">Base Stock Order</a>
         
         
     </div>
     
    
+    <div id="bso" class="section">
+        <h4>Base Stock Purchase Orders</h4>
+    
+        <div id="bso-container" style="display:none;">
+            <table id="bso-stock-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Color</th>
+                        <th>Size</th>
+                        <th>Stock</th>
+                        <th>B.S</th>
+                        <th>BSO</th>
+                    </tr>
+                </thead>
+                <tbody id="bso-stock-body">
+                    <!-- Rows will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
     <div id="deletedOrders" class="section">
         <h4>Deleted Orders</h4>
         <p>Deleted orders will be displayed here.</p>
     </div>
-    
      <div id="master" class="section">
         <h4>Party Master</h4>
         <table class="party-master-table">
@@ -382,6 +406,7 @@
     <script src="animations.js"></script>
     <script src="stock.js"></script>
     <script src="purchase.js"></script>
+    <script src="bso.js"></script>
     <!-- start webpushr code --> <script>(function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));webpushr('setup',{'key':'BJgL8_NTH55P5mh-yTMhQCDBYDOzxLKRmkIbbk-e8myTHe_Ldm0R1Ch3q7XVAxfq3wckcYszT9BSRT6liGt0Cug' });</script><!-- end webpushr code -->
      <script src="._webpushr-sw.js"></script>
  <script src="webpushr-sw.js"></script>
