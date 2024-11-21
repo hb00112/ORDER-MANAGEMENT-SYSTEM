@@ -238,7 +238,7 @@ async function billOrder(orderId) {
         const sentOrder = {
             orderNumber: originalOrder.orderNumber,
             partyName: originalOrder.partyName,
-            date: originalOrder.date || new Date().toLocaleDateString(),
+            date: originalOrder.dateTime,
             billingDate: new Date().toISOString(),
             billedItems: billedItems,
             status: 'completed'
