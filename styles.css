@@ -2540,127 +2540,145 @@ body.modal-open {
 .orders-scroll-content:hover {
     animation-play-state: paused;
 }
-/* BSO Section Overall Layout */
-.section#bso {
-    background-color: #f9f9f9;
+.pdf-editor-button-grid {
+    padding: 0.5rem 0;
+}
+
+.pdf-editor-action-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #101418;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    height: 3.5rem;
+    transition: background-color 0.2s;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.pdf-editor-action-btn:hover {
+    background-color: #0563c0;
+}
+.hidden {
+    display: none;
+}
+.pdf-editor-content-section {
+    padding: 20px;
+    background: #fff;
     border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.section#bso h4 {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-}
-
-/* Loading Indicator */
-#loading-indicator {
-    text-align: center;
-    color: #7f8c8d;
-    padding: 20px;
-    font-style: italic;
-}
-
-/* BSO Container */
-.bso-container {
-    width: 100%;
-    overflow-x: auto;
-}
-
-/* Item Section Styles */
-.bso-item-section {
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-}
-
-/* Item Name Header */
-.bso-item-name {
-    background-color: #3498db;
-    color: white;
-    padding: 10px;
-    font-weight: bold;
-    text-align: center;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-}
-
-/* Table Styles */
-.bso-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.bso-table thead {
-    background-color: #f1f3f4;
-}
-
-.bso-table th, .bso-table td {
-    border: 1px solid #e0e0e0;
-    padding: 10px;
-    text-align: center;
-}
-
-.bso-table th {
-    background-color: #f1f3f4;
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-/* Quantity Control Styles */
-.bso-quantity-control {
+.pdf-editor-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
 
-.bso-quantity-btn {
-    width: 30px;
-    height: 30px;
-    background-color: #3498db;
+.upload-section {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#pdfInput {
+    display: none;
+}
+
+.preview-section {
+    margin: 20px 0;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+#pdfCanvas {
+    max-width: 100%;
+    border: 1px solid #ddd;
+}
+
+.actions-section {
+    text-align: center;
+}
+
+#processButton {
+    padding: 10px 20px;
+    background: #28a745;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-.bso-quantity-btn:hover {
-    background-color: #2980b9;
+#processButton:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
 
-.bso-quantity-btn.minus-btn {
-    background-color: #e74c3c;
+.pdf-editor-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
 }
 
-.bso-quantity-btn.minus-btn:hover {
-    background-color: #c0392b;
+.pdf-editor-close-btn:hover {
+    color: #dc3545;
 }
 
-.bso-quantity {
-    font-weight: bold;
-    min-width: 30px;
-    display: inline-block;
+#cnPdfCanvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.actions-section {
     text-align: center;
+    margin-top: 20px;
 }
 
-/* Responsive Adjustments */
-@media screen and (max-width: 600px) {
-    .section#bso {
-        padding: 10px;
-    }
+#cnProcessButton {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
 
-    .bso-table th, .bso-table td {
-        padding: 6px;
-        font-size: 0.9em;
-    }
+#cnProcessButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
 
-    .bso-quantity-btn {
-        width: 25px;
-        height: 25px;
-    }
+.upload-section {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#cnPdfInput {
+    display: none;
 }
