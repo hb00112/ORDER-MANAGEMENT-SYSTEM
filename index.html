@@ -18,7 +18,9 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <meta name="theme-color" content="#4285f4">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <!-- PushAlert -->
@@ -98,6 +100,9 @@
         <div class="pdf-editor-button-grid">
             <button class="pdf-editor-action-btn" data-section="cn">CN Deductor</button>
         </div>
+        <div class="pdf-editor-button-grid">
+            <button class="pdf-editor-action-btn" data-section="merge">PDF Merge</button>
+        </div>
     </div>
     
     <!-- Add hidden class to both sections initially -->
@@ -139,7 +144,28 @@
         </div>
     </div>
 </div>
-
+<!-- PDF Merge Content Section -->
+<div id="mergeContent" class="pdf-editor-content-section hidden">
+    <div class="pdf-editor-header">
+        <h4>PDF Merge</h4>
+        <button class="pdf-editor-close-btn">&times;</button>
+    </div>
+    <div class="pdf-editor-main">
+        <div class="upload-section multiple-files">
+            <input type="file" id="mergePdfInput" accept=".pdf" multiple />
+            <label for="mergePdfInput" class="upload-label">Choose PDF files</label>
+        </div>
+        <div class="selected-files-list" id="selectedFilesList">
+            <!-- Selected files will be listed here -->
+        </div>
+        <div class="preview-grid" id="pdfPreviewGrid">
+            <!-- PDF previews will be shown here -->
+        </div>
+        <div class="actions-section">
+            <button id="mergeButton" disabled>Merge and Download</button>
+        </div>
+    </div>
+</div>
 
     <div id="deletedOrders" class="section">
         <h4>Deleted Orders</h4>
