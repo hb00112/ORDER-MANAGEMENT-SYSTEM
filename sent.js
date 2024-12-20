@@ -328,10 +328,56 @@ function sendDailyUndeliveredNotification() {
         .catch(error => console.error('Error in notification process:', error));
 }
 // Schedule daily notification at 8 AM
+// Define delivery schedule by day
+const DELIVERY_SCHEDULE = {
+    'Monday': ['Panjim', 'Parvorim', 'Mapusa'],
+    'Tuesday': [],
+    'Wednesday': ['Bicholim', 'Ponda', 'Phonda', 'Mapusa'],
+    'Thursday': [],
+    'Friday': ['Panjim', 'Parvorim', 'Vasco', 'Mapusa'],
+    'Saturday': ['Margoa', 'Sanvordem'],
+    'Sunday': ['Mapusa']
+};
+
+function getAreaFromPartyName(partyName) {
+    if (!partyName) return '';
+    const parts = partyName.split(' ');
+    return parts[parts.length - 1];
+}
+
+function getUndeliveredOrdersForDay(day) {
+    const areasForDay = DELIVERY_SCHEDULE[day] || [];
+    
+    return firebase.database().ref('sentOrders').once('value')
+        .then(snapshot => {
+            const undeliveredOrders = [];
+            
+            snapshot.forEach(childSnapshot => {
+                const order = normalizeOrderData(childSnapshot.val(), childSnapshot.key);
+                if (order && order.deliveryStatus === 'Undelivered') {
+                    const area = getAreaFromPartyName(order.partyName);
+                    if (areasForDay.includes(area)) {
+                        const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
+                        undeliveredOrders.push({
+                            partyName: order.partyName,
+                            area: area,
+                            totalQuantity: totalQuantity
+                        });
+                    }
+                }
+            });
+            
+            return undeliveredOrders;
+        });
+}
+
 function checkAndSendNotification() {
     const now = new Date();
-    const today7AM = new Date(now);
-    today7AM.setHours(8, 0, 0, 0);
+    const today8AM = new Date(now);
+    today8AM.setHours(8, 0, 0, 0);
+
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDay = days[now.getDay()];
 
     // Reference to store last notification time
     const notificationRef = firebase.database().ref('system/lastNotification');
@@ -344,23 +390,30 @@ function checkAndSendNotification() {
             // Check if we need to send notification
             const shouldSendNotification = () => {
                 if (!lastNotificationDate) return true;
-                
-                // Check if last notification was before today 7:30 AM
-                // and current time is after 7:30 AM
-                return lastNotificationDate < today7AM && now >= today7AM;
+                return lastNotificationDate < today8AM && now >= today8AM;
             };
 
             if (shouldSendNotification()) {
-                return getUndeliveredOrders()
+                return getUndeliveredOrdersForDay(currentDay)
                     .then(undeliveredOrders => {
                         if (undeliveredOrders.length > 0) {
-                            const message = undeliveredOrders
-                                .map(order => `${order.partyName}-${order.totalQuantity}`)
-                                .join('\n');
+                            // Group orders by area
+                            const ordersByArea = undeliveredOrders.reduce((acc, order) => {
+                                const area = order.area || 'Unknown';
+                                if (!acc[area]) acc[area] = [];
+                                acc[area].push(`${order.partyName}-${order.totalQuantity}`);
+                                return acc;
+                            }, {});
+
+                            // Create message with area-wise grouping
+                            const message = Object.entries(ordersByArea)
+                                .map(([area, orders]) => 
+                                    `${area}:\n${orders.join('\n')}`)
+                                .join('\n\n');
                             
                             const payload = {
                                 badge: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png',
-                                title: 'Dispatch Pending',
+                                title: `Dispatch Pending - ${currentDay}`,
                                 message: message,
                                 target_url: 'https://ka-oms.netlify.app',
                                 icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
@@ -382,6 +435,7 @@ function checkAndSendNotification() {
                                 return notificationRef.set({
                                     timestamp: now.toISOString(),
                                     status: 'success',
+                                    day: currentDay,
                                     ordersCount: undeliveredOrders.length
                                 });
                             });
@@ -391,48 +445,110 @@ function checkAndSendNotification() {
         })
         .catch(error => {
             console.error('Error in notification process:', error);
-            // Optionally store the error in Firebase
+            // Store the error in Firebase
             notificationRef.child('lastError').set({
                 timestamp: now.toISOString(),
-                error: error.message
+                error: error.message,
+                day: currentDay
             });
         });
 }
+
+// Update the scroll content function to show area-wise grouping
+// Keep the existing DELIVERY_SCHEDULE and other functions...
+
+function getAreaToDateMap() {
+    const areaToDateMap = {};
+    Object.entries(DELIVERY_SCHEDULE).forEach(([day, areas]) => {
+        areas.forEach(area => {
+            if (!areaToDateMap[area]) {
+                areaToDateMap[area] = [];
+            }
+            areaToDateMap[area].push(day);
+        });
+    });
+    return areaToDateMap;
+}
+
+function getDaysForArea(area) {
+    const areaToDateMap = getAreaToDateMap();
+    return areaToDateMap[area] || [];
+}
+
 function loadUndeliveredOrdersScroll() {
     const scrollContent = document.querySelector('.orders-scroll-content');
     if (!scrollContent) return;
 
     firebase.database().ref('sentOrders').once('value')
         .then(snapshot => {
-            const undeliveredOrders = [];
+            // Group orders by day based on their area
+            const ordersByDay = {
+                'Monday': [],
+                'Tuesday': [],
+                'Wednesday': [],
+                'Thursday': [],
+                'Friday': [],
+                'Saturday': [],
+                'Sunday': []
+            };
             
             snapshot.forEach(childSnapshot => {
                 const order = childSnapshot.val();
                 if (order && order.deliveryStatus === 'Undelivered') {
+                    const area = getAreaFromPartyName(order.partyName);
                     const totalQuantity = order.billedItems?.reduce((sum, item) => 
                         sum + (parseInt(item.quantity) || 0), 0) || 0;
                     
-                    undeliveredOrders.push({
-                        partyName: order.partyName || 'Unknown Party',
-                        totalQuantity: totalQuantity
+                    // Get all days this area is delivered to
+                    const deliveryDays = getDaysForArea(area);
+                    
+                    // Add the order to each relevant day
+                    deliveryDays.forEach(day => {
+                        ordersByDay[day].push({
+                            partyName: order.partyName,
+                            area: area,
+                            totalQuantity: totalQuantity
+                        });
                     });
                 }
             });
 
-            if (undeliveredOrders.length === 0) {
+            // Create scroll text with day grouping
+            const scrollParts = [];
+            
+            Object.entries(ordersByDay).forEach(([day, orders]) => {
+                if (orders.length > 0) {
+                    // Group orders by area within each day
+                    const ordersByArea = orders.reduce((acc, order) => {
+                        const area = order.area || 'Unknown';
+                        if (!acc[area]) acc[area] = [];
+                        acc[area].push(`${order.partyName} (${order.totalQuantity})`);
+                        return acc;
+                    }, {});
+
+                    const dayText = Object.entries(ordersByArea)
+                        .map(([area, areaOrders]) => 
+                            `${area}: ${areaOrders.join(', ')}`)
+                        .join(' | ');
+
+                    if (dayText) {
+                        scrollParts.push(`${day}: [ ${dayText} ]`);
+                    }
+                }
+            });
+
+            if (scrollParts.length === 0) {
                 scrollContent.textContent = 'No undelivered orders';
                 return;
             }
 
-            const scrollText = undeliveredOrders
-                .map(order => `${order.partyName} (${order.totalQuantity})`)
-                .join(' | ');
-                
-            scrollContent.textContent = `${scrollText} | 'Triple Tap on Order to Change Delivery Status'`;
+            // Combine all days into one scrolling text
+            const scrollText = scrollParts.join(' || ');
+            scrollContent.textContent = `${scrollText} || Triple Tap on Order to Change Delivery Status`;
             
             // Adjust animation duration based on content length
             const textLength = scrollText.length;
-            const duration = Math.max(10, textLength * 0.2);
+            const duration = Math.max(15, textLength * 0.2); // Increased minimum duration
             scrollContent.style.animationDuration = `${duration}s`;
         })
         .catch(error => {
@@ -441,6 +557,7 @@ function loadUndeliveredOrdersScroll() {
         });
 }
 
+// Keep the existing notification system functions the same...
 loadUndeliveredOrdersScroll();
 setInterval(loadUndeliveredOrdersScroll, 60000);
 
