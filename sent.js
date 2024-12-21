@@ -424,7 +424,7 @@ function checkAndSendNotification() {
                             const message = undeliveredOrders
                                 .map(order => {
                                     const notificationNum = (order.notificationCount || 0) + 1;
-                                    return `${order.partyName} - ${order.totalQuantity} (Notification ${notificationNum}/2)`;
+                                    return `${order.partyName} - ${order.totalQuantity} ( ${notificationNum}/2)`;
                                 })
                                 .join('\n');
                             
