@@ -335,7 +335,7 @@ const DELIVERY_SCHEDULE = {
     'Wednesday': ['Bicholim', 'Ponda', 'Phonda', 'Mapusa'],
     'Thursday': [],
     'Friday': ['Panjim', 'Parvorim', 'Vasco', 'Mapusa','PANJIM','MIRAMAR','Miramar'],
-    'Saturday': ['Margao', 'Sanvordem','Needs','Collection','cancona','Cancona'],
+    'Saturday': ['Margao', 'Sanvordem','Needs','Femiline Collection','canacona','Cancona'],
     'Sunday': ['Mapusa']
 };
 
