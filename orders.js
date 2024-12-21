@@ -661,29 +661,29 @@ let items =
 
 // Predefined parties
 let parties = [
-  "Avni Traders Phonda",
+   "Avni Traders Phonda",
 "Bharne Retail Trends Panjim",
-"Feelings ponda",
+"Feelings Phonda",
 "Falari Enterpries Mapusa ",
 "Puja Cosmetics Vasco",
 "Vishnu Fancy Stores Margao",
 "Poshak Retail Parvorim",
-"Caro Center Margoa",
+"Caro Center Margao",
 "Lovely Collection Panjim",
 "Shetye Enterprises Panjim",
 "cash",
 "Deepak Store Mapusa",
-"M S Dangui panjim",
-"Advait Enterprises ",
+"M S Dangui Panjim",
+"Advait Enterprises Bicholim ",
 "Par Excellence Panjim",
-"Callicas canacona",
-"J.V Manerkar",
+"Callicas Cancona",
+"J.V Manerkar Panjim",
 "Visnu Fancy Stores Margao",
 "Santosh Shopping Sanvordem",
 "Baron Panjim",
 "Goswami Gift Mapusa",
 "Krishna Fancy Margao ",
-"Femiline Collection ",
+"Femiline Collection Margaon ",
 "G D Kalekar Mapusa",
 "MS Dangui Mapusa",
 "Roop Darpan Bicholim",
@@ -691,6 +691,7 @@ let parties = [
 "Chirag Bag House Panjim",
 "Jagannath Kavlekar LLP Mapusa",
 "Siddhivinayak Mapusa",
+"Manish Cosmetics Miramar"
 
 ];
 
