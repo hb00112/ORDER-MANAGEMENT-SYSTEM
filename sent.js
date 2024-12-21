@@ -1,3 +1,4 @@
+
 //SENT.JS
 function loadSentOrders() {
     const sentOrdersContainer = document.getElementById('sentOrdersContainer');
@@ -351,25 +352,49 @@ function getUndeliveredOrdersForDay(day) {
     return firebase.database().ref('sentOrders').once('value')
         .then(snapshot => {
             const undeliveredOrders = [];
+            const updates = {};
             
             snapshot.forEach(childSnapshot => {
                 const order = normalizeOrderData(childSnapshot.val(), childSnapshot.key);
                 if (order && order.deliveryStatus === 'Undelivered') {
                     const area = getAreaFromPartyName(order.partyName);
                     if (areasForDay.includes(area)) {
-                        const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
-                        undeliveredOrders.push({
-                            partyName: order.partyName,
-                            area: area,
-                            totalQuantity: totalQuantity
-                        });
+                        // Get notification count for this order
+                        const notificationCount = order.notificationCount || 0;
+                        
+                        // Only include orders that haven't received 2 notifications yet
+                        if (notificationCount < 2) {
+                            const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
+                            undeliveredOrders.push({
+                                id: childSnapshot.key,
+                                partyName: order.partyName,
+                                area: area,
+                                totalQuantity: totalQuantity,
+                                notificationCount: notificationCount
+                            });
+                            
+                            // Increment notification count
+                            updates[`sentOrders/${childSnapshot.key}/notificationCount`] = notificationCount + 1;
+                            
+                            // If this will be the second notification, schedule status update
+                            if (notificationCount === 1) {
+                                updates[`sentOrders/${childSnapshot.key}/deliveryStatus`] = 'Delivered';
+                            }
+                        }
                     }
                 }
             });
             
+            // Batch update the notification counts and status changes
+            if (Object.keys(updates).length > 0) {
+                firebase.database().ref().update(updates)
+                    .catch(error => console.error('Error updating notification counts:', error));
+            }
+            
             return undeliveredOrders;
         });
 }
+
 
 function checkAndSendNotification() {
     const now = new Date();
@@ -395,9 +420,12 @@ function checkAndSendNotification() {
                 return getUndeliveredOrdersForDay(currentDay)
                     .then(undeliveredOrders => {
                         if (undeliveredOrders.length > 0) {
-                            // Create simple message with party names and quantities
+                            // Create message with notification count info
                             const message = undeliveredOrders
-                                .map(order => `${order.partyName} - ${order.totalQuantity}`)
+                                .map(order => {
+                                    const notificationNum = (order.notificationCount || 0) + 1;
+                                    return `${order.partyName} - ${order.totalQuantity} (Notification ${notificationNum}/2)`;
+                                })
                                 .join('\n');
                             
                             const payload = {
@@ -408,24 +436,27 @@ function checkAndSendNotification() {
                                 icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
                             };
 
-                            return fetch('https://api.webpushr.com/v1/notification/send/all', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'webpushrKey': 'b285a62d89f9a1576f806016b692f5b4',
-                                    'webpushrAuthToken': '98413'
-                                },
-                                body: JSON.stringify(payload)
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                return notificationRef.set({
-                                    timestamp: now.toISOString(),
-                                    status: 'success',
-                                    day: currentDay,
-                                    ordersCount: undeliveredOrders.length
+                            // Only send notification if there are orders to notify about
+                            if (message.trim()) {
+                                return fetch('https://api.webpushr.com/v1/notification/send/all', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'webpushrKey': 'b285a62d89f9a1576f806016b692f5b4',
+                                        'webpushrAuthToken': '98413'
+                                    },
+                                    body: JSON.stringify(payload)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    return notificationRef.set({
+                                        timestamp: now.toISOString(),
+                                        status: 'success',
+                                        day: currentDay,
+                                        ordersCount: undeliveredOrders.length
+                                    });
                                 });
-                            });
+                            }
                         }
                     });
             }
