@@ -379,7 +379,6 @@ function checkAndSendNotification() {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDay = days[now.getDay()];
 
-    // Reference to store last notification time
     const notificationRef = firebase.database().ref('system/lastNotification');
 
     notificationRef.once('value')
@@ -387,7 +386,6 @@ function checkAndSendNotification() {
             const lastNotification = snapshot.val();
             const lastNotificationDate = lastNotification ? new Date(lastNotification.timestamp) : null;
             
-            // Check if we need to send notification
             const shouldSendNotification = () => {
                 if (!lastNotificationDate) return true;
                 return lastNotificationDate < today8AM && now >= today8AM;
@@ -397,19 +395,10 @@ function checkAndSendNotification() {
                 return getUndeliveredOrdersForDay(currentDay)
                     .then(undeliveredOrders => {
                         if (undeliveredOrders.length > 0) {
-                            // Group orders by area
-                            const ordersByArea = undeliveredOrders.reduce((acc, order) => {
-                                const area = order.area || 'Unknown';
-                                if (!acc[area]) acc[area] = [];
-                                acc[area].push(`${order.partyName}-${order.totalQuantity}`);
-                                return acc;
-                            }, {});
-
-                            // Create message with area-wise grouping
-                            const message = Object.entries(ordersByArea)
-                                .map(([area, orders]) => 
-                                    `${area}:\n${orders.join('\n')}`)
-                                .join('\n\n');
+                            // Create simple message with party names and quantities
+                            const message = undeliveredOrders
+                                .map(order => `${order.partyName} - ${order.totalQuantity}`)
+                                .join('\n');
                             
                             const payload = {
                                 badge: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png',
@@ -419,7 +408,6 @@ function checkAndSendNotification() {
                                 icon: 'https://i.postimg.cc/BQ2J7HGM/03042020043247760-brlo.png'
                             };
 
-                            // Send notification
                             return fetch('https://api.webpushr.com/v1/notification/send/all', {
                                 method: 'POST',
                                 headers: {
@@ -431,7 +419,6 @@ function checkAndSendNotification() {
                             })
                             .then(response => response.json())
                             .then(data => {
-                                // Update last notification timestamp
                                 return notificationRef.set({
                                     timestamp: now.toISOString(),
                                     status: 'success',
@@ -445,7 +432,6 @@ function checkAndSendNotification() {
         })
         .catch(error => {
             console.error('Error in notification process:', error);
-            // Store the error in Firebase
             notificationRef.child('lastError').set({
                 timestamp: now.toISOString(),
                 error: error.message,
@@ -481,7 +467,7 @@ function loadUndeliveredOrdersScroll() {
 
     firebase.database().ref('sentOrders').once('value')
         .then(snapshot => {
-            // Group orders by day based on their area
+            // Group orders by day
             const ordersByDay = {
                 'Monday': [],
                 'Tuesday': [],
@@ -499,41 +485,29 @@ function loadUndeliveredOrdersScroll() {
                     const totalQuantity = order.billedItems?.reduce((sum, item) => 
                         sum + (parseInt(item.quantity) || 0), 0) || 0;
                     
-                    // Get all days this area is delivered to
+                    // Get delivery days for this area
                     const deliveryDays = getDaysForArea(area);
                     
-                    // Add the order to each relevant day
+                    // Add the order to each delivery day
                     deliveryDays.forEach(day => {
                         ordersByDay[day].push({
                             partyName: order.partyName,
-                            area: area,
                             totalQuantity: totalQuantity
                         });
                     });
                 }
             });
 
-            // Create scroll text with day grouping
+            // Create scroll text with day grouping only
             const scrollParts = [];
             
             Object.entries(ordersByDay).forEach(([day, orders]) => {
                 if (orders.length > 0) {
-                    // Group orders by area within each day
-                    const ordersByArea = orders.reduce((acc, order) => {
-                        const area = order.area || 'Unknown';
-                        if (!acc[area]) acc[area] = [];
-                        acc[area].push(`${order.partyName} (${order.totalQuantity})`);
-                        return acc;
-                    }, {});
+                    const dayOrders = orders
+                        .map(order => `${order.partyName} (${order.totalQuantity})`)
+                        .join(', ');
 
-                    const dayText = Object.entries(ordersByArea)
-                        .map(([area, areaOrders]) => 
-                            `${area}: ${areaOrders.join(', ')}`)
-                        .join(' | ');
-
-                    if (dayText) {
-                        scrollParts.push(`${day}: [ ${dayText} ]`);
-                    }
+                    scrollParts.push(`${day}: [ ${dayOrders} ]`);
                 }
             });
 
@@ -548,7 +522,7 @@ function loadUndeliveredOrdersScroll() {
             
             // Adjust animation duration based on content length
             const textLength = scrollText.length;
-            const duration = Math.max(15, textLength * 0.2); // Increased minimum duration
+            const duration = Math.max(15, textLength * 0.2);
             scrollContent.style.animationDuration = `${duration}s`;
         })
         .catch(error => {
@@ -556,7 +530,6 @@ function loadUndeliveredOrdersScroll() {
             scrollContent.textContent = 'Error loading undelivered orders';
         });
 }
-
 // Keep the existing notification system functions the same...
 loadUndeliveredOrdersScroll();
 setInterval(loadUndeliveredOrdersScroll, 60000);
