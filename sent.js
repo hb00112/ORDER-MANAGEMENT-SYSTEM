@@ -330,12 +330,12 @@ function sendDailyUndeliveredNotification() {
 // Schedule daily notification at 8 AM
 // Define delivery schedule by day
 const DELIVERY_SCHEDULE = {
-    'Monday': ['Panjim', 'Parvorim', 'Mapusa','PANJIM','MIRAMAR'],
+    'Monday': ['Panjim', 'Parvorim', 'Mapusa','PANJIM','MIRAMAR','Miramar'],
     'Tuesday': [],
     'Wednesday': ['Bicholim', 'Ponda', 'Phonda', 'Mapusa'],
     'Thursday': [],
-    'Friday': ['Panjim', 'Parvorim', 'Vasco', 'Mapusa','PANJIM','MIRAMAR'],
-    'Saturday': ['Margoa', 'Sanvordem','Needs','Collection','cancona'],
+    'Friday': ['Panjim', 'Parvorim', 'Vasco', 'Mapusa','PANJIM','MIRAMAR','Miramar'],
+    'Saturday': ['Margao', 'Sanvordem','Needs','Collection','cancona','Cancona'],
     'Sunday': ['Mapusa']
 };
 
