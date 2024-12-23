@@ -473,7 +473,7 @@ function populateTable() {
                            onclick="openMap(${index})"
                            style="cursor: pointer;"
                            title="Click to open map">
-                        📍
+                        🔗
                     </span>`
                 }
             </td>
