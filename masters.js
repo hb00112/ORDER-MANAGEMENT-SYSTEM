@@ -13,9 +13,9 @@ const partyData = [
         locationLink: null
     },
     {
-        partyName: "Advait Enterprises - Bicholim",
+       partyName: "Advait Enterprises - Bicholim",
         coordinates: null,
-        locationLink: null
+        locationLink: https://hb00112.github.io/MS-Dangui-Name-change/
     },
     // Canacona
     {
