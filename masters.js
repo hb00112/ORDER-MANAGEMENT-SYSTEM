@@ -109,26 +109,24 @@ const partyData = [
     {
         partyName: "Baron - Panjim",
         coordinates: {
-            lat: 15.498072678766361,
-            lng: 73.82542972334339
-        },
+            lat: null,
         locationLink: null
     },
     {
         partyName: "Chirag Bag House - Panjim",
-        coordinates: {lat:15.498822395506862,lng: 73.8222645373662},
+        coordinates:null,
         locationLink: null
     },
     {
         partyName: "J.V Manerkar - Panjim",
-        coordinates: {lat:15.500795472416964,lng: 73.82931163566691},
+        coordinates:null,
         locationLink: null
     },
    
     // Parvorim
     {
         partyName: "Poshak Retail - Parvorim",
-        coordinates: {lat:15.533518139367382,lng: 73.82225221849463},
+        coordinates: null,
         locationLink: null
     },
     // Phonda/Ponda
@@ -139,7 +137,7 @@ const partyData = [
     },
     {
         partyName: "Feelings - Ponda",
-        coordinates: {lat:15.400735367795287,lng: 74.00605617523317},
+        coordinates: null,
         locationLink: null
     },
     // Sanvordem
@@ -151,7 +149,7 @@ const partyData = [
     // Vasco
     {
         partyName: "Puja Cosmetics - Vasco",
-        coordinates: {lat:15.397243286508294,lng: 73.81096095551894},
+        coordinates: null,
         locationLink: null
     },
     
