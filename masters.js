@@ -3,13 +3,12 @@ const partyData = [
     // Bicholim
     {
         partyName: "Roop Darpan - Bicholim",
-        coordinates: {lat: 15.587945583060277, 
-            lng: 73.94766136230967},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "Mahamay Cosmetics - Bicholim",
-        coordinates: {lat:15.587211516066104, lng:73.94797331535224},
+        coordinates:null,
         locationLink: null
     },
     {
@@ -20,18 +19,18 @@ const partyData = [
     // Canacona
     {
         partyName: "Callicas - Canacona",
-        coordinates: {lat:15.006606552890053, lng:74.0463952938426},
+        coordinates: null,
         locationLink: null
     },
     // Mapusa
     {
         partyName: "Falari Enterpries - Mapusa",
-        coordinates: {lat:15.589365247224864, lng:73.8118954616089},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "Deepak Store - Mapusa",
-        coordinates: {lat:15.588641830696005, lng:73.81127494630533},
+        coordinates:null,
         locationLink: null
     },
     {
@@ -41,12 +40,12 @@ const partyData = [
     },
     {
         partyName: "G D Kalekar - Mapusa",
-        coordinates: {lat:15.588557509558795, lng:73.81151139521666},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "MS Dangui - Mapusa",
-        coordinates: {lat:15.588928018799352,lng: 73.81211117427368},
+        coordinates:null,
         locationLink: null
     },
  {
@@ -57,55 +56,51 @@ const partyData = [
 
     {
         partyName: "Jagannath Kavlekar LLP - Mapusa",
-        coordinates: {lat:15.585820445990006,lng: 73.81233290735419},
+        coordinates:null,
         locationLink: null
     },
     {
         partyName: "Siddhivinayak - Mapusa",
-        coordinates: {lat:15.587586260033774,lng: 73.81229355926534},
+        coordinates:null,
         locationLink: null
     },
     {
         partyName: "Femiline Collection - Margaon",
-        coordinates: {lat:15.273099814366223,lng: 73.97284791765553},
+        coordinates:null,
         locationLink: null
     },
     {
         partyName: "Visnu Fancy Stores - Margao",
-        coordinates: {lat:15.271282819800955,lng: 73.96030743849607},
+        coordinates:null,
         locationLink: null
     },
     {
         partyName: "Krishna Fancy - Margao",
-        coordinates: {lat:15.271619041983532,lng: 73.95953185225159},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "Caro Center - Margoa",
-        coordinates: {lat:15.272311775037739,lng: 73.95780725263138},
+        coordinates: null,
         locationLink: null
     },
     // Panjim
     {
         partyName: "Bharne Retail Trends - Panjim",
-        coordinates: {lat:15.500477485323938,lng: 73.8281064230195},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "Lovely Collection - Panjim",
-        coordinates: {lat:15.479218929400968,lng: 73.81219215767942},
+        coordinates: null,
         locationLink: null
     },
     {
         partyName: "Shetye Enterprises - Panjim",
-        coordinates: {lat:15.485509477728389,lng: 73.82070095136504},
+        coordinates:null,
         locationLink: null
     },
-    {
-        partyName: "M S Dangui - Panjim",
-        coordinates: {lat:15.500652759036013,lng: 73.82898800924747},
-        locationLink: null
-    },
+    
     {
         partyName: "Par Excellence - Panjim",
         coordinates: null,
@@ -315,7 +310,7 @@ function openMap(index) {
             const locationButton = L.control({position: 'bottomright'});
             locationButton.onAdd = function(map) {
                 const btn = L.DomUtil.create('button', 'custom-map-button');
-                btn.innerHTML = '📍';
+                btn.innerHTML = '🔗';
                 btn.style.cssText = `
                     width: 40px;
                     height: 40px;
