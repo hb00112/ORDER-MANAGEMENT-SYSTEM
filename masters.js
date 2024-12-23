@@ -15,7 +15,7 @@ const partyData = [
     {
        partyName: "Advait Enterprises - Bicholim",
         coordinates: null,
-        locationLink: "https://hb00112.github.io/MS-Dangui-Name-change/"
+        locationLink:null
     },
     // Canacona
     {
@@ -49,6 +49,12 @@ const partyData = [
         coordinates: {lat:15.588928018799352,lng: 73.81211117427368},
         locationLink: null
     },
+ {
+        partyName: "MS Dangui - Panjim",
+        coordinates:null,
+        locationLink: "https://hb00112.github.io/MS-Dangui-Name-change/"
+    },
+
     {
         partyName: "Jagannath Kavlekar LLP - Mapusa",
         coordinates: {lat:15.585820445990006,lng: 73.81233290735419},
