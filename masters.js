@@ -108,8 +108,7 @@ const partyData = [
     },
     {
         partyName: "Baron - Panjim",
-        coordinates: {
-            lat: null,
+        coordinates: null,
         locationLink: null
     },
     {
