@@ -467,7 +467,7 @@ function populateTable() {
                            onclick="getCurrentLocationAndSendMessage('${party.partyName}')"
                            style="cursor: pointer; color: #2563eb; text-decoration: underline;"
                            title="Click to pick location">
-                        Select location on map
+                        No Link
                     </span>` : 
                     `<span class="party-location-view-trigger" 
                            onclick="openMap(${index})"
