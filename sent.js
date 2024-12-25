@@ -345,7 +345,166 @@ function getAreaFromPartyName(partyName) {
     const parts = partyName.split(' ');
     return parts[parts.length - 1];
 }
+function showUndeliveredOrdersForDay(day) {
+    const ordersList = document.getElementById('ordersList');
+    const markDeliveredBtn = document.getElementById('markDeliveredBtn');
+    
+    if (!ordersList || !markDeliveredBtn) return;
+    
+    ordersList.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    
+    firebase.database().ref('sentOrders').once('value')
+        .then(snapshot => {
+            const orders = [];
+            
+            snapshot.forEach(childSnapshot => {
+                const order = childSnapshot.val();
+                if (order && order.deliveryStatus === 'Undelivered') {
+                    const area = getAreaFromPartyName(order.partyName);
+                    const scheduledAreas = DELIVERY_SCHEDULE[day] || [];
+                    
+                    if (scheduledAreas.some(scheduledArea => 
+                        area.toLowerCase() === scheduledArea.toLowerCase())) {
+                        
+                        const totalQuantity = order.billedItems?.reduce((sum, item) => 
+                            sum + (parseInt(item.quantity) || 0), 0) || 0;
+                        
+                        orders.push({
+                            id: childSnapshot.key,
+                            partyName: order.partyName,
+                            totalQuantity: totalQuantity,
+                            area: area
+                        });
+                    }
+                }
+            });
 
+            if (orders.length === 0) {
+                ordersList.innerHTML = `
+                    <div class="text-center text-muted mt-3">
+                        <p>No undelivered orders for ${day}</p>
+                    </div>`;
+                markDeliveredBtn.style.display = 'none';
+                return;
+            }
+
+            ordersList.innerHTML = `
+                <div class="list-group">
+                    ${orders.map(order => `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input order-checkbox" 
+                                           type="checkbox" 
+                                           value="${order.id}" 
+                                           id="order_${order.id}">
+                                    <label class="form-check-label" for="order_${order.id}">
+                                        ${order.partyName}
+                                    </label>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">${order.totalQuantity}</span>
+                            </div>
+                            <small class="text-muted ms-4">Area: ${order.area}</small>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            // Update mark delivered button visibility
+            updateMarkDeliveredButton();
+
+            // Add change event listeners to checkboxes
+            const checkboxes = ordersList.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateMarkDeliveredButton);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading orders:', error);
+            ordersList.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    Error loading orders. Please try again.
+                </div>`;
+        });
+}
+
+function updateMarkDeliveredButton() {
+    const markDeliveredBtn = document.getElementById('markDeliveredBtn');
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    markDeliveredBtn.style.display = anyChecked ? 'block' : 'none';
+}
+
+function markOrdersAsDelivered() {
+    const markDeliveredBtn = document.getElementById('markDeliveredBtn');
+    const checkedOrders = document.querySelectorAll('.order-checkbox:checked');
+    const updates = {};
+    
+    markDeliveredBtn.disabled = true;
+    markDeliveredBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Updating...`;
+
+    checkedOrders.forEach(checkbox => {
+        updates[`sentOrders/${checkbox.value}/deliveryStatus`] = 'Delivered';
+    });
+
+    if (Object.keys(updates).length > 0) {
+        firebase.database().ref().update(updates)
+            .then(() => {
+                // Refresh current day's orders
+                const activeButton = document.querySelector('#dayButtons .active');
+                if (activeButton) {
+                    showUndeliveredOrdersForDay(activeButton.dataset.day);
+                }
+                // Refresh scrolling display
+                loadUndeliveredOrdersScroll();
+                
+                // Show success message
+                const ordersList = document.getElementById('ordersList');
+                ordersList.insertAdjacentHTML('afterbegin', `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Orders marked as delivered successfully
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+            })
+            .catch(error => {
+                console.error('Error updating orders:', error);
+                const ordersList = document.getElementById('ordersList');
+                ordersList.insertAdjacentHTML('afterbegin', `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Error updating orders. Please try again.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+            })
+            .finally(() => {
+                markDeliveredBtn.disabled = false;
+                markDeliveredBtn.innerHTML = 'Mark Selected as Delivered';
+            });
+    }
+}
+
+function initializeModalHandlers() {
+    const scrollContent = document.querySelector('.orders-scroll-content');
+    if (scrollContent) {
+        scrollContent.style.cursor = 'pointer';
+        scrollContent.addEventListener('click', () => {
+            const modal = createOrdersModal();
+            modal.show();
+            
+            // Show Monday orders by default
+            const mondayBtn = document.querySelector('[data-day="Monday"]');
+            if (mondayBtn) {
+                mondayBtn.classList.add('active');
+                showUndeliveredOrdersForDay('Monday');
+            }
+        });
+    }
+}
+
+// Initialize when document is ready
+document.addEventListener('DOMContentLoaded', initializeModalHandlers);
 function getUndeliveredOrdersForDay(day) {
     const areasForDay = DELIVERY_SCHEDULE[day] || [];
     
@@ -492,10 +651,34 @@ function getDaysForArea(area) {
     return areaToDateMap[area] || [];
 }
 
+// Update the scroll content function to start immediately
 function loadUndeliveredOrdersScroll() {
     const scrollContent = document.querySelector('.orders-scroll-content');
-    if (!scrollContent) return;
+    if (!scrollContent) {
+        console.error('Scroll content container not found');
+        return;
+    }
 
+    // Add click handler immediately without waiting for data
+    if (!scrollContent.getAttribute('data-click-handler-added')) {
+        scrollContent.style.cursor = 'pointer';
+        scrollContent.addEventListener('click', () => {
+            const modal = createOrdersModal();
+            modal.show();
+            
+            // Show Monday orders by default
+            const mondayBtn = document.querySelector('[data-day="Monday"]');
+            if (mondayBtn) {
+                mondayBtn.classList.add('active');
+                showUndeliveredOrdersForDay('Monday');
+            }
+        });
+        scrollContent.setAttribute('data-click-handler-added', 'true');
+    }
+
+    // Start with a loading message that's also clickable
+    scrollContent.textContent = 'Loading undelivered orders...';
+    
     firebase.database().ref('sentOrders').once('value')
         .then(snapshot => {
             // Group orders by day
@@ -516,28 +699,25 @@ function loadUndeliveredOrdersScroll() {
                     const totalQuantity = order.billedItems?.reduce((sum, item) => 
                         sum + (parseInt(item.quantity) || 0), 0) || 0;
                     
-                    // Get delivery days for this area
-                    const deliveryDays = getDaysForArea(area);
-                    
-                    // Add the order to each delivery day
-                    deliveryDays.forEach(day => {
-                        ordersByDay[day].push({
-                            partyName: order.partyName,
-                            totalQuantity: totalQuantity
-                        });
+                    Object.entries(DELIVERY_SCHEDULE).forEach(([day, areas]) => {
+                        if (areas.some(scheduledArea => 
+                            area.toLowerCase() === scheduledArea.toLowerCase())) {
+                            ordersByDay[day].push({
+                                partyName: order.partyName,
+                                totalQuantity: totalQuantity
+                            });
+                        }
                     });
                 }
             });
 
-            // Create scroll text with day grouping only
+            // Create scroll text
             const scrollParts = [];
-            
             Object.entries(ordersByDay).forEach(([day, orders]) => {
                 if (orders.length > 0) {
                     const dayOrders = orders
                         .map(order => `${order.partyName} (${order.totalQuantity})`)
                         .join(', ');
-
                     scrollParts.push(`${day}: [ ${dayOrders} ]`);
                 }
             });
@@ -547,20 +727,20 @@ function loadUndeliveredOrdersScroll() {
                 return;
             }
 
-            // Combine all days into one scrolling text
+            // Set the scroll text with instructions
             const scrollText = scrollParts.join(' || ');
-            scrollContent.textContent = `${scrollText} || Triple Tap on Order to Change Delivery Status`;
+            scrollContent.textContent = `${scrollText} || Click anywhere to manage orders`;
             
-            // Adjust animation duration based on content length
-            const textLength = scrollText.length;
-            const duration = Math.max(15, textLength * 0.2);
+            // Set animation duration based on content length
+            const duration = Math.max(15, scrollText.length * 0.2);
             scrollContent.style.animationDuration = `${duration}s`;
         })
         .catch(error => {
             console.error('Error loading undelivered orders for scroll:', error);
-            scrollContent.textContent = 'Error loading undelivered orders';
+            scrollContent.textContent = 'Error loading orders... Click to try again';
         });
 }
+
 // Keep the existing notification system functions the same...
 loadUndeliveredOrdersScroll();
 setInterval(loadUndeliveredOrdersScroll, 60000);
@@ -591,6 +771,61 @@ function downloadAsImage(element, filename) {
     });
 }
 
+function createOrdersModal() {
+    let modal = document.getElementById('undeliveredOrdersModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'undeliveredOrdersModal';
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-fullscreen-sm-down">
+                <div class="modal-content">
+                    <div class="modal-header flex-column">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                            <h5 class="modal-title">Undelivered Orders</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="days-container w-100 overflow-auto">
+                            <div class="btn-group flex-wrap" role="group" id="dayButtons">
+                                <button type="button" class="btn btn-outline-primary" data-day="Monday">Mon</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Tuesday">Tue</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Wednesday">Wed</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Thursday">Thu</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Friday">Fri</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Saturday">Sat</button>
+                                <button type="button" class="btn btn-outline-primary" data-day="Sunday">Sun</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ordersList" class="pb-5"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary w-100" id="markDeliveredBtn" style="display: none;">
+                            Mark Selected as Delivered
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Add event listeners after creating the modal
+        const dayButtons = modal.querySelectorAll('#dayButtons .btn');
+        dayButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                dayButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                showUndeliveredOrdersForDay(e.target.dataset.day);
+            });
+        });
+
+        const markDeliveredBtn = modal.querySelector('#markDeliveredBtn');
+        markDeliveredBtn.addEventListener('click', markOrdersAsDelivered);
+    }
+
+    return new bootstrap.Modal(modal);
+}
 function downloadAsPDF(element, filename) {
     // First, create a wrapper div that will contain our clone
     const wrapper = document.createElement('div');
@@ -803,16 +1038,54 @@ function initializeNotificationSystem() {
     // Check every hour in case the page stays open
     setInterval(checkAndSendNotification, 60 * 60 * 1000);
 }
+function addScrollStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .orders-scroll-container {
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
+        .orders-scroll-container:hover {
+            background-color: #e9ecef;
+        }
+
+        .orders-scroll-content {
+            white-space: nowrap;
+            animation: scroll-text linear infinite;
+            display: inline-block;
+            padding-right: 50px;
+            cursor: pointer;
+        }
+
+        @keyframes scroll-text {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
 document.addEventListener('DOMContentLoaded', () => {
     loadSentOrders();
     initializeNotificationSystem();
+    initializeModalHandlers();
+    setInterval(loadUndeliveredOrdersScroll, 60000);
    
 });
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         checkAndSendNotification();
+        loadUndeliveredOrdersScroll();
     }
 });
 
