@@ -2815,3 +2815,125 @@ body.modal-open {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+.modal-header .btn-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.modal-header .btn-group {
+    margin-right: 2rem;
+}
+
+.modal-header .btn-group .btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.orders-scroll-content {
+    cursor: pointer;
+}
+
+#dayButtons .btn.active {
+    background-color: #0d6efd;
+    color: white;
+}
+/* Modal styles for better mobile display */
+.modal-header .btn-close {
+    padding: 0.5rem;
+}
+
+.days-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.days-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+#dayButtons {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: max-content;
+}
+
+#dayButtons .btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0;
+    flex: 1;
+    min-width: 3.5rem;
+}
+
+#dayButtons .btn:first-child {
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+#dayButtons .btn:last-child {
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+#dayButtons .btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: none;
+    padding-top: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+#ordersList {
+    margin-bottom: 60px;
+}
+
+.form-check-input {
+    margin-top: 0.3em;
+}
+
+/* Make the modal full screen on mobile */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0;
+        max-width: none;
+        height: 100%;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 0;
+        height: 100%;
+    }
+    
+    .modal-body {
+        padding-bottom: 80px;
+    }
+}
