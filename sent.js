@@ -337,7 +337,7 @@ const DELIVERY_SCHEDULE = {
     'Thursday': [],
     'Friday': ['Panjim', 'Parvorim', 'Vasco', 'Mapusa','PANJIM','MIRAMAR','Miramar'],
     'Saturday': ['Margao', 'Sanvordem','Needs','Collection ','canacona','Cancona'],
-    'Sunday': ['Mapusa','emporium']
+    'Sunday': ['Mapusa','emporium','SIOLIM']
 };
 
 function getAreaFromPartyName(partyName) {
