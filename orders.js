@@ -663,6 +663,7 @@ let items =
 let parties = [
    "Avni Traders Phonda",
 "Bharne Retail Trends Panjim",
+  "BURYE EMPORIUM SIOLIM",
 "Feelings Phonda",
 "Falari Enterpries Mapusa ",
 "Puja Cosmetics Vasco",
