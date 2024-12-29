@@ -1219,7 +1219,6 @@ function updateTotals(modal) {
 
 
 
-
 function displaySummarizedOrders(orders, container) {
     console.log('Displaying summarized orders. Total orders:', orders.length);
     container.innerHTML = '';
@@ -1227,10 +1226,30 @@ function displaySummarizedOrders(orders, container) {
     console.log('Grouped orders:', groupedOrders);
     
     for (const [partyName, group] of Object.entries(groupedOrders)) {
-        const totalQty = group.reduce((sum, order) => sum + calculateTotalQuantityForOrder(order), 0);
-        const itemNames = getUniqueItemNames(group);
+        // Get only items with non-zero SRQ
+        const nonZeroItems = group.flatMap(order => 
+            (order.items || []).filter(item => {
+                const totalQuantity = Object.values(item.quantities || {})
+                    .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+                return totalQuantity > 0;
+            })
+        );
         
-        console.log('Creating row for:', partyName, 'Total Quantity:', totalQty, 'Items:', itemNames);
+        // Calculate total quantity only for non-zero SRQ items
+        const totalQty = nonZeroItems.reduce((sum, item) => {
+            const itemTotal = Object.values(item.quantities || {})
+                .reduce((itemSum, qty) => itemSum + parseInt(qty) || 0, 0);
+            return sum + itemTotal;
+        }, 0);
+
+        // Get unique item codes (without color) only for items with non-zero SRQ
+        const itemCodes = [...new Set(nonZeroItems.map(item => {
+            // Extract just the item code part (before the parenthesis)
+            const itemName = item.name;
+            return itemName.split('(')[0];
+        }))].join(', ');
+        
+        console.log('Creating row for:', partyName, 'Total Quantity:', totalQty, 'Items:', itemCodes);
         const row = document.createElement('tr');
         
         // Check if any order in the group has been sent to billing
@@ -1242,7 +1261,7 @@ function displaySummarizedOrders(orders, container) {
         row.innerHTML = `
             <td>${partyName}</td>
             <td>
-                <span class="item-names">${itemNames}</span>
+                <span class="item-names">${itemCodes}</span>
             </td>
             <td>${totalQty}</td>
         `;
@@ -1252,6 +1271,7 @@ function displaySummarizedOrders(orders, container) {
         container.appendChild(row);
     }
 }
+
 function openStockRemovalModal(partyName, orders) {
     console.log('Opening modal for party:', partyName);
     console.log('Orders:', orders);
@@ -1270,49 +1290,63 @@ function openStockRemovalModal(partyName, orders) {
         const today = new Date();
         const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
         
-        modalHTML += `
-            <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span style="font-size: 1.1em; color: #007bff;"> ${orderDate.toLocaleDateString()}</span>
-                <span style="font-size: 1.1em; color: #28a745;"> ${order.orderNumber || 'N/A'}</span>
-                <span style="font-size: 1.1em; color: #e73838;"> ${daysSinceOrder} days ago</span>
-            </div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Item Name & Color</th>
-                        <th>Sizes</th>
-                        <th>SRQ</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        if (order.items && Array.isArray(order.items)) {
-            order.items.forEach(item => {
-                const sizesWithQuantities = Object.entries(item.quantities || {})
-                    .map(([size, quantity]) => `${size}/${quantity}`)
-                    .join(', ');
-                const totalQuantity = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
-                
-                modalHTML += `
-                    <tr>
-                        <td>${item.name}(${item.color || 'N/A'})</td>
-                        <td class="sizes-cell">${sizesWithQuantities}</td>
-                        <td>${totalQuantity}</td>
-                    </tr>
-                `;
+        // Check if order has any items with non-zero SRQ
+        const hasNonZeroItems = order.items && Array.isArray(order.items) && 
+            order.items.some(item => {
+                const totalQuantity = Object.values(item.quantities || {})
+                    .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+                return totalQuantity > 0;
             });
-        } else {
-            modalHTML += '<tr><td colspan="3">No items found or error in data structure</td></tr>';
-        }
-        
-        modalHTML += `
-                </tbody>
-            </table>
-        `;
-        
-        if (index < orders.length - 1) {
-            modalHTML += '<hr>'; // Add a separator between orders
+            
+        if (hasNonZeroItems) {
+            modalHTML += `
+                <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="font-size: 1.1em; color: #007bff;"> ${orderDate.toLocaleDateString()}</span>
+                    <span style="font-size: 1.1em; color: #28a745;"> ${order.orderNumber || 'N/A'}</span>
+                    <span style="font-size: 1.1em; color: #e73838;"> ${daysSinceOrder} days ago</span>
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item Name & Color</th>
+                            <th>Sizes</th>
+                            <th>SRQ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            if (order.items && Array.isArray(order.items)) {
+                // Filter and display only items with non-zero SRQ
+                order.items.forEach(item => {
+                    const totalQuantity = Object.values(item.quantities || {})
+                        .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+                    
+                    // Only create row if SRQ (totalQuantity) is greater than 0
+                    if (totalQuantity > 0) {
+                        const sizesWithQuantities = Object.entries(item.quantities || {})
+                            .map(([size, quantity]) => `${size}/${quantity}`)
+                            .join(', ');
+                        
+                        modalHTML += `
+                            <tr>
+                                <td>${item.name}(${item.color || 'N/A'})</td>
+                                <td class="sizes-cell">${sizesWithQuantities}</td>
+                                <td>${totalQuantity}</td>
+                            </tr>
+                        `;
+                    }
+                });
+            }
+            
+            modalHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            if (index < orders.length - 1) {
+                modalHTML += '<hr>'; // Add a separator between orders
+            }
         }
     });
     
@@ -1325,7 +1359,6 @@ function openStockRemovalModal(partyName, orders) {
     
     modal.style.display = 'block';
 }
-
 
 function initializeModal() {
     const modal = document.getElementById('stockRemovalModal');
