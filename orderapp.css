@@ -1,0 +1,162 @@
+/* Order Approval Section Styles */
+.oa-section {
+    position: relative;
+    padding: 20px;
+    margin: 15px 0;
+    display: none; /* Hide by default */
+}
+
+.section.active {
+    display: block; /* Show when active */
+}
+
+.oa-main-heading {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.oa-retail-heading {
+    color: #34495e;
+    font-size: 20px;
+    margin: 15px 0;
+}
+
+.oa-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px 0;
+}
+
+.oa-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.oa-order-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.oa-order-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.oa-order-header {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+}
+
+.oa-party-name {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.oa-order-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.oa-detail-item {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.oa-detail-label {
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+.oa-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.oa-items-table th, 
+.oa-items-table td {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    text-align: left;
+}
+
+.oa-items-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+.oa-total-quantity {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 15px 0;
+    text-align: right;
+}
+
+.oa-action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.oa-btn {
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.oa-btn-approve {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.oa-btn-approve:hover {
+    background-color: #27ae60;
+}
+
+.oa-btn-reject {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.oa-btn-reject:hover {
+    background-color: #c0392b;
+}
+
+.oa-color-size-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.oa-color-size-item {
+    font-size: 13px;
+    color: #666;
+    padding: 4px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.oa-item-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}

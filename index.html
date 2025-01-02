@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KA ORDER MANAGEMENT SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://s3.ezgif.com/tmp/ezgif-3-092ebae015.png" type="image/png">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <meta name="theme-color" content="#4285f4">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <!-- PushAlert -->
+<script type="text/javascript">
+        (function(d, t) {
+                var g = d.createElement(t),
+                s = d.getElementsByTagName(t)[0];
+                g.src = "https://cdn.pushalert.co/integrate_5686ad6dd7357c7d96272154fdcdbf7f.js";
+                s.parentNode.insertBefore(g, s);
+        }(document, "script"));
+</script>
+<!-- End PushAlert -->
+<link rel="stylesheet" href="orderapp.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Welcome!</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter your username:</p>
+                    <input type="text" id="usernameInput" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="saveUsername">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="offlineAlert" class="alert alert-warning" style="display: none;" role="alert">
+        You are currently offline. Some features may be limited.
+    </div>
+    <nav class="navbar navbar-expand navbar-light bg-light">
+        <div class="container-fluid">
+            <button id="menuToggle" class="btn btn-link">☰</button>
+            <div class="navbar-nav">
+                <a class="nav-link active" href="#" data-section="orders">Orders</a>
+                <a class="nav-link" href="#" data-section="pendingOrders">Pending</a>
+                <a class="nav-link" href="#" data-section="billing">Billing</a>
+                <a class="nav-link" href="#" data-section="sentOrders">Sent</a>
+            </div>
+        </div>
+    </nav>
+    <div id="homeScreen" class="section active">
+        <div class="marquee-container">
+            <marquee behavior="scroll" direction="left" class="announcement" scrollamount="5">
+               PDF EDITOR NOW AVIALABLE IN SLIDER BAR (POSHAK NAME CHANGING, CN AMT REMOVING, PDF MERGING)
+            </marquee>
+        </div>
+        <h3>Hello <span id="userNameDisplay"></span></h3>
+        <div class="text-effect-wrapper">
+            <h1 class="hc-text">KA</h1>
+        </div>
+        <h4>KAMBESHWAR AGENCIES</h4>
+    </div>
+    <div id="slideMenu" class="slide-menu">
+        <a href="#" class="close-btn">&times;</a>
+        <a href="#" data-section="deletedOrders">Deleted Orders</a>
+        <a href="#" data-section="master">Party Master</a>
+        <a href="#" data-section="userManagement">User Management</a>
+        <a href="#" data-section="stockUpdation">Stock Updation</a>
+        <a href="#" data-section="stock">Stock</a>
+        <a href="#" data-section="purchaseorder">Purchase Order</a>
+        <a href="#" data-section="bso">Base Stock Order</a>
+        <a href="#" data-section="orderapprove">Order Approval</a>
+        
+        
+    </div>
+
+    <div id="bso" class="section">
+        <h4>Base Stock Purchase Orders</h4>
+    
+        <div id="bso-container" style="display:none;">
+            <table id="bso-stock-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Color</th>
+                        <th>Size</th>
+                        <th>Stock</th>
+                        <th>B.S</th>
+                        <th>BSO</th>
+                    </tr>
+                </thead>
+                <tbody id="bso-stock-body">
+                    <!-- Rows will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    
+    <div id="pdf" class="section">
+        <h4>PDF Editor</h4>
+        <div class="pdf-editor-button-grid">
+            <button class="pdf-editor-action-btn" data-section="poshak">Poshak Name Change</button>
+        </div>
+        <div class="pdf-editor-button-grid">
+            <button class="pdf-editor-action-btn" data-section="cn">CN Deductor</button>
+        </div>
+        <div class="pdf-editor-button-grid">
+            <button class="pdf-editor-action-btn" data-section="merge">PDF Merge</button>
+        </div>
+    </div>
+    
+    <!-- Add hidden class to both sections initially -->
+    <div id="poshakContent" class="pdf-editor-content-section hidden">
+        <div class="pdf-editor-header">
+            <h4>Poshak Name Change</h4>
+            <button class="pdf-editor-close-btn">&times;</button>
+        </div>
+        <div class="pdf-editor-main">
+            <div class="upload-section">
+                <input type="file" id="pdfInput" accept=".pdf" />
+                <label for="pdfInput" class="upload-label">Choose PDF file</label>
+            </div>
+            <div id="pdfPreview" class="preview-section">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+            <div class="actions-section">
+                <button id="processButton" disabled>Process and Download</button>
+            </div>
+        </div>
+    </div>
+    
+   <!-- CN Deductor Content Section -->
+<div id="cnContent" class="pdf-editor-content-section hidden">
+    <div class="pdf-editor-header">
+        <h4>CN Deductor</h4>
+        <button class="pdf-editor-close-btn">&times;</button>
+    </div>
+    <div class="pdf-editor-main">
+        <div class="upload-section">
+            <input type="file" id="cnPdfInput" accept=".pdf" />
+            <label for="cnPdfInput" class="upload-label">Choose PDF file</label>
+        </div>
+        <div id="cnPdfPreview" class="preview-section">
+            <canvas id="cnPdfCanvas"></canvas>
+        </div>
+        <div class="actions-section">
+            <button id="cnProcessButton" disabled>Process and Download</button>
+        </div>
+    </div>
+</div>
+<!-- PDF Merge Content Section -->
+<div id="mergeContent" class="pdf-editor-content-section hidden">
+    <div class="pdf-editor-header">
+        <h4>PDF Merge</h4>
+        <button class="pdf-editor-close-btn">&times;</button>
+    </div>
+    <div class="pdf-editor-main">
+        <div class="upload-section multiple-files">
+            <input type="file" id="mergePdfInput" accept=".pdf" multiple />
+            <label for="mergePdfInput" class="upload-label">Choose PDF files</label>
+        </div>
+        <div class="selected-files-list" id="selectedFilesList">
+            <!-- Selected files will be listed here -->
+        </div>
+        <div class="preview-grid" id="pdfPreviewGrid">
+            <!-- PDF previews will be shown here -->
+        </div>
+        <div class="actions-section">
+            <button id="mergeButton" disabled>Merge and Download</button>
+        </div>
+    </div>
+</div>
+<!-- Order Approval Section -->
+<div id="orderapprove" class="oa-section">
+    <h4 class="oa-main-heading">Order Approval</h4>
+    <div class="oa-container">
+        <h5 class="oa-retail-heading">Retail Orders</h5>
+        <div id="unapprovedOrdersList" class="oa-orders-list">
+            <!-- Orders will be dynamically populated here -->
+        </div>
+    </div>
+</div>
+    <div id="deletedOrders" class="section">
+        <h4>Deleted Orders</h4>
+        <p>Deleted orders will be displayed here.</p>
+    </div>
+    
+     <div id="master" class="section">
+        <h4>Party Master</h4>
+        <table class="party-master-table">
+            <thead>
+                <tr>
+                    <th>Party Name</th>
+                    <th>Station</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody id="partyTableBody">
+                <!-- Table content will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    
+    <div id="userManagement" class="section">
+        <h4>User Management</h4>
+        <button class="btn btn-primary" id="usersBtn">Users</button>
+        <button class="btn btn-primary" id="approvalRequestsBtn">Approval Requests</button>
+    </div>
+    
+    <div id="stockUpdation" class="section">
+        <h4>Stock Updation</h4>
+        <input type="file" id="xlsFile" accept=".xls,.xlsx" />
+        <button class="btn btn-primary" id="uploadStockBtn">Upload Stock Data</button>
+        
+        <div class="alert alert-danger mt-3">
+            <strong>NOTE:</strong> Once the XLS file is uploaded, the current stock data will be completely reset and replaced with the new data from the file. This action cannot be undone, so please ensure that the file is accurate before proceeding. Any errors may result in incorrect stock levels. Upload the file carefully to avoid potential issues.
+        </div>
+    </div>
+    <div id="purchaseorder" class="section">
+        <h4>Purchase Orders</h4>
+        <p>Purchase orders will be displayed here.</p>
+        <button id="purchaseFormatBtn" class="purchase-order-button">Purchase Format</button>
+        <button id="placeOrder2Btn" class="place-order-button">Place Order</button>
+    
+        <!-- Place Order Modal -->
+        <div id="placeOrderModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2>Place Order</h2>
+                <div id="poStyleGrid" class="po-grid"></div>
+            </div>
+        </div>
+    
+        <!-- Color Modal -->
+        <div id="poColorModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2 id="poColorModalTitle">Colors for Style</h2>
+                <div id="poColorGrid" class="po-grid"></div>
+            </div>
+        </div>
+    
+        <!-- Size Modal -->
+        <div id="poSizeModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2 id="poSizeModalTitle">Sizes for Style</h2>
+                <h3 id="poSizeModalSubtitle">Color</h3>
+                <div id="poSizeGrid" class="po-size-grid"></div>
+                <button id="poSaveButton" class="po-button">Save to Cart</button>
+            </div>
+        </div>
+    
+        <!-- Cart Summary -->
+        <div id="poCartSummary" class="po-cart-summary">
+            <span id="poCartItemCount">Cart: 0 items</span>
+            <button id="poViewOrderBtn" class="po-button">View Order</button>
+        </div>
+    
+        <!-- Cart Modal -->
+        <div id="poCartModal" class="po-modal">
+            <div class="po-modal-content">
+                <span class="po-modal-close">&times;</span>
+                <h2>Cart Summary</h2>
+                <table id="poCartTable" class="po-table">
+                    <thead>
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Category</th>
+                            <th>Style</th>
+                            <th>Description</th>
+                            <th>Color</th>
+                            <th>Color Name</th>
+                            <th>Stylecol</th>
+                            <th>Size</th>
+                            <th>MRP</th>
+                            <th>Pack Size</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poCartTableBody"></tbody>
+                </table>
+                <button id="poExportBtn" class="po-button">Export to Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stock" class="section">
+        <h4>Stock</h4>
+        <div id="stockList" class="stock-grid">
+            <!-- Stock items will be dynamically added here -->
+        </div>
+    </div>
+  
+    <!-- Item Stock Modal -->
+    <div id="itemStockModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalItemName"></h2>
+            <table id="modalStockTable">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Size & Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Stock details will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="users" class="section">
+        <h4>Users</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+        </table>
+    </div>
+
+    <div id="approvalRequests" class="section">
+        <h4>Approval Requests</h4>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="approvalRequestsBody"></tbody>
+        </table>
+    </div>
+
+   
+    <div id="orders" class="section">
+        <h4>Orders</h4>
+        <form id="orderForm">
+            <div class="mb-3">
+                <input type="text" class="form-control" id="partySearch" placeholder="Search or add party">
+                <div id="partyList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="itemSearch" placeholder="Search or add item">
+                <div id="itemList" class="list-group mt-2" style="display: none;"></div>
+            </div>
+            <!-- The item details and size/quantity grid will be inserted here dynamically -->
+        </form>
+        <div class="order-footer">
+            <button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
+            <button type="button" class="btn btn-success" id="saveOrderBtn"> Cart Empty</button>
+        </div>
+        <!-- The cart summary table will be inserted here dynamically -->
+    </div>
+    
+    <div class="container mt-2">
+        <div id="pendingOrders" class="section">
+            <h4>Pending Orders</h4>
+            <div class="d-flex justify-content-center align-items-center mb-2">
+                <div class="toggle-container d-flex align-items-center">
+                    <span class="me-2">Summarized</span>
+                    <label class="switch mx-2">
+                        <input type="checkbox" id="viewToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="ms-2">Detailed</span>
+                </div>
+            </div>
+            <button id="filterButton" class="btn btn-success" style="width: 100px; height: 30px;">Filter</button>
+            <button id="clearFiltersButton" class="btn btn-secondary">Clear Filters</button>
+            <table class="table table-sm">
+                <thead id="pendingOrdersHeadDetailed">
+                    
+                </thead>
+                <thead id="pendingOrdersHeadSummarized" style="display: none;">
+                    <tr>
+                        <th>Party Name</th>
+                        <th>Items</th>
+                        <th>Total Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingOrdersBody"></tbody>
+            </table>
+           
+        </div>
+    </div>
+    
+    <div id="filterModal4" class="modal4">
+        <div class="modal4-content">
+            <div class="modal4-header">
+                <h5>Filters</h5>
+                <span class="close4">X</span>
+            </div>
+            <div class="modal4-body">
+                <div class="modal4-sidebar">
+                    <ul id="filterMenu">
+                        <li data-filter="partyName" class="filter-item active">Party Name</li>
+                        <!-- Add more filter options here -->
+                    </ul>
+                </div>
+                <div class="modal4-main" id="filterContent">
+                    <div class="filter-actions">
+                        <button id="selectAllBtn" class="btn btn-secondary">Select All</button>
+                        <button id="deselectAllBtn" class="btn btn-secondary">Deselect All</button>
+                    </div>
+                    <div id="partyNameList" class="party-name-list"></div>
+                    <div class="modal4-footer">
+                        <span id="selectionCount">0 parties selected</span>
+                        <button id="saveFilterBtn" class="btn btn-primary">Show Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="noFilterSelectedMessage" class="message">No filter selected</div>
+
+    <!-- Stock Removal Modal -->
+    <div id="stockRemovalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+    
+    <div id="billing" class="section">
+        <h4>Billing</h4>
+        <div id="billingOrders"></div>
+    </div>
+
+    <div id="sentOrders" class="section">
+        <div class="sent-orders-header">
+            <h4>Sent Orders</h4>
+            <div class="undelivered-marquee-wrapper">
+                <span class="undelivered-label">Undelivered:</span>
+                <div class="orders-scroll-container">
+                    <div class="orders-scroll-content">
+                        Loading undelivered orders...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="sentOrdersContainer"></div>
+    </div>
+
+    <div id="pendingApprovalScreen" class="fullscreen-overlay" style="display: none;">
+        <div class="approval-content">
+            <h1>Registration Pending</h1>
+            <p>Please wait for your registration to be approved.</p>
+            <div class="loading-animation">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your JavaScript files -->
+    <script src="firebase-config.js"></script>
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+    <script src="orders.js"></script>
+    <script src="pending.js"></script>
+    <script src="billing.js"></script>
+    <script src="sent.js"></script>
+    <script src="deleted-orders.js"></script>
+    <script src="masters.js"></script>
+    <script src="user-management.js"></script>
+    <script src="main.js"></script>
+    <script src="animations.js"></script>
+    <script src="stock.js"></script>
+    <script src="purchase.js"></script>
+    <script src="pdf.js"></script>
+    <!-- start webpushr code --> <script>(function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));webpushr('setup',{'key':'BJgL8_NTH55P5mh-yTMhQCDBYDOzxLKRmkIbbk-e8myTHe_Ldm0R1Ch3q7XVAxfq3wckcYszT9BSRT6liGt0Cug' });</script><!-- end webpushr code -->
+     <script src="._webpushr-sw.js"></script>
+ <script src="webpushr-sw.js"></script>
+ <script src="orderapp.js"></script>
+</body>
+</html>
+
