@@ -1438,7 +1438,7 @@ function viewOrderDetails(orderId) {
         });
 }
 
-
+/*
 document.addEventListener('DOMContentLoaded', function() {
     const allSections = document.querySelectorAll('.section');
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
@@ -1458,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle navigation without archived orders
         });
     });
-});
+});*/
 
 
 
