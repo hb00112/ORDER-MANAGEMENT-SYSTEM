@@ -2,6 +2,32 @@ let username = null;
 let orderCounter = 0;
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize core menu items
+    const requiredSections = ['bso', 'orderapprove'];
+    requiredSections.forEach(sectionId => {
+        ensureSectionInMenu(sectionId);
+    });
+
+    function ensureSectionInMenu(sectionId) {
+        const slideMenu = document.getElementById('slideMenu');
+        const existingLink = slideMenu.querySelector(`a[data-section="${sectionId}"]`);
+        
+        if (!existingLink) {
+            const newLink = document.createElement('a');
+            newLink.href = '#';
+            newLink.setAttribute('data-section', sectionId);
+            newLink.textContent = sectionId === 'bso' ? 'Base Stock Order' : 'Order Approval';
+            
+            // Insert before PDF Editor (last item)
+            const pdfLink = slideMenu.querySelector('a[data-section="pdf"]');
+            if (pdfLink) {
+                slideMenu.insertBefore(newLink, pdfLink);
+            } else {
+                slideMenu.appendChild(newLink);
+            }
+        }
+    }
+
     loadNewItemsFromFirebase().then(() => {
         console.log('Items loaded and datalist updated');
     });
@@ -17,8 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
         showSection('approvalRequests');
         loadApprovalRequests();
     });
-    
-    
 
     const itemSearch = document.getElementById('itemSearch');
     itemSearch.addEventListener('input', function() {
@@ -54,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
     checkUserStatus().then((status) => {
         switch (status) {
             case 'active':
-                // User is active, allow access to the application
                 break;
             case 'pending':
                 document.getElementById('pendingApprovalScreen').style.display = 'flex';
@@ -65,19 +88,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    const slideMenu = document.getElementById('slideMenu');
+    const menuToggle = document.getElementById('menuToggle');
+    const closeBtn = document.querySelector('.close-btn');
+
+    // Unified section handling
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'none';
+        });
+        
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            
+            // Update active states
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            
+            const activeLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+    }
+
+    // Menu navigation setup
     document.querySelectorAll('.nav-link, #slideMenu a[data-section]').forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
             const sectionId = this.getAttribute('data-section');
             showSection(sectionId);
-
-            // Update active state for nav links
-            document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
-            if (this.classList.contains('nav-link')) {
-                this.classList.add('active');
-            }
-
-            // Close slide menu if it's open
             slideMenu.style.width = '0';
         });
     });
@@ -86,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const firebaseParties = snapshot.val();
         if (firebaseParties) {
             parties = parties.concat(Object.values(firebaseParties));
-            parties = [...new Set(parties)]; // Remove duplicates
-            sortParties(); // Sort the combined list
+            parties = [...new Set(parties)];
+            sortParties();
         }
     });
 
@@ -95,45 +137,12 @@ document.addEventListener('DOMContentLoaded', function () {
     loadBillingOrders();
     loadSentOrders();
 
-    const slideMenu = document.getElementById('slideMenu');
-    const menuToggle = document.getElementById('menuToggle');
-    const closeBtn = document.querySelector('.close-btn');
-
-    closeBtn.addEventListener('click', function () {
+    closeBtn.addEventListener('click', () => {
         slideMenu.style.width = '0';
     });
 
-    slideMenu.querySelectorAll('a[data-section]').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const sectionId = this.getAttribute('data-section');
-            showSection(sectionId);
-            slideMenu.style.width = '0';
-        });
-    });
-
-    menuToggle.addEventListener('click', function () {
+    menuToggle.addEventListener('click', () => {
         slideMenu.style.width = '250px';
-        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-    });
-
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const sectionId = this.getAttribute('data-section');
-            showSection(sectionId);
-        });
-    });
-
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
-            const sectionId = this.getAttribute('data-section');
-            document.getElementById(sectionId).classList.add('active');
-            this.classList.add('active');
-        });
     });
 
     window.addEventListener('click', function (event) {
@@ -142,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-   
     window.addEventListener('resize', adjustForMobileView);
     adjustForMobileView();
 
@@ -158,11 +166,5 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
-    }
-    
-// Call setupFirebaseListener when the page loads
-setupFirebaseListener();
+    setupFirebaseListener();
 });
