@@ -96,10 +96,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 newText: 'C-3 TECHNO PARK,CHOGM ROAD',
                 bold: false
             },
+          
+  {
+                match: (text) => text.includes('PANJIM'),
+                newText: 'PARVORIM',
+                bold: false,
+                replacementId: 'address-part1' // Add an identifier for this replacement
+            },
             {
-                match: (text) => text.includes('PANJIM') && text.includes('State: GOA'),
-                newText: 'PORVORIM      State: GOA(30)',
-                bold: false
+                match: (text) => text.includes('State: GOA'),
+                newText: 'State: GOA(30)',
+                bold: false,
+                replacementId: 'address-part2' // Add an identifier for this replacement
             },
             {
                 match: (text) => text.includes('GSTIN: 30AAAFT8453E1ZH'),
