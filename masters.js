@@ -1,6 +1,11 @@
 // Enhanced party data array with same structure
 const partyData = [
     // Bicholim
+     {
+        partyName: "Burye Emporium - Siolim",
+        coordinates: null,
+        locationLink: "https://hb00112.github.io/BURYE-EMPROIUM-NAME-CHANGE/"
+    },
     {
         partyName: "Roop Darpan - Bicholim",
         coordinates: null,
