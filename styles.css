@@ -254,7 +254,7 @@ body {
     padding:150px 0px;
     width: 100%;
     /* Adjust container width if needed */
-    max-width: 800px;
+    max-width: none;
     margin-top: 0px; /*HC TEXT HEIGHT*/
     padding-bottom: 350PX;
 
