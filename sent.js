@@ -554,7 +554,7 @@ function getUndeliveredOrdersForDay(day) {
         });
 }
 
-
+/*notification stopped by admin
 function checkAndSendNotification() {
     const now = new Date();
     const today8AM = new Date(now);
@@ -629,7 +629,7 @@ function checkAndSendNotification() {
             });
         });
 }
-
+*/
 // Update the scroll content function to show area-wise grouping
 // Keep the existing DELIVERY_SCHEDULE and other functions...
 
