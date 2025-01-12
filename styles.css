@@ -1027,7 +1027,7 @@ display: none;
 }
 .order-actions button.bill-btn {
     /* Set a desired width for the button: */
-    width: 380px; /* Adjust as needed */
+    width: 100%; /* Adjust as needed */
   
     /* Ensure text doesn't wrap unnecessarily: */
     white-space: nowrap;
