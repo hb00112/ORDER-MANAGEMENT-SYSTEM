@@ -2938,3 +2938,12 @@ body.modal-open {
         padding-bottom: 80px;
     }
 }
+
+th:nth-of-type(3) {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+th:first-of-type {
+    BORDER-TOP-LEFT-RADIUS: 12PX;
+    BORDER-BOTTOM-LEFT-RADIUS: 12PX;
+}
