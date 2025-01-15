@@ -409,8 +409,11 @@
     </div>
 
    
-    <div id="orders" class="section">
-        <h4>Orders</h4>
+     <div id="orders" class="section">
+        <h4 class="enamor-orders-header">
+            Orders
+            <span class="enamor-color-palette-icon" id="colorPaletteIcon">🎨</span>
+        </h4>
         <form id="orderForm">
             <div class="mb-3">
                 <input type="text" class="form-control" id="partySearch" placeholder="Search or add party">
@@ -428,7 +431,14 @@
         </div>
         <!-- The cart summary table will be inserted here dynamically -->
     </div>
-    
+    <div class="enamor-color-details-overlay" id="colorDetailsOverlay"></div>
+<div class="enamor-color-details-modal" id="colorDetailsModal">
+    <div class="enamor-color-details-header">
+        <h3 class="enamor-color-details-title">Color Information</h3>
+        <button class="enamor-color-details-close" id="colorDetailsClose">×</button>
+    </div>
+    <ul class="enamor-color-details-list" id="colorDetailsList"></ul>
+</div>
     <div class="container mt-2">
         <div id="pendingOrders" class="section">
             <h4>Pending Orders</h4>
