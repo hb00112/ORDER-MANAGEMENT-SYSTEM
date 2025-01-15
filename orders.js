@@ -2,658 +2,1305 @@ let cart = [];
 
 // Predefined items
 let items =
-[{"name": "A202", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CHIVIO", "DYB", "JETBLK", "OLVNT", "SURSPR"]},
-  {"name": "A203", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CHM", "DUSOR", "PASTUR"]},
-  {"name": "A204", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["MBCAOP", "SSAAOP","HTMBCO"]},
-  {"name": "A301", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["ABG", "BRWSTG", "GBG", "MBNGUG"]},
-  {"name": "A303", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JBSG", "NVYSGR"]},
-  {"name": "A304", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DBW", "JBRL", "PSW", "SAW", "TEX"]},
-  {"name": "A306", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CRMBG", "JETBLK", "JTBBGR", "MMMBG", "NVMEL", "NVMGFG"]},
-  {"name": "A309", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBMARG", "BLKMLG", "DOMARG", "NVYAR", "OLMAR"]},
-  {"name": "A310", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CHM", "LVML", "NVMEL", "OLVMEL"]},
-  {"name": "A311", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JBFEGR", "LVCAGR", "PPFEGR", "SSCAGR","JBKFOG","MSWFOG"]},
-  {"name": "A312", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DUSOR", "JETBLK", "ROUGE", "TRDWIN"]},
-  {"name": "A401", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DYB", "GRKBLU", "OLVNT", "TGN"]},
-  {"name": "A402", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CHOCOF", "CSTR", "JETBLK", "NAVY", "OLVNT", "ROUGE"]},
-  {"name": "A404", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBELL", "JETBLK", "ROUGE", "SURSPR"]},
-  {"name": "A406", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JETBLK", "OLIVE", "PURHAZ"]},
-  {"name": "A601", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DYB", "OLVNT"]},
-  {"name": "A602", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DBS", "DTSSTP", "JBSS", "ONSSTR"]},
-  {"name": "A603", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DYB", "OLVNT"]},
-  {"name": "A604", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CHM", "PASTUR"]},
-  {"name": "A605", 
-  "sizes": ["L", "M", "S", "XL", "XS", "XXL"], 
-  "colors": ["CSTR", "DUSOR", "DYB", "GOBBLU", "GULGRE", "JETBLK", "NAVY", "OLVNT","CHIVIO"]},
-  {"name": "A607", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["MBCAOP", "SSAAOP","HTMBCO"]},
-  {"name": "A609", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BSDMEL", "IPSDML", "RFSDML"]},
-  {"name": "A704", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKMEL", "NVMEL"]},
-  {"name": "A901", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DYB", "JETBLK", "NAVY", "OLVNT"]},
-  {"name": "A903", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBDAPR", "CMG", "JETBLK", "MEGRME", "NAVY", "OLVNT", "OMM"]},
-  {"name": "A905", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLBMGR", "JBSUGR", "ROSUGR", "SUSMGR"]},
-  {"name": "A906", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JETBLK", "OLIVE", "PURHAZ"]},
-  {"name": "E014", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["ARMGRN", "CCM", "CSTR", "DULFOR", "DUSOR", "JETBLK", "MGM", "NAVY", "TGTCA"]},
-  {"name": "E018", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CCM", "JETBLK", "MGM", "NAVY"]},
-  {"name": "E040", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["AABC", "GAOPNC", "JNGCOC", "NSKNCO"]},
-  {"name": "E044", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CCM", "JETBLK", "MGM", "NAVY"]},
-  {"name": "E047", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JBK", "LMNCRM", "MGM", "NAVY", "SFBEI"]},
-  {"name": "E048", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["ACA", "ARMGAA", "BSBAOP", "CBPAOP", "CSTR", "DUFAOP", "DUSOR", "ELMGRN", "JBPAOP", "JETBLK", "MBDAOP", "MBTAOP", "NAVY", "NVUHBA", "PRPLDA", "RAIFOR", "ROUGE", "WABAOP"]},
-  {"name": "E057", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JETBLK", "MGM", "NAVY", "PCHPAR", "RAIFOR", "SURSPR"]},
-  {"name": "E060", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CAPMEL", "CH MEL", "DBY MEL", "DUSOR", "JETBLK", "MDB", "MGM", "NVMEL"]},
-  {"name": "E061", 
-  "sizes": ["L", "M", "XL", "XXL"], 
-  "colors": ["NVYRG", "PURRIG", "RGS", "TGS"]},
-  {"name": "E062", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BALGRN", "BR0", "BSA", "CHVRAP", "CSRSAP", "DFTPAP", "EBTDAP", "FMA", "JETBLK", "NSF", "RVA"]},
-  {"name": "E064", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["AGY", "DBY", "JETBLK"]},
-  {"name": "E066", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["ARMGRN", "CCM", "JETBLK", "MGM", "MHGN", "NAVY"]},
-  {"name": "E068", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKMEL", "CHIVIO", "CSTR", "ELMGRN", "JETBLK", "MDB", "NAVY", "OLVNT", "PURHAZ", "ROUGE"]},
-  {"name": "E076", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKMEL", "DCT", "JETBLK", "NAVY"]},
-  {"name": "E078", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JETBLK", "NAVY", "ROSWTR", "TGN"]},
-  {"name": "E079", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["AGHG", "AGNG", "BBMG", "DBNG", "DOEG", "JBHNG", "NVBHN", "PSBHNG"]},
-  {"name": "E080", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["ARMGRN", "JETBLK", "MGM", "NAVY", "PDRBLU", "ROUGE"]},
-  {"name": "E089", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLMMRG", "CVMMRG", "GGMMRG", "GMX"]},
-  {"name": "E121", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JETBLK", "NAVY", "SOFTPI"]},
-  {"name": "E123", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["NAVY"]},
-  {"name": "E147", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CFBDDG", "CHVLEG", "ELGDDG", "IHP", "MHR", "RLG","GPNG"]},
-  {"name": "E157", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["AYRGR", "JBRGR", "LCPE", "MBEGR", "MGMBE", "NYPC", "PPEGR", "RFFGR", "RWLY", "SPFGR"]},
-  {"name": "E161", 
-  "sizes": ["L", "M", "XL", "XXL"], 
-  "colors": ["JBRS", "NRNS", "PLH"]},
-  {"name": "E247", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["LCDA", "LIWA", "PSBAOP", "ROBIAO", "SAWA"]},
-  {"name": "E257", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBDAOP", "BRWDAP", "MBSAOP", "RFSCP", "ROSSTP", "SSSBTP", "TGBFAP"]},
-  {"name": "E305", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["AMY", "ELMGRN", "JETBLK"]},
-  {"name": "E306", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DFMDUF", "EBMELB", "MGMBLK", "ROMROU"]},
-  {"name": "E307", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLABRW", "FIMDRB", "LGMSPB"]},
-  {"name": "E309", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CSTR", "JETBLK", "RAIFOR", "ROUGE"]},
-  {"name": "E3G4", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBPVGR", "ELBLMG", "JBLTGR", "JBRTWG", "RFGRGR", "ROSSGR"]},
-  {"name": "E3G5", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["LAVEGR", "MAREGR", "REOEGR", "ROUEGR"]},
-  {"name": "E403", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKMEL", "DUFOME", "MEBLME"]},
-  {"name": "E405", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBELL", "BLKMEL", "MDBMEL", "REOC"]},
-  {"name": "E406", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DUSOR", "JETBLK", "MDB", "OLIVE"]},
-  {"name": "E4A3", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKBAO", "NHO", "RBNBA", "RGA", "SFPBPA", "SFTGBA"]},
-  {"name": "E4A4", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BKSPRA", "DCHKCA", "JNGLAO", "OLPSLA", "PRPLIN"]},
-  {"name": "E4A5", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BRBLCH", "DFPAOP", "FPGAOP", "ORHUCH", "PBTAOP", "ROUGCH","MBFAOP"]},
-  {"name": "E7A1", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BOTSTK", "FPGAOP", "IVYSTR", "MTLAOP", "PBTAOP", "PLEVPD"]},
-  {"name": "E801", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JBO", "JWC", "NYL", "PDL", "ROV"]},
-  {"name": "E802", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BGH", "JGG", "MPGRMG", "NVYDGR", "PSF"]},
-  {"name": "E8S2", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BTH", "BWU", "MSL"]},
-  {"name": "E901", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["AFG", "AGFG", "CWR", "JBFG", "JWL"]},
-  {"name": "E903", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["DYB", "MLD"]},
-  {"name": "E904", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BBELL", "BLKMEL", "MDBMEL", "REOC"]},
-  {"name": "E9G2", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["CAPTGR", "JBNSGR", "ROUTGR", "SSNSGR"]},
-  {"name": "EA61", 
-  "sizes": ["L", "M", "XL", "XXL"], 
-  "colors": ["BWI", "DBRSG", "FGS", "GSSR"]},
-  {"name": "EA64", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKPAO", "LVNDMA", "NSO", "NVYOA", "STRBDD"]},
-  {"name": "EC13", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BLKBAO", "NHO", "RBNBA", "SFPBPA", "SFTGBA"]},
-  {"name": "EC14", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["BDY", "JBOP", "JCY", "NSTDA", "NVTAOP", "PTSTDA", "RIY", "SGSTDA"]},
-  {"name": "EC16", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JTBMNC", "NVYSCM", "SFTLMC", "SFTPSC"]},
-  {"name": "EC18", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["GSTDA", "JCY", "NVTAOP", "PSD"]},
-  {"name": "EC19", 
-  "sizes": ["L", "M", "S", "XL", "XXL"], 
-  "colors": ["JBSA", "NVYCIR", "PSSAOP", "TCCA"]},
-  {"name": "A014", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D", "42Z"], 
-  "colors": ["BLACK", "MASAI", "PEARL", "SKIN","CMG"]},
-  {"name": "A017", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "BPRP", "CPM", "GKP", "ODM","OMM", "PPRP", "SKIN", "WHITE"]},
-  {"name": "A019", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "RSBLSH", "SKIN","BRI"]},
-  {"name": "A022", 
-  "sizes": [" 2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "GRYMRL", "PEARL", "SKIN", "WHITE"]},
-  {"name": "A025",
-    "sizes": [" 32B","32D","34B","36B","38C"],
-    "colors": [ "TBY(DISC)", "WHITE(DISC)"]},
-  {"name": "A027", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D"], 
-  "colors": ["BDE", "BLACK", "GRW", "GRYMEL", "PLS", "WHITE"]},
-  {"name": "A032", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "CHYBLS", "ECL", "RTE", "SLI", "WHITE"]},
-  {"name": "A039", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "EVEBLU", "GRW", "GRYMRL", "LILAST", "LIMAPR", "PEARL", "RESWPR", "SKIN", "WHITE"]},
-  {"name": "A042", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "42B", "42C"], 
-  "colors": ["BLACK", "CHIVIO", "CMG","DDO", "GSP", "LPR", "ODM", "PEARL", "PURPLE", "RVL", "SKIN", "TMG", "WHITE"]},
-  {"name": "A055", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "CFAUP", "GRW", "PEARL", "SKIN", "TLPP", "WHITE"]},
-  {"name": "A058", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D", "40B", "40C"], 
-  "colors": ["BLACK", "PHB", "PLS", "WHITE"]},
-  {"name": "A064", 
-  "sizes": ["32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "GRW", "RTE"]},
-  {"name": "A072", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "PHB", "PLS"]},
-  {"name": "A073", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "SKIN"]},
-  {"name": "A076", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["ECL", "OLT", "RSBLSH"]},
-  {"name": "A077", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["ECL", "OLT", "RSBLSH"]},
-  {"name": "A078", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "BRI", "PLS"]},
-  {"name": "A106", 
-  "sizes": [" 2XL", "L", "M", "S", "XL", "XS"], 
-  "colors": ["BDE", "BLACK", "SKIN", "WHITE"]},
-  {"name": "A112", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D", "42Z", " 32B", " 32C", " 32D", " 32Z"], 
-  "colors": ["BLACK", "CMG", "GRW", "PBH", "PLS", "RTE", "WHITE"]},
-  {"name": "A125", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["CHAMEL", "GRYMEL", "WHITE"]},
-  {"name": "A132", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "CBP", "PLS"]},
-  {"name": "A165", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "PLS", "TSE"]},
-  {"name": "AB75", 
-  "sizes": ["34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D", "40B", "40C", "40D", "42B", "42C", "42D"], 
-  "colors": ["BLACK", "ODM", "PEARL", "PLS", "PURPLE", "WHITE"]},
-  {"name": "BB01", 
-  "sizes": ["2xs", "M", "S", "XS"], 
-  "colors": ["SKIN", "WHITE","BLACK"]},
-  {"name": "BB02", 
-  "sizes": ["2xs", "M", "S", "XS"], 
-  "colors": ["BLACK", "PEARL", "WHITE"]},
-  {"name": "E001", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "SKIN", "WHITE"]},
-  {"name": "E003", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "SKIN", "WHITE"]},
-  {"name": "E007", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "SKIN", "WHITE"]},
-  {"name": "E016", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BTWH", "HBSCS", "HLMLLC", "HTRRSE", "JETBLK", "LGM", "LTBM", "SKIN"]},
-  {"name": "E025", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "NAVY", "PHP", "WHITE"]},
-  {"name": "E032", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "SKIN", "WHITE"]},
-  {"name": "E095", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["SKIN", "WHITE"]},
-  {"name": "MT02", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z"], 
-  "colors": ["CPM", "GRW", "ODM", "SKIN"]},
-  {"name": "SB06", 
-  "sizes": ["2XL", "L", "M", "S", "XL", "XS", " 2XL"], 
-  "colors": ["BLACK", "CPM","CAMPT(DISC)", "DHP", "GRW", "GRYMRL", "MFL", "PEARL", "SKIN", "TMG", "WHITE"]},
-  {"name": "SB08", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "GRW", "GRYMEL", "MLP", "MMV", "PEARL"]},
-  {"name": "SB28", 
-  "sizes": ["LAR", "MED", "SMA", "XLA"], 
-  "colors": ["BLACK", "GRYMEL", "PFI"]},
-  {"name": "SB38", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["FUCPUR", "GRA", "WHITE"]},
-  {"name": "TH01", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "PEI", "PLS"]},
-  {"name": "TH02", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "PEI", "PLS"]},
-  {"name": "TH03", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "PEI", "PLS"]},
-  {"name": "BR08", 
-  "sizes": ["2XL", "L", "M", "XL"], 
-  "colors": ["BLACK", "BUFF"]},
-  {"name": "BR11", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HOB"]},
-  {"name": "F023", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "FRHPRT", "IGY", "NSTLGR", "PWL", "SIL", "SOR"]},
-  {"name": "F024", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "40B", "40C", "40D", "42C", "42D"], 
-  "colors": ["BLACK", "CON", "PLS", "WHITE"]},
-  {"name": "F037", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["ALS", "BLACK", "LSBNBL", "OCH", "PSTLIL"]},
-  {"name": "F040", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "CRMRD"]},
-  {"name": "F043", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BUTSCO", "CTM"]},
-  {"name": "F048", 
-  "sizes": ["34B", "34C", "34D", "34F", "34Z", "36B", "36C", "36D", "36F", "36Z", "38B", "38C", "38D", "38F", "38Z", "40B", "40C", "40D", "40F", "40Z"], 
-  "colors": ["PLUM", "TSK"]},
-  {"name": "F053", 
-  "sizes": ["34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z"], 
-  "colors": ["ECL", "HOB"]},
-  {"name": "F057", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "HOB", "IGY"]},
-  {"name": "F065", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["ARO", "AUM", "BLACK", "CLM", "HOB", "WFM"]},
-  {"name": "F070", 
-  "sizes": ["LAR", "MED", "SMA", "XLA"], 
-  "colors": ["IGY", "PLS"]},
-  {"name": "F074", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D"], 
-  "colors": ["BKCCL", "BLACK", "BOS", "BUFF", "RSTLCE"]},
-  {"name": "F084", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "NUDE", "STI"]},
-  {"name": "F087", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z"], 
-  "colors": ["CON", "SLI"]},
-  {"name": "F091", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["FRVRR", "LBLU", "PLUM"]},
-  {"name": "F096", 
-  "sizes": ["34C", "34D", "34F", "34Z", "36B", "36C", "36D", "36F", "36G", "36Z", "38C", "38D", "38F", "38G", "38Z", "40C", "40D", "40F", "40G", "40Z", "42C", "42D", "42F", "42G", "42Z", "44C", "44D", "44F", "44G", "44Z"], 
-  "colors": ["BLACK", "IGY", "PEARL"]},
-  {"name": "F097", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D"], 
-  "colors": ["BLACK", "MNPP", "PEARL"]},
-  {"name": "F107", 
-  "sizes": ["LAR", "MED", "SMA", "XLA"], 
-  "colors": ["BLACK"]},
-  {"name": "F108", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["AQGRY", "BLACK", "VLTTLP"]},
-  {"name": "F109", 
-  "sizes": ["LAR", "MED", "SMA", "XLA"], 
-  "colors": ["AQGRY", "RTE"]},
-  {"name": "F110", 
-  "sizes": ["LAR", "MED", "SMA", "XLA"], 
-  "colors": ["BLACK"]},
-  {"name": "F111", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "FRVRR", "MOLIG"]},
-  {"name": "F114", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "HOB", "NSTLGR"]},
-  {"name": "F115", 
-  "sizes": ["32B", "32C", "34B", "34C", "36B", "36C", "38B", "38C"], 
-  "colors": ["BLACK", "HOB"]},
-  {"name": "F116", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "38B", "38C"], 
-  "colors": ["BKC", "DSR"]},
-  {"name": "F118", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["DSR", "VLTTLP"]},
-  {"name": "F121", 
-  "sizes": ["32D", "32Z", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z"], 
-  "colors": ["BLACK", "HOB", "SLI"]},
-  {"name": "F122", 
-  "sizes": ["34C", "34D", "34F", "34Z", "36B", "36C", "36D", "36F", "36Z", "38B", "38C", "38D", "38F", "38Z", "40B", "40C", "40D", "40F", "40Z"], 
-  "colors": ["BKC", "RTE"]},
-  {"name": "F123", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "40B", "40C"], 
-  "colors": ["BLACK", "HOB", "NSTLGR"]},
-  {"name": "F124", 
-  "sizes": ["32D", "32F", "32G", "32Z", "34C", "34D", "34F", "34G", "34Z", "36C", "36D", "36F", "36G", "36Z", "38C", "38D", "38F", "38G", "38Z", "40C", "40D", "40F", "40Z"], 
-  "colors": ["BLACK", "CEDWOD"]},
-  {"name": "F125", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["CEDWOD", "NUGGET"]},
-  {"name": "F126", 
-  "sizes": ["32D", "32F", "32G", "32Z", "34C", "34D", "34F", "34G", "34Z", "36C", "36D", "36F", "36G", "36Z", "38C", "38D", "38F", "38G", "38Z", "40C", "40D", "40F", "40Z"], 
-  "colors": ["BLACK", "CEDWOD"]},
-  {"name": "F127", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["OLT", "SLI"]},
-  {"name": "F129", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["COSKY", "VIOQUA"]},
-  {"name": "F130", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "38B"], 
-  "colors": ["CHBLPR", "WISPRT"]},
-  {"name": "F131", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "HOB", "NSTLGR"]},
-  {"name": "F132", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "HOB"]},
-  {"name": "F133", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK"]},
-  {"name": "F134", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["HIBRED", "OLT"]},
-  {"name": "F135", 
-  "sizes": ["34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z"], 
-  "colors": ["BLACK", "BOS", "BUFF"]},
-  {"name": "F137", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["LSBNBL", "PSTLIL"]},
-  {"name": "F138", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "HIBRED", "OLT"]},
-  {"name": "F141", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "HAURED"]},
-  {"name": "F142", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HAURED"]},
-  {"name": "F143", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["MONGRY", "NUDROS"]},
-  {"name": "F144", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["MONGRY", "NUDROS"]},
-  {"name": "F165", 
-  "sizes": ["32B", "32C", "32D", "34B", "34C", "34D", "36B", "36C", "36D", "38B", "38C"], 
-  "colors": ["BLACK", "DNT", "FVP", "HOB", "PCHCRL"]},
-  {"name": "FB06", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D", "42Z"], 
-  "colors": ["BKC", "BLACK", "MASAI", "PLS", "WHITE"]},
-  {"name": "FB12", 
-  "sizes": ["34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D", "38Z", "40B", "40C", "40D", "40Z", "42B", "42C", "42D", "42Z"], 
-  "colors": ["BLACK", "BUFF", "CLM", "ECL", "GRW", "MASAI", "WHITE"]},
-  {"name": "N116", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BKC"]},
-  {"name": "N118", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["DSR", "VLTTLP"]},
-  {"name": "N125", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["CEDWOD", "NUGGET"]},
-  {"name": "N127", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["OLT", "SLI"]},
-  {"name": "N138", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HIBRED"]},
-  {"name": "N143", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["MONGRY", "NUDROS"]},
-  {"name": "P000", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["ARO", "AUM", "BLACK", "FRHPRT", "GRNTR", "MNBLU", "PWL", "SIL", "SOR", "WFM"]},
-  {"name": "P037", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["ALS", "LSBNBL", "PSTLIL"]},
-  {"name": "P040", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "CRMRD"]},
-  {"name": "P043", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BUTSCO", "CTM"]},
-  {"name": "P087", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["CON", "SLI"]},
-  {"name": "P091", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["FRVRR", "LBLU", "PLUM"]},
-  {"name": "P108", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["AQGRY", "BLACK", "RTE"]},
-  {"name": "P109", 
-  "sizes": ["L", "M", "S"], 
-  "colors": ["AQGRY", "BLACK", "RTE"]},
-  {"name": "P112", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["PURPLE", "SCRED"]},
-  {"name": "P113", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["PURPLE", "SCRED"]},
-  {"name": "P116", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BKC", "DSR"]},
-  {"name": "P118", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["DSR", "VLTTLP"]},
-  {"name": "P122", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BKC", "RTE"]},
-  {"name": "P125", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["CEDWOD", "NUGGET"]},
-  {"name": "P126", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "CEDWOD"]},
-  {"name": "P127", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["OLT", "SLI"]},
-  {"name": "P129", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["COSKY", "VIOQUA"]},
-  {"name": "P130", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["CHBLPR", "WISPRT"]},
-  {"name": "P138", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HIBRED", "OLT"]},
-  {"name": "P141", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HAURED"]},
-  {"name": "P142", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["BLACK", "HAURED"]},
-  {"name": "P143", 
-  "sizes": ["L", "M", "S", "XL"], 
-  "colors": ["MONGRY", "NUDROS"]},
-  {"name": "P165", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["DNT", "FVP"]},
-  {"name": "PB40", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["QUP", "JETBLK", "NUDE"]},
-  {"name": "PS40", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["GRKBLU", "JETBLK", "NUDE", "QUP"]},
-  {"name": "SB18", 
-  "sizes": ["32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "GRYMEL", "LCR", "NISH"]},
-  {"name": "SB25", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["GRYMEL", "PEARL"]},
-  {"name": "SB29", 
-  "sizes": ["30D", "32B", "32C", "32D", "32Z", "34B", "34C", "34D", "34Z", "36B", "36C", "36D", "36Z", "38B", "38C", "38D"], 
-  "colors": ["BLACK", "NSH"]},
-  {"name": "TS09", 
-  "sizes": ["2XL", "L", "M", "XL"], 
-  "colors": ["BLACK", "BUFF"]},
-  {"name": "CB03", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCP", "MCS"]},
-  {"name": "CH03", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCP", "MCS"]},
-  {"name": "CH06", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCP", "MCS"]},
-  {"name": "CR01", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCD", "MCR"]},
-  {"name": "CR02", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCD", "MCR","MCM(DISC)"]},
-  {"name": "CR17", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCD", "MCM", "MCP"]},
-  {"name": "MB01", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCS"]},
-  {"name": "MB20", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCS"]},
-  {"name": "MH01", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCS"]},
-  {"name": "MH20", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCS"]},
-  {"name": "MS01", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["MCS"]},
-  {"name": "PH40", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["JETBLK", "NUDE", "QUP"]},
-  {"name": "PP12", 
-  "sizes": ["2XL", "L", "M", "S", "XL"], 
-  "colors": ["BLACK", "GRW"]}
-  ]
+[
+  {
+    "name": "A202",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CHIVIO","DYB","JETBLK","OLVNT","SURSPR"],
+    "colorname": ["CHIVIO : CHINESE VIOLET, 899,989","DYB : DRY BLOOD, 899,989","JETBLK : JET BLACK, 899,989","OLVNT : OLIVE NIGHT, 899,989","SURSPR : SURF SPRAY, 899,989"]
+  },
+  {
+    "name": "A203",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CHM","DUSOR","PASTUR"],
+    "colorname": ["CHM : CHARCOAL MELANGE, 1399,1539","DUSOR : DUSKY ORCHID, 1399,1539","PASTUR : Pastel Turquoise, 1399,1539"]
+  },
+  {
+    "name": "A204",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["MBCAOP","SSAAOP"],
+    "colorname": ["MBCAOP : MEDIEVAL BLUE CRACKLE AOP, 1049,1149","SSAAOP : SURF SPRAY ABSTRACT AOP, 1049,1149"]
+  },
+  {
+    "name": "A301",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["ABG","BRWSTG","GBG","MBNGUG"],
+    "colorname": ["ABG : APRICOTPIE/BEHERENOW, 999,1099","BRWSTG : BRIGHT WHITE STRONGER GRAPHICS, 999,1099","GBG : GRN PEAR/BREATHE, 899,989","MBNGUG : MEDIEVAL BLUE NEVER GIVE UP GRAPHICS, 999,1099"]
+  },
+  {
+    "name": "A303",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JBSG","NVYSGR"],
+    "colorname": ["JBSG : JET BLK/SWEAT, 899,989","NVYSGR : NAVY/SWEAT GRAPHIC, 899,989"]
+  },
+  {
+    "name": "A304",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DBW","JBRL","PSW","SAW","TEX"],
+    "colorname": ["DBW : DRY BLOOD/RELAX, 1299,1399","JBRL : JET BLK/RELAX, 1299,1399","PSW : PURPLE SLATE/RELAX, 1299,1399","SAW : SOFT AQUA/RELAX, 1299,1399","TEX : THAI GREEN/RELAX, 1299,1399"]
+  },
+  {
+    "name": "A306",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CRMBG","JETBLK","JTBBGR","MMMBG","NVMEL","NVMGFG"],
+    "colorname": ["CRMBG : CASTLEROCK MELANGE BELIVE GRAPHIC, 1199,1299","JETBLK : JET BLACK, 1199,1299","JTBBGR : JET BLACK BELIVE GRAPHIC, 1199,1299","MMMBG : MUSKMELON MELANGE BELIVE GRAPHIC, 1199,1299","NVMEL : NAVY MELANGE, 1199,1299","NVMGFG : NAVY MELANGE GRATEFUL GRAPHIC, 1199,1299"]
+  },
+  {
+    "name": "A309",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBMARG","BLKMLG","DOMARG","NVYAR","OLMAR"],
+    "colorname": ["BBMARG : BLUE BELL MELANGE ACTIVE REFLECTIVE GRAPHIC, 649,699","BLKMLG : BLACK MELANGE - ACTIVE REFLECTIVE, 649,699","DOMARG : DUSKY ORCHID MELANGE ACTIVE REFLECTIVE GRAPHIC, 649,699","NVYAR : NAVY MELANGE - ACTIVE REFLECTIVE, 649,699","OLMAR : OLIVE MELANGE - ACTIVE REFLECTIVE, 649,699"]
+  },
+  {
+    "name": "A310",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CHM","LVML","NVMEL","OLVMEL"],
+    "colorname": ["CHM : CHARCOAL MELANGE, 999,1049","LVML : LAVENDER MELANGE, 999,1049","NVMEL : NAVY MELANGE, 999,1049","OLVMEL : OLIVE MELANGE, 999,1049"]
+  },
+  {
+    "name": "A311",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JBFEGR","LVCAGR","PPFEGR","SSCAGR"],
+    "colorname": ["JBFEGR : JET BLACK FOREVER GRAPHIC, 599,649","LVCAGR : LAVENDER CALM GRAPHIC, 599,649","PPFEGR : PEACH PARFAIT FOREVER GRAPHIC, 599,649","SSCAGR : SURF SPRAY CALM GRAPHIC, 599,649"]
+  },
+  {
+    "name": "A312",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DUSOR","JETBLK","ROUGE","TRDWIN"],
+    "colorname": ["DUSOR : DUSKY ORCHID, 899,949","JETBLK : JET BLACK, 899,949","ROUGE : ROUGE, 899,949","TRDWIN : TRADEWIND, 899,949"]
+  },
+  {
+    "name": "A401",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DYB","GRKBLU","OLVNT","TGN"],
+    "colorname": ["DYB : DRY BLOOD, 1499,1599","GRKBLU : GREEK BLUE, 1499,1599","OLVNT : OLIVE NIGHT, 1499,1599","TGN : THAI GREEN, 1499,1599"]
+  },
+  {
+    "name": "A402",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CHOCOF","CSTR","JETBLK","NAVY","OLVNT","ROUGE"],
+    "colorname": ["CHOCOF : Choco Fudge, 1499,1649","CSTR : CASTLE ROCK, 1499,1649","JETBLK : JET BLACK, 1499,1649","NAVY : NAVY, 1499,1649","OLVNT : OLIVE NIGHT, 1499,1649","ROUGE : ROUGE, 1499,1649"]
+  },
+  {
+    "name": "A404",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBELL","JETBLK","ROUGE","SURSPR"],
+    "colorname": ["BBELL : BLUE BELL, 1699,1869","JETBLK : JET BLACK, 1699,1869","ROUGE : ROUGE, 1699,1869","SURSPR : SURF SPRAY, 1699,1869"]
+  },
+  {
+    "name": "A406",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JETBLK","OLIVE","PURHAZ"],
+    "colorname": ["JETBLK : JET BLACK, 1399,1549","OLIVE : OLIVE, 1399,1549","PURHAZ : PURPLE HAZE, 1399,1549"]
+  },
+  {
+    "name": "A601",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DYB","OLVNT"],
+    "colorname": ["DYB : DRY BLOOD, 1899,1999","OLVNT : OLIVE NIGHT, 1899,1999"]
+  },
+  {
+    "name": "A602",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DBS","DTSSTP","JBSS","ONSSTR"],
+    "colorname": ["DBS : DRYBLOOD SOLO STRIPE, 1649,1799","DTSSTP : DEEP TEAL SOLO STRIPE, 1649,1799","JBSS : JETBLACK SOLO STRIPE, 1649,1799","ONSSTR : OLIVNGT SOLO STRIPE, 1649,1799"]
+  },
+  {
+    "name": "A603",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DYB","OLVNT"],
+    "colorname": ["DYB : DRY BLOOD, 1699,1869","OLVNT : OLIVE NIGHT, 1699,1869"]
+  },
+  {
+    "name": "A604",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CHM","PASTUR"],
+    "colorname": ["CHM : CHARCOAL MELANGE, 1699,1869","PASTUR : Pastel Turquoise, 1699,1869"]
+  },
+  {
+    "name": "A605",
+    "sizes": ["XS","S","M","L","XL","XXL"],
+    "colors": ["CSTR","DUSOR","DYB","GOBBLU","GULGRE","JETBLK","NAVY","OLVNT"],
+    "colorname": ["CSTR : CASTLE ROCK, 999,1049","DUSOR : DUSKY ORCHID, 999,1049","DYB : DRY BLOOD, 999,1049","GOBBLU : Goblin Blue, 999,1049","GULGRE : GULL GREY, 999,1049","JETBLK : JET BLACK, 999,1049","NAVY : NAVY, 999,1049","OLVNT : OLIVE NIGHT, 999,1049"]
+  },
+  {
+    "name": "A607",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["MBCAOP","SSAAOP"],
+    "colorname": ["MBCAOP : MEDIEVAL BLUE CRACKLE AOP, 1299,1429","SSAAOP : SURF SPRAY ABSTRACT AOP, 1299,1429"]
+  },
+  {
+    "name": "A609",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BSDMEL","IPSDML","RFSDML"],
+    "colorname": ["BSDMEL : BLACK SPACE DYE MELANGE, 1399,1549","IPSDML : IMPERIAL PURPLE SPACE DYED MELANGE, 1399,1549","RFSDML : RAIN FORST SPACE DYED MELANGE, 1399,1549"]
+  },
+  {
+    "name": "A704",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKMEL","NVMEL"],
+    "colorname": ["BLKMEL : BLACK MELANGE, 699,749","NVMEL : NAVY MELANGE, 699,749"]
+  },
+  {
+    "name": "A901",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DYB","JETBLK","NAVY","OLVNT"],
+    "colorname": ["DYB : DRY BLOOD, 2599,2699","JETBLK : JET BLACK, 2599,2699","NAVY : NAVY, 2599,2699","OLVNT : OLIVE NIGHT, 2599,2699"]
+  },
+  {
+    "name": "A903",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBDAPR","CMG","JETBLK","MEGRME","NAVY","OLVNT","OMM"],
+    "colorname": ["BBDAPR : Brabdied Apricot, 2399,2499","CMG : CHAMBRAY MELANGE, 2399,2499","JETBLK : JET BLACK, 2399,2499","MEGRME : MEDIUM GREY MELANGE, 2399,2499","NAVY : NAVY, 2399,2499","OLVNT : OLIVE NIGHT, 2399,2499","OMM : OAT MEAL MELANGE, 2399,2499"]
+  },
+  {
+    "name": "A905",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLBMGR","JBSUGR","ROSUGR","SUSMGR"],
+    "colorname": ["BLBMGR : BLUE BELL MAGIC GRAPHIC, 1699,1849","JBSUGR : JET BLACK SET UP GRAPHIC, 1699,1849","ROSUGR : ROUGE SET UP GRAPHIC, 1699,1849","SUSMGR : SURF SPRAY MAGIC GRAPHIC, 1699,1849"]
+  },
+  {
+    "name": "A906",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JETBLK","OLIVE","PURHAZ"],
+    "colorname": ["JETBLK : JET BLACK, 1599,1749","OLIVE : OLIVE, 1599,1749","PURHAZ : PURPLE HAZE, 1599,1749"]
+  },
+  {
+    "name": "E014",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["ARMGRN","CCM","CSTR","DULFOR","DUSOR","JETBLK","MGM","NAVY","TGTCA"],
+    "colorname": ["ARMGRN : ARMY GREEN, 939,1039","CCM : CHARCOALMELANGE, 939,1039","CSTR : CASTLE ROCK, 939,1039","DULFOR : Dull Forest, 939,1039","DUSOR : DUSKY ORCHID, 939,1039","JETBLK : JET BLACK, 939,1039","MGM : MEDIUMGREY MELANGE, 939,1039","NAVY : NAVY, 939,1039","TGTCA : THAIGRNCIR\TERRACOT, 939,1039"]
+  },
+  {
+    "name": "E018",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CCM","JETBLK","MGM","NAVY"],
+    "colorname": ["CCM : CHARCOALMELANGE, 899,989","JETBLK : JET BLACK, 899,989","MGM : MEDIUMGREY MELANGE, 899","NAVY : NAVY, 899,989"]
+  },
+  {
+    "name": "E040",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["AABC","GAOPNC","JNGCOC","NSKNCO"],
+    "colorname": ["AABC : ABT ANIMAL BLK CMB, 1699,1799","GAOPNC : GALAXY AOP NAVY COMBO, 1699,1799","JNGCOC : JUNGLE CAMO OLIVE COMBO, 1699,1799","NSKNCO : NEW SKIN AOP NAVY, 1699,1799"]
+  },
+  {
+    "name": "E044",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CCM","JETBLK","MGM","NAVY"],
+    "colorname": ["CCM : CHARCOALMELANGE, 799","JETBLK : JET BLACK, 799,879","MGM : MEDIUMGREY MELANGE, 799","NAVY : NAVY, 799,879"]
+  },
+  {
+    "name": "E047",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JBK","LMNCRM","MGM","NAVY","SFBEI"],
+    "colorname": ["JBK : JETBLACK, 549,599","LMNCRM : LEMON CREAM, 549,599","MGM : MEDIUMGREY MELANGE, 549,599","NAVY : NAVY, 549,599","SFBEI : SOFT BEIGE, 549,599"]
+  },
+  {
+    "name": "E048",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["ACA","ARMGAA","BSBAOP","CBPAOP","CSTR","DUFAOP","DUSOR","ELMGRN","JBPAOP","JETBLK","MBDAOP","MBTAOP","NAVY","NVUHBA","PRPLDA","RAIFOR","ROUGE","WABAOP"],
+    "colorname": ["ACA : ASH CELTIC AOP, 1049,1159","ARMGAA : ARMYGREEN ARROWHEAD AOP, 1049,1159","BSBAOP : BRAZILLIAN SANDBOUQUET AOP, 1049,1159","CBPAOP : CORNFLOWER BLUEPOPPY AOP, 1049,1159","CSTR : CASTLE ROCK, 1049,1159","DUFAOP : DUSKY ORCHID FLOWER BUNCH AOP, 1049,1159","DUSOR : DUSKY ORCHID, 1049,1159","ELMGRN : ELM GREEN, 1049,1159","JBPAOP : JET BLACK PAINTED LEAVES AOP, 1049,1159","JETBLK : JET BLACK, 1049,1159","MBDAOP : MEDIEVAL BLUE DIAMOND AOP, 1049,1159","MBTAOP : MEDIEVAL BLUETIE DYE AOP, 1049,1159","NAVY : NAVY, 1049,1159","NVUHBA : NAVY HIBISCUS AOP, 1049","PRPLDA : PURPLE DASH AOP, 1049,1159","RAIFOR : RAIN FOREST, 1049,1159","ROUGE : ROUGE, 1049,1159","WABAOP : WHITE ABSTRACT AOP, 1049,1159"]
+  },
+  {
+    "name": "E057",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JETBLK","MGM","NAVY","PCHPAR","RAIFOR","SURSPR"],
+    "colorname": ["JETBLK : JET BLACK, 699,769","MGM : MEDIUMGREY MELANGE, 699,769","NAVY : NAVY, 699,769","PCHPAR : PEACH PARAFAIT, 699,769","RAIFOR : RAIN FOREST, 699,769","SURSPR : SURF SPRAY, 699,769"]
+  },
+  {
+    "name": "E060",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CAPMEL","CH MEL","DBY MEL","DUSOR","JETBLK","MDB","MGM","NVMEL"],
+    "colorname": ["CAPMEL : CAPPUCCINO MELANGE, 1249,1349","CH MEL : CHARCOAL MELANGE, 1249,1349","DBY MEL : DEEP RUBY, 1249,1349","DUSOR : DUSKY ORCHID, 1249,1349","JETBLK : JET BLACK, 1249,1349","MDB : MEDIEVAL BLUE, 1249,1349","MGM : MEDIUMGREY MELANGE, 1249,1349","NVMEL : NAVY MELANGE, 1249,1349"]
+  },
+  {
+    "name": "E061",
+    "sizes": ["M","L","XL","XXL"],
+    "colors": ["NVYRG","PURRIG","RGS","TGS"],
+    "colorname": ["NVYRG : NAVY/RISE GRAPHIC, 849","PURRIG : PURPLE SLATE/RISE, 849","RGS : ROUGE/SHINE, 849","TGS : THAI GREEN/SHINE, 849"]
+  },
+  {
+    "name": "E062",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BALGRN","BR0","BSA","CHVRAP","CSRSAP","DFTPAP","EBTDAP","FMA","JETBLK","NSF","RVA"],
+    "colorname": ["BALGRN : BALI GREEN, 649,719","BR0 : BLACK RINGS AOP, 699,779","BSA : BALI SPLASH AOP, 699,779","CHVRAP : CHINESE VIOLET ROSE AOP, 699,769","CSRSAP : CASTLE ROCK SQUARE AOP, 699,769","DFTPAP : DULL FOREST TROPICAL PALM AOP, 699,769","EBTDAP : ELEMENTAL BLUE TINY DIAMOND AOP, 699,769","FMA : FERN DIAMOND AOP, 699,779","JETBLK : JET BLACK, 649,719","NSF : NAVY SCATTER FLORA, 699","RVA : ROUGE VINE AOP, 699"]
+  },
+  {
+    "name": "E064",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["AGY","DBY","JETBLK"],
+    "colorname": ["AGY : ASH GREY, 1149","DBY : DEEP RUBY, 1149","JETBLK : JET BLACK, 1149"]
+  },
+  {
+    "name": "E066",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["ARMGRN","CCM","JETBLK","MGM","MHGN","NAVY"],
+    "colorname": ["ARMGRN : ARMY GREEN, 1049,1149","CCM : CHARCOALMELANGE, 1049,1149","JETBLK : JET BLACK, 1049,1149","MGM : MEDIUMGREY MELANGE, 1049,1149","MHGN : MAHOGANY, 1049","NAVY : NAVY, 1049"]
+  },
+  {
+    "name": "E068",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKMEL","CHIVIO","CSTR","ELMGRN","JETBLK","MDB","NAVY","OLVNT","PURHAZ","ROUGE"],
+    "colorname": ["BLKMEL : BLACK MELANGE, 1799,1979","CHIVIO : CHINESE VIOLET, 1799,1979","CSTR : CASTLE ROCK, 1799,1979","ELMGRN : ELM GREEN, 1799,1979","JETBLK : JET BLACK, 1799,1979","MDB : MEDIEVAL BLUE, 1799,1979","NAVY : NAVY, 1799,1979","OLVNT : OLIVE NIGHT, 1799,1979","PURHAZ : PURPLE HAZE, 1799,1979","ROUGE : ROUGE, 1799,1979"]
+  },
+  {
+    "name": "E076",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKMEL","DCT","JETBLK","NAVY"],
+    "colorname": ["BLKMEL : BLACK MELANGE, 1899,2099","DCT : DARK CHOCOLATE, 1899,2099","JETBLK : JET BLACK, 1899,2099","NAVY : NAVY, 1899,2099"]
+  },
+  {
+    "name": "E078",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JETBLK","NAVY","ROSWTR","TGN"],
+    "colorname": ["JETBLK : JET BLACK, 749,829","NAVY : NAVY, 749,829","ROSWTR : ROSE WATER, 749","TGN : THAI GREEN, 749"]
+  },
+  {
+    "name": "E079",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["AGHG","AGNG","BBMG","DBNG","DOEG","JBHNG","NVBHN","PSBHNG"],
+    "colorname": ["AGHG : ASH GREY/BEHERENOW, 1199,1299","AGNG : ARMYGREEN/BEHERENOW, 1199,1299","BBMG : BLUE BELL/MAGIC GRAPHIC, 1199,1299","DBNG : DRY BLOOD/BEHERENOW, 1199,1299","DOEG : DUSKY ORCHID/ENOUGH GRAPHIC, 1199,1299","JBHNG : JET BLK/BE HERE NOW, 1199,1299","NVBHN : NAVY/BE HERE NOW, 1199,1299","PSBHNG : PURPSLATE/BEHERENOW, 1199,1299"]
+  },
+  {
+    "name": "E080",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["ARMGRN","JETBLK","MGM","NAVY","PDRBLU","ROUGE"],
+    "colorname": ["ARMGRN : ARMY GREEN, 799","JETBLK : JET BLACK, 799","MGM : MEDIUMGREY MELANGE, 799,889","NAVY : NAVY, 799,889","PDRBLU : POWDER BLUE, 799","ROUGE : ROUGE, 799"]
+  },
+  {
+    "name": "E089",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLMMRG","CVMMRG","GGMMRG","GMX"],
+    "colorname": ["BLMMRG : BLACKMELANGE/MATRIX REFLECTIVEGRAPHIC, 649,719","CVMMRG : CHNIESE VIOLETMELANGE/MATRIX REFLECTIVEGRAPHIC, 649,719","GGMMRG : GULL GREYMELANGE/MATRIX REFLECTIVEGRAPHIC, 649,719","GMX : GREEKBLUEMEL/MATRIX, 649,719"]
+  },
+  {
+    "name": "E121",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JETBLK","NAVY","SOFTPI"],
+    "colorname": ["JETBLK : JET BLACK, 1349","NAVY : NAVY, 1349,1449","SOFTPI : SOFT PINK, 1349"]
+  },
+  {
+    "name": "E123",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["NAVY"],
+    "colorname": ["NAVY : NAVY, 1199"]
+  },
+  {
+    "name": "E147",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CFBDDG","CHVLEG","ELGDDG","IHP","MHR","RLG"],
+    "colorname": ["CFBDDG : CBLUE DREAMER GRAPHICS, 699,769","CHVLEG : CHIVIOLET LMT EDT GR, 699,769","ELGDDG : ELGR DAY DREAMER GR, 699,769","IHP : IVORY/HAMSA GRAPHIC, 699","MHR : MAUVE PINK/HAMSA, 699,769","RLG : ROSE WATER/LIMIT, 699"]
+  },
+  {
+    "name": "E157",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["AYRGR","JBRGR","LCPE","MBEGR","MGMBE","NYPC","PPEGR","RFFGR","RWLY","SPFGR"],
+    "colorname": ["AYRGR : AMBER YELLOW REAL, 799,879","JBRGR : JET BLACK REAL GRAPHIC, 799,879","LCPE : LEMON CREAM/PEACE, 799,879","MBEGR : MEDIVAL BLUE ENOUGH, 799,879","MGMBE : M.GRYMEL/HAMSAENARGY, 799,879","NYPC : NAVY/ PEACE, 799,879","PPEGR : PEACH PARFAIT ENOUGH, 799,879","RFFGR : RAIN FOREST FLAWLESS, 799,879","RWLY : ROSEWATR/LOTUSYOGINI, 799,879","SPFGR : SURF SPRAY FLAWLESS, 799,879"]
+  },
+  {
+    "name": "E161",
+    "sizes": ["M","L","XL","XXL"],
+    "colors": ["JBRS","NRNS","PLH"],
+    "colorname": ["JBRS : JET BLK/RISE- SHINE, 999","NRNS : NAVY/RISE /SHINE, 999","PLH : PURSLATE/ RISE SHINE, 999"]
+  },
+  {
+    "name": "E247",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["LCDA","LIWA","PSBAOP","ROBIAO","SAWA"],
+    "colorname": ["LCDA : LEMON CREAM DEER AOP, 729,799","LIWA : LILAC IRIS WHALE AOP, 729","PSBAOP : PURPLE SLATEBIRD AOP, 729","ROBIAO : ROSEWATER BIRD AOP, 729","SAWA : SOFT AQUA WHALE AOP, 729"]
+  },
+  {
+    "name": "E257",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBDAOP","BRWDAP","MBSAOP","RFSCP","ROSSTP","SSSBTP","TGBFAP"],
+    "colorname": ["BBDAOP : BLUE BELL DITSY AOP, 829,899","BRWDAP : Bright white-dandelion aop, 829,899","MBSAOP : MED BLUE SEMI CIRCLE, 829,899","RFSCP : RAIN FOREST SEMI CIRCLE, 829,899","ROSSTP : ROUGE BUTTERFLY, 829,899","SSSBTP : SURF SPRAY BUTTERFLY, 829,899","TGBFAP : Tangerine-butterfly aop, 829,899"]
+  },
+  {
+    "name": "E305",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["AMY","ELMGRN","JETBLK"],
+    "colorname": ["AMY : AMBER YELLOW, 649,699","ELMGRN : ELM GREEN, 649,699","JETBLK : JET BLACK, 649,699"]
+  },
+  {
+    "name": "E306",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DFMDUF","EBMELB","MGMBLK","ROMROU"],
+    "colorname": ["DFMDUF : DULL FOREST MELANGE/DULL FOREST, 549,599","EBMELB : ELEMENTAL BLUE MEL/ ELEMENTAL BLUE, 549,599","MGMBLK : MEDIUM GREY MEL/ BLACK, 549,599","ROMROU : ROUGE MEL/ ROUGE, 549,599"]
+  },
+  {
+    "name": "E307",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLABRW","FIMDRB","LGMSPB"],
+    "colorname": ["BLABRW : Black/Bright White, 749,799","FIMDRB : Forged Iron Melange/Dry Blood, 749,799","LGMSPB : Light Grey Melange/Space Blue, 749,799"]
+  },
+  {
+    "name": "E309",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CSTR","JETBLK","RAIFOR","ROUGE"],
+    "colorname": ["CSTR : CASTLE ROCK, 899,949","JETBLK : JET BLACK, 899,949","RAIFOR : RAIN FOREST, 899,949","ROUGE : ROUGE, 899,949"]
+  },
+  {
+    "name": "E3G4",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBPVGR","ELBLMG","JBLTGR","JBRTWG","RFGRGR","ROSSGR"],
+    "colorname": ["BBPVGR : BLUE BELL POSITIVE VIBES GRAPHIC, 899,949","ELBLMG : ELEMENTAL BLUE MAGIC GRAPHICS, 899,949","JBLTGR : JET BLACK LTD EDITION GRAPHIC, 899,949","JBRTWG : JET BLACK RIDE THE WAVE GRAPHIC, 899,949","RFGRGR : RAIN FOREST GRACEFUL GRAPHIC, 899,949","ROSSGR : ROUGE STAY STRONG GRAPHIC, 899,949"]
+  },
+  {
+    "name": "E3G5",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["LAVEGR","MAREGR","REOEGR","ROUEGR"],
+    "colorname": ["LAVEGR : LAVENDER EXPECT GRAPHIC, 799,849","MAREGR : MARMALADE EXPECT GRAPHIC, 799,849","REOEGR : RED OCHRE EASY GRAPHIC, 799,849","ROUEGR : ROUGE EASY GRAPHIC, 799,849"]
+  },
+  {
+    "name": "E403",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKMEL","DUFOME","MEBLME"],
+    "colorname": ["BLKMEL : BLACK MELANGE, 1299,1429","DUFOME : DULL FOREST MELANGE, 1299,1429","MEBLME : MEDIEVAL BLUE MELANGE, 1299,1429"]
+  },
+  {
+    "name": "E405",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBELL","BLKMEL","MDBMEL","REOC"],
+    "colorname": ["BBELL : BLUE BELL, 1699,1849","BLKMEL : BLACK MELANGE, 1699,1849","MDBMEL : MEDIEVAL BLUE MEL, 1699,1849","REOC : Red Ochre, 1699,1849"]
+  },
+  {
+    "name": "E406",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DUSOR","JETBLK","MDB","OLIVE"],
+    "colorname": ["DUSOR : DUSKY ORCHID, 1499,1649","JETBLK : JET BLACK, 1499,1649","MDB : MEDIEVAL BLUE, 1499,1649","OLIVE : OLIVE, 1499,1649"]
+  },
+  {
+    "name": "E4A3",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKBAO","NHO","RBNBA","RGA","SFPBPA","SFTGBA"],
+    "colorname": ["BLKBAO : BLACK BLING AOP, 1249,1349","NHO : NAVY HOUNDS AOP, 1249,1349","RBNBA : ROBIN BLOCK AOP, 1249,1349","RGA : ROUGE GARDEN AOP, 1249","SFPBPA : SOFT PINK BLOCK PRINT AOP, 1249,1349","SFTGBA : SOFT GREEN BLING AOP, 1249,1349"]
+  },
+  {
+    "name": "E4A4",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BKSPRA","DCHKCA","JNGLAO","OLPSLA","PRPLIN"],
+    "colorname": ["BKSPRA : BLACK SPRAY AOP, 1149,1249","DCHKCA : DARK CHOCOLATE CHAIN AOP, 1149,1249","JNGLAO : JUNGLE GREEN LEAFY AOP, 1149,1249","OLPSLA : OLIVE PAISLEY AOP, 1149,1249","PRPLIN : PURPEL INDIE AOP, 1149,1249"]
+  },
+  {
+    "name": "E4A5",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BRBLCH","DFPAOP","FPGAOP","ORHUCH","PBTAOP","ROUGCH"],
+    "colorname": ["BRBLCH : BRUNNERA BLUECHECKS, 949,999","DFPAOP : DULLFOREST PW AOP, 949,999","FPGAOP : FND PINK GARDEN FLR AOP, 949,999","ORHUCH : ORCHID HUSHCHECKS, 949,999","PBTAOP : PBLUE TROPICAL LVS AOP, 949,999","ROUGCH : ROUGE CHECKS, 949,999"]
+  },
+  {
+    "name": "E7A1",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BOTSTK","FPGAOP","IVYSTR","MTLAOP","PBTAOP","PLEVPD"],
+    "colorname": ["BOTSTK : BOTANICAL STROKES AOP, 699,749","FPGAOP : FND PINK GARDEN FLR AOP, 699,749","IVYSTR : IVORY STRIPE, 699","MTLAOP : MULTICOLOUR LEAVES AOP, 699","PBTAOP : PBLUE TROPICAL LVS AOP, 699,749","PLEVPD : PALE VIOLET PLAID, 699"]
+  },
+  {
+    "name": "E801",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JBO","JWC","NYL","PDL","ROV"],
+    "colorname": ["JBO : JET BLACK/LOVE, 1299,1399","JWC : JET BLACK W/CALM, 1299,1399","NYL : NAVY/LOVE, 1299,1399","PDL : POWDER BLUE/LOVE, 1299,1399","ROV : ROUGE/LOVE, 1299,1399"]
+  },
+  {
+    "name": "E802",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BGH","JGG","MPGRMG","NVYDGR","PSF"],
+    "colorname": ["BGH : BALIGREEN/HAPPY GRA, 949,1049","JGG : JET BLK/GRUMPY, 949,1049","MPGRMG : MAUVE PINK GRIMPY GRAPHIC, 949,1049","NVYDGR : NAVY DREAM GRAPHIC, 949,1049","PSF : PURSLATE/ GRATFUL, 949,1049"]
+  },
+  {
+    "name": "E8S2",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BTH","BWU","MSL"],
+    "colorname": ["BTH : BALI GRNSTRIP/HPY GP, 1049,1159","BWU : BLK&WHTSTP/GRUMPYGPH, 1049,1159","MSL : MAUVEPNK STR/SLEEPY, 1049,1159"]
+  },
+  {
+    "name": "E901",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["AFG","AGFG","CWR","JBFG","JWL"],
+    "colorname": ["AFG : ASHGREY/FOCUSGRAPHIC, 1199,1299","AGFG : ARMYGREEN/FOCUS GRP, 1199,1299","CWR : CHARCOALMEL W/ RELAX, 999,1099","JBFG : JET BLK/FOCUS, 1199,1299","JWL : JET BLACK W/RELAX, 999"]
+  },
+  {
+    "name": "E903",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["DYB","MLD"],
+    "colorname": ["DYB : DRY BLOOD, 1849,1999","MLD : MINERAL RED, 1849,1999"]
+  },
+  {
+    "name": "E904",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BBELL","BLKMEL","MDBMEL","REOC"],
+    "colorname": ["BBELL : BLUE BELL, 1699,1849","BLKMEL : BLACK MELANGE, 1699,1849","MDBMEL : MEDIEVAL BLUE MEL, 1699,1849","REOC : Red Ochre, 1699,1849"]
+  },
+  {
+    "name": "E9G2",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["CAPTGR","JBNSGR","ROUTGR","SSNSGR"],
+    "colorname": ["CAPTGR : CAPPUCCINO THINK GRAPHIC, 999,1049","JBNSGR : JET BLACK NEVER STOP GRAPHIC, 999,1049","ROUTGR : ROUGE THINK GRAPHIC, 999,1049","SSNSGR : SURF SPRAY NEVER STOP GRAPHIC, 999,1049"]
+  },
+  {
+    "name": "EA61",
+    "sizes": ["M","L","XL","XXL"],
+    "colors": ["BWI","DBRSG","FGS","GSSR"],
+    "colorname": ["BWI : BLACK&WHITE ST/SHINE, 949","DBRSG : DBSTRIPE/RISE-SHINE, 949","FGS : FERN GREEN STR/SHINE, 949","GSSR : G.STNSTR/RISE/SHINE, 949"]
+  },
+  {
+    "name": "EA64",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKPAO","LVNDMA","NSO","NVYOA","STRBDD"],
+    "colorname": ["BLKPAO : BLACK PIXIE AOP, 1299","LVNDMA : LAVENDER MANDALA AOP, 1299,1399","NSO : NAVY SHIBORI AOP, 1299","NVYOA : NAVY OPTICAK AOP, 1299,1399","STRBDD : STRAWBERRY - DITSY DOT AOP, 1299,1399"]
+  },
+  {
+    "name": "EC13",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BLKBAO","NHO","RBNBA","SFPBPA","SFTGBA"],
+    "colorname": ["BLKBAO : BLACK BLING AOP, 1049,1149","NHO : NAVY HOUNDS AOP, 1049","RBNBA : ROBIN BLOCK AOP, 1049,1149","SFPBPA : SOFT PINK BLOCK PRINT AOP, 1049,1149","SFTGBA : SOFT GREEN BLING AOP, 1049,1149"]
+  },
+  {
+    "name": "EC14",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["BDY","JBOP","JCY","NSTDA","NVTAOP","PTSTDA","RIY","SGSTDA"],
+    "colorname": ["BDY : BALI GRN TIEDYE  AOP, 1049,1149","JBOP : JET BLACK ALL OVER PRINT, 1049,1149","JCY : JETBLACK TIE DYE AOP, 1049,1149","NSTDA : NAVY SPIRAL TIE DYE AOP, 1049,1149","NVTAOP : NAVY TIE DYE AOP, 1049","PTSTDA : PINK TAFFY SPIRAL TIE DYE AOP, 1049,1149","RIY : ROUGE TIE DYE AOP, 1049,1149","SGSTDA : SOFT GREEN SPIRAL TIE DYE AOP, 1049,1149"]
+  },
+  {
+    "name": "EC16",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JTBMNC","NVYSCM","SFTLMC","SFTPSC"],
+    "colorname": ["JTBMNC : JET BLACK MOON COMBO, 1399,1499","NVYSCM : NAVY SUN COMBO, 1399,1499","SFTLMC : SOFT LILAC MOON COMBO, 1399,1499","SFTPSC : SOFT PINK SUN COMBO, 1399,1499"]
+  },
+  {
+    "name": "EC18",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["GSTDA","JCY","NVTAOP","PSD"],
+    "colorname": ["GSTDA : GRNSTONE TIE DYE AOP, 1399,1499","JCY : JETBLACK TIE DYE AOP, 1399,1499","NVTAOP : NAVY TIE DYE AOP, 1399,1499","PSD : PURPLE SLATETIE DYE, 1399,1499"]
+  },
+  {
+    "name": "EC19",
+    "sizes": ["S","M","L","XL","XXL"],
+    "colors": ["JBSA","NVYCIR","PSSAOP","TCCA"],
+    "colorname": ["JBSA : JET BLACK SQUARE AOP, 1599,1699","NVYCIR : NAVY CIRCLE AOP, 1599,1699","PSSAOP : PURPLE SLATE SQUARE, 1599,1699","TCCA : TERRA COTTA CIRCLE, 1599,1699"]
+  },
+  {
+    "name": "A014",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D","42Z"],
+    "colors": ["BLACK","MASAI","PEARL","SKIN"],
+    "colorname": ["BLACK : BLACK, 979,999,1049","MASAI : MASAI, 979,999,1049","PEARL : PEARL, 979,999,1049","SKIN : SKIN, 979,999,1049"]
+  },
+  {
+    "name": "A017",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","BPRP","CPM","GKP","ODM","PPRP","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 849,899","BPRP : BLUE PRIM ROSE PRINT, 899","CPM : CAPRI MELANGE, 849,899","GKP : GINKO PRINT, 899","ODM : ORCHID MELANGE, 849,899","PPRP : PINK PRIM ROSE PRINT, 899","SKIN : SKIN, 849,899","WHITE : WHITE, 849,899"]
+  },
+  {
+    "name": "A019",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","RSBLSH","SKIN"],
+    "colorname": ["BLACK : BLACK, 899","RSBLSH : ROSE BLUSH, 899","SKIN : SKIN, 899"]
+  },
+  {
+    "name": "A022",
+    "sizes": ["S","M","L","XL"," 2XL"],
+    "colors": ["BLACK","GRYMRL","PEARL","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 469,449","GRYMRL : GREY MELANGE, 469,449","PEARL : PEARL, 469,449","SKIN : SKIN, 469,449","WHITE : WHITE, 469,449"]
+  },
+  {
+    "name": "A027",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
+    "colors": ["BDE","BLACK","GRW","GRYMEL","PLS","WHITE"],
+    "colorname": ["BDE : BLUSHING BRIDE, 779,799","BLACK : BLACK, 779,799","GRW : GRAPE WINE, 779,799","GRYMEL : GREY MELANGE, 779,799","PLS : PALE SKIN, 779,799","WHITE : WHITE, 779,799"]
+  },
+  {
+    "name": "A032",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","CHYBLS","ECL","RTE","SLI","WHITE"],
+    "colorname": ["BLACK : BLACK, 999","CHYBLS : CHERRY BLOSSOM, 999","ECL : ECLIPSE, 999","RTE : ROSETTE, 999","SLI : SILVER LILAC, 999","WHITE : WHITE, 999"]
+  },
+  {
+    "name": "A039",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
+    "colors": ["BLACK","EVEBLU","GRW","GRYMRL","LILAST","LIMAPR","PEARL","RESWPR","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 799,849","EVEBLU : EVENING BLUE, 799,849","GRW : GRAPE WINE, 799,849","GRYMRL : GREY MELANGE, 799,849","LILAST : LILAC ASTER, 849,899","LIMAPR : LILAC MARBLE, 799,849","PEARL : PEARL, 799,849","RESWPR : RED SWRILL PRINT, 849,899","SKIN : SKIN, 799,849","WHITE : WHITE, 799,849"]
+  },
+  {
+    "name": "A042",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","42B","42C"],
+    "colors": ["BLACK","CHIVIO","CMG","GSP","LPR","ODM","PEARL","PURPLE","RVL","SKIN","TMG","WHITE"],
+    "colorname": ["BLACK : BLACK, 699,729,769","CHIVIO : CHINESE VIOLET, 699,729,769","CMG : CHAMBRAY MELANGE, 699,729,769","GSP : GINKOSCATTERED PRINT, 749,779,829","LPR : LUPINE PRINT, 749,779,829","ODM : ORCHID MELANGE, 699,729,769","PEARL : PEARL, 699,729,769","PURPLE : PURPLE, 699,729,769","RVL : REVELLO PRINT, 749,779,829","SKIN : SKIN, 699,729,769","TMG : TOMATO MELANGE, 699,729,769","WHITE : WHITE, 699,729,769"]
+  },
+  {
+    "name": "A055",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","CFAUP","GRW","PEARL","SKIN","TLPP","WHITE"],
+    "colorname": ["BLACK : BLACK, 599","CFAUP : CORAL FAUNA PRINT, 649","GRW : GRAPE WINE, 599","PEARL : PEARL, 599","SKIN : SKIN, 599","TLPP : TULIP PRINT, 649","WHITE : WHITE, 599"]
+  },
+  {
+    "name": "A058",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D","40B","40C"],
+    "colors": ["BLACK","PHB","PLS","WHITE"],
+    "colorname": ["BLACK : BLACK, 879,929","PHB : PEACH BLOSSOM, 879,929","PLS : PALE SKIN, 879,929","WHITE : WHITE, 879,929"]
+  },
+  {
+    "name": "A064",
+    "sizes": ["32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
+    "colors": ["BLACK","GRW","RTE"],
+    "colorname": ["BLACK : BLACK, 1299,1349","GRW : GRAPE WINE, 1299,1349","RTE : ROSETTE, 1299,1349"]
+  },
+  {
+    "name": "A072",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","PHB","PLS"],
+    "colorname": ["BLACK : BLACK, 549","PHB : PEACH BLOSSOM, 549","PLS : PALE SKIN, 549"]
+  },
+  {
+    "name": "A073",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","SKIN"],
+    "colorname": ["BLACK : BLACK, 629","SKIN : SKIN, 629"]
+  },
+  {
+    "name": "A076",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["ECL","OLT","RSBLSH"],
+    "colorname": ["ECL : ECLIPSE, 949","OLT : PEARL BLUSH, 949","RSBLSH : ROSE BLUSH, 949"]
+  },
+  {
+    "name": "A077",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["ECL","OLT","RSBLSH"],
+    "colorname": ["ECL : ECLIPSE, 1049","OLT : PEARL BLUSH, 1049","RSBLSH : ROSE BLUSH, 1049"]
+  },
+  {
+    "name": "A078",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["BLACK","BRI","PLS"],
+    "colorname": ["BLACK : BLACK, 999,1019,1049","BRI : BRIDAL RED, 999,1019,1049","PLS : PALE SKIN, 999,1019,1049"]
+  },
+  {
+    "name": "A106",
+    "sizes": ["XS","S","M","L","XL"," 2XL"],
+    "colors": ["BDE","BLACK","SKIN","WHITE"],
+    "colorname": ["BDE : BLUSHING BRIDE, 669,649","BLACK : BLACK, 669,649","SKIN : SKIN, 669,649","WHITE : WHITE, 669,649"]
+  },
+  {
+    "name": "A112",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D","42Z"," 32B"," 32C"," 32D"," 32Z"],
+    "colors": ["BLACK","CMG","GRW","PBH","PLS","RTE","WHITE"],
+    "colorname": ["BLACK : BLACK, 999,1029,1049","CMG : CHAMBRAY MELANGE, 999,1029,1049","GRW : GRAPE WINE, 999,1029,1049","PBH : PEACH BLUSH, 999,1029,1049","PLS : PALE SKIN, 999,1029,1049","RTE : ROSETTE, 999,1029,1049","WHITE : WHITE, 999,1029,1049"]
+  },
+  {
+    "name": "A125",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["CHAMEL","GRYMEL","WHITE"],
+    "colorname": ["CHAMEL : CHARCOAL MELANGE, 499","GRYMEL : GREY MELANGE, 499","WHITE : WHITE, 499"]
+  },
+  {
+    "name": "A132",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["BLACK","CBP","PLS"],
+    "colorname": ["BLACK : BLACK, 1299,1449","CBP : CHERRY BLOSSOM PRINT, 1299,1449","PLS : PALE SKIN, 1299,1449"]
+  },
+  {
+    "name": "A165",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","PLS","TSE"],
+    "colorname": ["BLACK : BLACK, 1049","PLS : PALE SKIN, 1049","TSE : TIBETAN STONE, 1049"]
+  },
+  {
+    "name": "AB75",
+    "sizes": ["34B","34C","34D","36B","36C","36D","38B","38C","38D","40B","40C","40D","42B","42C","42D"],
+    "colors": ["BLACK","ODM","PEARL","PLS","PURPLE","WHITE"],
+    "colorname": ["BLACK : BLACK, 799,879,899","ODM : ORCHID MELANGE, 799,879","PEARL : PEARL, 799,879,899","PLS : PALE SKIN, 799,879,899","PURPLE : PURPLE, 799,879,899","WHITE : WHITE, 799,879,899"]
+  },
+  {
+    "name": "BB01",
+    "sizes": ["XS","S","M","2xs"],
+    "colors": ["SKIN","WHITE"],
+    "colorname": ["SKIN : SKIN, 339","WHITE : WHITE, 339"]
+  },
+  {
+    "name": "BB02",
+    "sizes": ["XS","S","M","2xs"],
+    "colors": ["BLACK","PEARL","WHITE"],
+    "colorname": ["BLACK : BLACK, 339","PEARL : PEARL, 339","WHITE : WHITE, 339"]
+  },
+  {
+    "name": "E001",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 299","SKIN : SKIN, 299","WHITE : WHITE, 299"]
+  },
+  {
+    "name": "E003",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 449","SKIN : SKIN, 449","WHITE : WHITE, 449"]
+  },
+  {
+    "name": "E007",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 399","SKIN : SKIN, 399","WHITE : WHITE, 399"]
+  },
+  {
+    "name": "E016",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BTWH","HBSCS","HLMLLC","HTRRSE","JETBLK","LGM","LTBM","SKIN"],
+    "colorname": ["BTWH : BRIGHT WHITE, 299,289","HBSCS : HIBISCUS, 299,289","HLMLLC : HEIRLOOM LILAC, 299,289","HTRRSE : HEATHER ROSE, 299,289","JETBLK : JET BLACK, 299,289","LGM : LIGHT GREY MELANGE, 299,289","LTBM : LIGHT BLUE MELANGE, 299,289","SKIN : SKIN, 299,289"]
+  },
+  {
+    "name": "E025",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","NAVY","PHP","WHITE"],
+    "colorname": ["BLACK : BLACK, 299","NAVY : NAVY, 299","PHP : PEACH PINK, 299","WHITE : WHITE, 299"]
+  },
+  {
+    "name": "E032",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","SKIN","WHITE"],
+    "colorname": ["BLACK : BLACK, 299","SKIN : SKIN, 299","WHITE : WHITE, 299"]
+  },
+  {
+    "name": "E095",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["SKIN","WHITE"],
+    "colorname": ["SKIN : SKIN, 399","WHITE : WHITE, 399"]
+  },
+  {
+    "name": "MT02",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
+    "colors": ["CPM","GRW","ODM","SKIN"],
+    "colorname": ["CPM : CAPRI MELANGE, 949,979,1049","GRW : GRAPE WINE, 949,979,1049","ODM : ORCHID MELANGE, 949,979,1049","SKIN : SKIN, 949,979,1049"]
+  },
+  {
+    "name": "SB06",
+    "sizes": ["XS","S","M","L","XL","2XL"," 2XL"],
+    "colors": ["BLACK","CPM","DHP","GRW","GRYMRL","MFL","PEARL","SKIN","TMG","WHITE"],
+    "colorname": ["BLACK : BLACK, 419,399","CPM : CAPRI MELANGE, 419,399","DHP : DITSY HEART PRINT, 499,479","GRW : GRAPE WINE, 419,399","GRYMRL : GREY MELANGE, 419,399","MFL : MARBLE FLAKE PRINT, 479,499","PEARL : PEARL, 419,399","SKIN : SKIN, 419,399","TMG : TOMATO MELANGE, 419,399","WHITE : WHITE, 419,399"]
+  },
+  {
+    "name": "SB08",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","GRW","GRYMEL","MLP","MMV","PEARL"],
+    "colorname": ["BLACK : BLACK, 899,929","GRW : GRAPE WINE, 899,929","GRYMEL : GREY MELANGE, 899,929","MLP : MARBLE LOCK PRINT, 899,929","MMV : MARBLE MAVVE PRINT, 899,929","PEARL : PEARL, 899,929"]
+  },
+  {
+    "name": "SB28",
+    "sizes": ["LAR","MED","SMA","XLA"],
+    "colors": ["BLACK","GRYMEL","PFI"],
+    "colorname": ["BLACK : BLACK, 649,669","GRYMEL : GREY MELANGE, 649,669","PFI : PARFAIT PINK, 649,669"]
+  },
+  {
+    "name": "SB38",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["FUCPUR","GRA","WHITE"],
+    "colorname": ["FUCPUR : FUCHIA PURPLE, 749","GRA : GRAPHITE, 749","WHITE : WHITE, 749"]
+  },
+  {
+    "name": "TH01",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","PEI","PLS"],
+    "colorname": ["BLACK : BLACK, 949,899","PEI : PEAR PINK, 949,899","PLS : PALE SKIN, 949,899"]
+  },
+  {
+    "name": "TH02",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","PEI","PLS"],
+    "colorname": ["BLACK : BLACK, 1099,1049","PEI : PEAR PINK, 1099,1049","PLS : PALE SKIN, 1099,1049"]
+  },
+  {
+    "name": "TH03",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","PEI","PLS"],
+    "colorname": ["BLACK : BLACK, 1249,1199","PEI : PEAR PINK, 1249,1199","PLS : PALE SKIN, 1249,1199"]
+  },
+  {
+    "name": "BR08",
+    "sizes": ["M","L","XL","2XL"],
+    "colors": ["BLACK","BUFF"],
+    "colorname": ["BLACK : BLACK, 1299","BUFF : BUFF, 1299"]
+  },
+  {
+    "name": "BR11",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","HOB"],
+    "colorname": ["BLACK : BLACK, 1999","HOB : HONEY BEIGE, 1999"]
+  },
+  {
+    "name": "F023",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","FRHPRT","IGY","NSTLGR","PWL","SIL","SOR"],
+    "colorname": ["BLACK : BLACK, 1049","FRHPRT : FRINGED HIBISCUS PRINT, 1199","IGY : INK GREY, 1049","NSTLGR : NOSTALGIA ROSE, 1049","PWL : PINK WILD LACE PRINT, 1199","SIL : SILVER ROSE PRINT, 1199","SOR : SORRENTO PRINT, 1199"]
+  },
+  {
+    "name": "F024",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","40B","40C","40D","42C","42D"],
+    "colors": ["BLACK","CON","PLS","WHITE"],
+    "colorname": ["BLACK : BLACK, 1049,1159","CON : CONFETTI, 1049,1159","PLS : PALE SKIN, 1049,1159","WHITE : WHITE, 1049,1159"]
+  },
+  {
+    "name": "F037",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["ALS","BLACK","LSBNBL","OCH","PSTLIL"],
+    "colorname": ["ALS : ALMOND SKIN, 1299","BLACK : BLACK, 1299","LSBNBL : LISBON BLUE, 1299","OCH : ORCHID SMOKE, 1299","PSTLIL : PASTEL LILAC, 1299"]
+  },
+  {
+    "name": "F040",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","CRMRD"],
+    "colorname": ["BLACK : BLACK, 1849","CRMRD : CRIMSON RED, 1849"]
+  },
+  {
+    "name": "F043",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BUTSCO","CTM"],
+    "colorname": ["BUTSCO : BUTTER SCOTCH, 1699","CTM : CLARET MAROON, 1699"]
+  },
+  {
+    "name": "F048",
+    "sizes": ["34B","34C","34D","34F","34Z","36B","36C","36D","36F","36Z","38B","38C","38D","38F","38Z","40B","40C","40D","40F","40Z"],
+    "colors": ["PLUM","TSK"],
+    "colorname": ["PLUM : PLUM, 1249,1379","TSK : TAN SKIN, 1249,1379"]
+  },
+  {
+    "name": "F053",
+    "sizes": ["34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
+    "colors": ["ECL","HOB"],
+    "colorname": ["ECL : ECLIPSE, 1699,1869","HOB : HONEY BEIGE, 1699,1869"]
+  },
+  {
+    "name": "F057",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","HOB","IGY"],
+    "colorname": ["BLACK : BLACK, 1399","HOB : HONEY BEIGE, 1399","IGY : INK GREY, 1399"]
+  },
+  {
+    "name": "F065",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["ARO","AUM","BLACK","CLM","HOB","WFM"],
+    "colorname": ["ARO : AMARANTO PRINT, 1349","AUM : AUTUMN MELODY PRINT, 1349","BLACK : BLACK, 1249","CLM : PINK CHAMPAGNE, 1249","HOB : HONEY BEIGE, 1179","WFM : WILDFLOWER MELODY, 1349"]
+  },
+  {
+    "name": "F070",
+    "sizes": ["LAR","MED","SMA","XLA"],
+    "colors": ["IGY","PLS"],
+    "colorname": ["IGY : INK GREY, 1349","PLS : PALE SKIN, 1349"]
+  },
+  {
+    "name": "F074",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D"],
+    "colors": ["BKCCL","BLACK","BOS","BUFF","RSTLCE"],
+    "colorname": ["BKCCL : BLACKBERRY CORDIAL LACE, 1549,1709","BLACK : BLACK, 1499,1649","BOS : BOSSA NOVA, 1499,1649","BUFF : BUFF, 1499,1649","RSTLCE : ROSETTE LACE, 1549,1709"]
+  },
+  {
+    "name": "F084",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","NUDE","STI"],
+    "colorname": ["BLACK : BLACK, 1499","NUDE : NUDE, 1499","STI : STRAWBERRY ICE, 1499"]
+  },
+  {
+    "name": "F087",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
+    "colors": ["CON","SLI"],
+    "colorname": ["CON : CONFETTI, 1499,1649","SLI : SILVER LILAC, 1499,1649"]
+  },
+  {
+    "name": "F091",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["FRVRR","LBLU","PLUM"],
+    "colorname": ["FRVRR : FOREVER ROSE, 1849","LBLU : LAPIS BLUE, 1849","PLUM : PLUM, 1849"]
+  },
+  {
+    "name": "F096",
+    "sizes": ["34C","34D","34F","34Z","36B","36C","36D","36F","36G","36Z","38C","38D","38F","38G","38Z","40C","40D","40F","40G","40Z","42C","42D","42F","42G","42Z","44C","44D","44F","44G","44Z"],
+    "colors": ["BLACK","IGY","PEARL"],
+    "colorname": ["BLACK : BLACK, 1499,1549","IGY : INK GREY, 1499,1549","PEARL : PEARL, 1499,1549"]
+  },
+  {
+    "name": "F097",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D"],
+    "colors": ["BLACK","MNPP","PEARL"],
+    "colorname": ["BLACK : BLACK, 1399,1449","MNPP : MIDNIGHT PEONY PRINT, 1549,1599","PEARL : PEARL, 1399,1449"]
+  },
+  {
+    "name": "F107",
+    "sizes": ["LAR","MED","SMA","XLA"],
+    "colors": ["BLACK"],
+    "colorname": ["BLACK : BLACK, 999"]
+  },
+  {
+    "name": "F108",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["AQGRY","BLACK","VLTTLP"],
+    "colorname": ["AQGRY : AQUA GREY, 1049","BLACK : BLACK, 1049","VLTTLP : VIOLET TULIP, 1049"]
+  },
+  {
+    "name": "F109",
+    "sizes": ["LAR","MED","SMA","XLA"],
+    "colors": ["AQGRY","RTE"],
+    "colorname": ["AQGRY : AQUA GREY, 899","RTE : ROSETTE, 899"]
+  },
+  {
+    "name": "F110",
+    "sizes": ["LAR","MED","SMA","XLA"],
+    "colors": ["BLACK"],
+    "colorname": ["BLACK : BLACK, 899"]
+  },
+  {
+    "name": "F111",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","FRVRR","MOLIG"],
+    "colorname": ["BLACK : BLACK, 1049","FRVRR : FOREVER ROSE, 1049","MOLIG : MOON LIGHT, 1049"]
+  },
+  {
+    "name": "F114",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","HOB","NSTLGR"],
+    "colorname": ["BLACK : BLACK, 1499","HOB : HONEY BEIGE, 1499","NSTLGR : NOSTALGIA ROSE, 1499"]
+  },
+  {
+    "name": "F115",
+    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
+    "colors": ["BLACK","HOB"],
+    "colorname": ["BLACK : BLACK, 1599","HOB : HONEY BEIGE, 1599"]
+  },
+  {
+    "name": "F116",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","38B","38C"],
+    "colors": ["BKC","DSR"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 1499","DSR : DUSTY ROSE, 1499"]
+  },
+  {
+    "name": "F118",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["DSR","VLTTLP"],
+    "colorname": ["DSR : DUSTY ROSE, 1599","VLTTLP : VIOLET TULIP, 1599"]
+  },
+  {
+    "name": "F121",
+    "sizes": ["32D","32Z","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
+    "colors": ["BLACK","HOB","SLI"],
+    "colorname": ["BLACK : BLACK, 1049,1199","HOB : HONEY BEIGE, 1049,1199","SLI : SILVER LILAC, 1049,1199"]
+  },
+  {
+    "name": "F122",
+    "sizes": ["34C","34D","34F","34Z","36B","36C","36D","36F","36Z","38B","38C","38D","38F","38Z","40B","40C","40D","40F","40Z"],
+    "colors": ["BKC","RTE"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 1399,1549","RTE : ROSETTE, 1399,1549"]
+  },
+  {
+    "name": "F123",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","40B","40C"],
+    "colors": ["BLACK","HOB","NSTLGR"],
+    "colorname": ["BLACK : BLACK, 1599,1749","HOB : HONEY BEIGE, 1599,1749","NSTLGR : NOSTALGIA ROSE, 1599,1749"]
+  },
+  {
+    "name": "F124",
+    "sizes": ["32D","32F","32G","32Z","34C","34D","34F","34G","34Z","36C","36D","36F","36G","36Z","38C","38D","38F","38G","38Z","40C","40D","40F","40Z"],
+    "colors": ["BLACK","CEDWOD"],
+    "colorname": ["BLACK : BLACK, 1599,1699","CEDWOD : CEDAR WOOD, 1599,1699"]
+  },
+  {
+    "name": "F125",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["CEDWOD","NUGGET"],
+    "colorname": ["CEDWOD : CEDAR WOOD, 1399","NUGGET : NUGGET, 1399"]
+  },
+  {
+    "name": "F126",
+    "sizes": ["32D","32F","32G","32Z","34C","34D","34F","34G","34Z","36C","36D","36F","36G","36Z","38C","38D","38F","38G","38Z","40C","40D","40F","40Z"],
+    "colors": ["BLACK","CEDWOD"],
+    "colorname": ["BLACK : BLACK, 1349,1449","CEDWOD : CEDAR WOOD, 1349,1449"]
+  },
+  {
+    "name": "F127",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["OLT","SLI"],
+    "colorname": ["OLT : PEARL BLUSH, 1599","SLI : SILVER LILAC, 1599"]
+  },
+  {
+    "name": "F129",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["COSKY","VIOQUA"],
+    "colorname": ["COSKY : COSMIC SKY, 1399,1539","VIOQUA : VIOLET QUARTZ, 1399,1539"]
+  },
+  {
+    "name": "F130",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","38B"],
+    "colors": ["CHBLPR","WISPRT"],
+    "colorname": ["CHBLPR : CHERRY BLOSSOM PRINT, 1699","WISPRT : WISTERIA PRINT, 1699"]
+  },
+  {
+    "name": "F131",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
+    "colors": ["BLACK","HOB","NSTLGR"],
+    "colorname": ["BLACK : BLACK, 949","HOB : HONEY BEIGE, 949","NSTLGR : NOSTALGIA ROSE, 949"]
+  },
+  {
+    "name": "F132",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["BLACK","HOB"],
+    "colorname": ["BLACK : BLACK, 1049,1159","HOB : HONEY BEIGE, 1049,1159"]
+  },
+  {
+    "name": "F133",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK"],
+    "colorname": ["BLACK : BLACK, 1299"]
+  },
+  {
+    "name": "F134",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["HIBRED","OLT"],
+    "colorname": ["HIBRED : Hibiscus Red, 1399","OLT : PEARL BLUSH, 1399"]
+  },
+  {
+    "name": "F135",
+    "sizes": ["34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z"],
+    "colors": ["BLACK","BOS","BUFF"],
+    "colorname": ["BLACK : BLACK, 1599,1759","BOS : BOSSA NOVA, 1599,1759","BUFF : BUFF, 1599,1759"]
+  },
+  {
+    "name": "F137",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["LSBNBL","PSTLIL"],
+    "colorname": ["LSBNBL : LISBON BLUE, 1499","PSTLIL : PASTEL LILAC, 1499"]
+  },
+  {
+    "name": "F138",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","HIBRED","OLT"],
+    "colorname": ["BLACK : BLACK, 1699","HIBRED : Hibiscus Red, 1699","OLT : PEARL BLUSH, 1699"]
+  },
+  {
+    "name": "F141",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","HAURED"],
+    "colorname": ["BLACK : BLACK, 1899","HAURED : HAUTE RED, 1899"]
+  },
+  {
+    "name": "F142",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","HAURED"],
+    "colorname": ["BLACK : BLACK, 1899","HAURED : HAUTE RED, 1899"]
+  },
+  {
+    "name": "F143",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["MONGRY","NUDROS"],
+    "colorname": ["MONGRY : MOON GREY, 1799","NUDROS : NUDE ROSE, 1799"]
+  },
+  {
+    "name": "F144",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["MONGRY","NUDROS"],
+    "colorname": ["MONGRY : MOON GREY, 1599","NUDROS : NUDE ROSE, 1599"]
+  },
+  {
+    "name": "F165",
+    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
+    "colors": ["BLACK","DNT","FVP","HOB","PCHCRL"],
+    "colorname": ["BLACK : BLACK, 1299","DNT : DAINTY PETAL PRINT, 1399","FVP : FESTIVE PETAL PRINT, 1399","HOB : HONEY BEIGE, 1299","PCHCRL : PEACH CORAL, 1299"]
+  },
+  {
+    "name": "FB06",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D","42Z"],
+    "colors": ["BKC","BLACK","MASAI","PLS","WHITE"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 1149,1269","BLACK : BLACK, 1149,1269","MASAI : MASAI, 1149,1269","PLS : PALE SKIN, 1149,1269","WHITE : WHITE, 1149,1269"]
+  },
+  {
+    "name": "FB12",
+    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D","42Z"],
+    "colors": ["BLACK","BUFF","CLM","ECL","GRW","MASAI","WHITE"],
+    "colorname": ["BLACK : BLACK, 1199,1319","BUFF : BUFF, 1199,1319","CLM : PINK CHAMPAGNE, 1199,1319","ECL : ECLIPSE, 1199,1319","GRW : GRAPE WINE, 1199,1319","MASAI : MASAI, 1199,1319","WHITE : WHITE, 1199,1319"]
+  },
+  {
+    "name": "N116",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BKC"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 1499"]
+  },
+  {
+    "name": "N118",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["DSR","VLTTLP"],
+    "colorname": ["DSR : DUSTY ROSE, 2099","VLTTLP : VIOLET TULIP, 2099"]
+  },
+  {
+    "name": "N125",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["CEDWOD","NUGGET"],
+    "colorname": ["CEDWOD : CEDAR WOOD, 1699","NUGGET : NUGGET, 1699"]
+  },
+  {
+    "name": "N127",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["OLT","SLI"],
+    "colorname": ["OLT : PEARL BLUSH, 2199","SLI : SILVER LILAC, 2199"]
+  },
+  {
+    "name": "N138",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","HIBRED"],
+    "colorname": ["BLACK : BLACK, 1999","HIBRED : Hibiscus Red, 1999"]
+  },
+  {
+    "name": "N143",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["MONGRY","NUDROS"],
+    "colorname": ["MONGRY : MOON GREY, 1899","NUDROS : NUDE ROSE, 1899"]
+  },
+  {
+    "name": "P000",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["ARO","AUM","BLACK","FRHPRT","GRNTR","MNBLU","PWL","SIL","SOR","WFM"],
+    "colorname": ["ARO : AMARANTO PRINT, 469","AUM : AUTUMN MELODY PRINT, 469","BLACK : BLACK, 409","FRHPRT : FRINGED HIBISCUS PRINT, 469","GRNTR : GARNET ROSE, 409","MNBLU : MOONLIT BLUE, 409","PWL : PINK WILD LACE PRINT, 469","SIL : SILVER ROSE PRINT, 469","SOR : SORRENTO PRINT, 469","WFM : WILDFLOWER MELODY, 469"]
+  },
+  {
+    "name": "P037",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["ALS","LSBNBL","PSTLIL"],
+    "colorname": ["ALS : ALMOND SKIN, 849","LSBNBL : LISBON BLUE, 849","PSTLIL : PASTEL LILAC, 849"]
+  },
+  {
+    "name": "P040",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","CRMRD"],
+    "colorname": ["BLACK : BLACK, 649","CRMRD : CRIMSON RED, 649"]
+  },
+  {
+    "name": "P043",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BUTSCO","CTM"],
+    "colorname": ["BUTSCO : BUTTER SCOTCH, 499","CTM : CLARET MAROON, 499"]
+  },
+  {
+    "name": "P087",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["CON","SLI"],
+    "colorname": ["CON : CONFETTI, 749","SLI : SILVER LILAC, 749"]
+  },
+  {
+    "name": "P091",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["FRVRR","LBLU","PLUM"],
+    "colorname": ["FRVRR : FOREVER ROSE, 729","LBLU : LAPIS BLUE, 729","PLUM : PLUM, 729"]
+  },
+  {
+    "name": "P108",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["AQGRY","BLACK","RTE"],
+    "colorname": ["AQGRY : AQUA GREY, 549","BLACK : BLACK, 549","RTE : ROSETTE, 549"]
+  },
+  {
+    "name": "P109",
+    "sizes": ["S","M","L"],
+    "colors": ["AQGRY","BLACK","RTE"],
+    "colorname": ["AQGRY : AQUA GREY, 449","BLACK : BLACK, 449","RTE : ROSETTE, 449"]
+  },
+  {
+    "name": "P112",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["PURPLE","SCRED"],
+    "colorname": ["PURPLE : PURPLE, 599","SCRED : SCOOTER RED, 599"]
+  },
+  {
+    "name": "P113",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["PURPLE","SCRED"],
+    "colorname": ["PURPLE : PURPLE, 499","SCRED : SCOOTER RED, 499"]
+  },
+  {
+    "name": "P116",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BKC","DSR"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 599","DSR : DUSTY ROSE, 599"]
+  },
+  {
+    "name": "P118",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["DSR","VLTTLP"],
+    "colorname": ["DSR : DUSTY ROSE, 499","VLTTLP : VIOLET TULIP, 499"]
+  },
+  {
+    "name": "P122",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BKC","RTE"],
+    "colorname": ["BKC : BLACKBERRY CORDIAL, 499","RTE : ROSETTE, 499"]
+  },
+  {
+    "name": "P125",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["CEDWOD","NUGGET"],
+    "colorname": ["CEDWOD : CEDAR WOOD, 599","NUGGET : NUGGET, 599"]
+  },
+  {
+    "name": "P126",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","CEDWOD"],
+    "colorname": ["BLACK : BLACK, 599","CEDWOD : CEDAR WOOD, 599"]
+  },
+  {
+    "name": "P127",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["OLT","SLI"],
+    "colorname": ["OLT : PEARL BLUSH, 549","SLI : SILVER LILAC, 549"]
+  },
+  {
+    "name": "P129",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["COSKY","VIOQUA"],
+    "colorname": ["COSKY : COSMIC SKY, 599","VIOQUA : VIOLET QUARTZ, 599"]
+  },
+  {
+    "name": "P130",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["CHBLPR","WISPRT"],
+    "colorname": ["CHBLPR : CHERRY BLOSSOM PRINT, 659","WISPRT : WISTERIA PRINT, 659"]
+  },
+  {
+    "name": "P138",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","HIBRED","OLT"],
+    "colorname": ["BLACK : BLACK, 549","HIBRED : Hibiscus Red, 549","OLT : PEARL BLUSH, 549"]
+  },
+  {
+    "name": "P141",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","HAURED"],
+    "colorname": ["BLACK : BLACK, 549","HAURED : HAUTE RED, 549"]
+  },
+  {
+    "name": "P142",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["BLACK","HAURED"],
+    "colorname": ["BLACK : BLACK, 599","HAURED : HAUTE RED, 599"]
+  },
+  {
+    "name": "P143",
+    "sizes": ["S","M","L","XL"],
+    "colors": ["MONGRY","NUDROS"],
+    "colorname": ["MONGRY : MOON GREY, 599","NUDROS : NUDE ROSE, 599"]
+  },
+  {
+    "name": "P165",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["DNT","FVP"],
+    "colorname": ["DNT : DAINTY PETAL PRINT, 569","FVP : FESTIVE PETAL PRINT, 569"]
+  },
+  {
+    "name": "PB40",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["QUP","JETBLK","NUDE"],
+    "colorname": ["JETBLK : JET BLACK, 459,449","NUDE : NUDE, 459,449","QUP : QUEEN PINK, 499,449"]
+  },
+  {
+    "name": "PS40",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["GRKBLU","JETBLK","NUDE","QUP"],
+    "colorname": ["GRKBLU : GREEK BLUE, 459,449","JETBLK : JETBLACK, 509","JETBLK : JET BLACK, 499","NUDE : NUDE, 509,499","QUP : QUEEN PINK, 509,499"]
+  },
+  {
+    "name": "SB18",
+    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["BLACK","GRYMEL","LCR","NISH"],
+    "colorname": ["BLACK : BLACK, 1949","GRYMEL : GREY MELANGE, 1949","LCR : LILAC RUN, 1999","NISH : NIGHT SHADE, 1949"]
+  },
+  {
+    "name": "SB25",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["GRYMEL","PEARL"],
+    "colorname": ["GRYMEL : GREY MELANGE, 1249","PEARL : PEARL, 1249"]
+  },
+  {
+    "name": "SB29",
+    "sizes": ["30D","32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
+    "colors": ["BLACK","NSH"],
+    "colorname": ["BLACK : BLACK, 1949","NSH : NIGHTSHADE, 1949"]
+  },
+  {
+    "name": "TS09",
+    "sizes": ["M","L","XL","2XL"],
+    "colors": ["BLACK","BUFF"],
+    "colorname": ["BLACK : BLACK, 1399","BUFF : BUFF, 1399"]
+  },
+  {
+    "name": "CB03",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCP","MCS"],
+    "colorname": ["MCP : MULTICOLORPRINT, 579,549","MCS : MULTICOLORSOLID, 529,499"]
+  },
+  {
+    "name": "CH03",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCP","MCS"],
+    "colorname": ["MCP : MULTICOLORPRINT, 579,549","MCS : MULTICOLORSOLID, 529,499"]
+  },
+  {
+    "name": "CH06",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCP","MCS"],
+    "colorname": ["MCP : MULTICOLORPRINT, 529,509","MCS : MULTICOLORSOLID, 499,479"]
+  },
+  {
+    "name": "CR01",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCD","MCR"],
+    "colorname": ["MCD : MULTICOLORDARK, 679,649","MCR : MULTICOLORS, 729,699"]
+  },
+  {
+    "name": "CR02",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCD","MCR"],
+    "colorname": ["MCD : MULTICOLORDARK, 679,649","MCR : MULTICOLORS, 729,699"]
+  },
+  {
+    "name": "CR17",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCD","MCM","MCP"],
+    "colorname": ["MCD : MULTICOLORDARK, 609,579","MCM : MULTICOLORMEDIUM, 609,579","MCP : MULTICOLORPRINT, 659,629"]
+  },
+  {
+    "name": "MB01",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCS"],
+    "colorname": ["MCS : MULTICOLORSOLID, 549,529"]
+  },
+  {
+    "name": "MB20",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCS"],
+    "colorname": ["MCS : MULTICOLORSOLID, 619,599"]
+  },
+  {
+    "name": "MH01",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCS"],
+    "colorname": ["MCS : MULTICOLORSOLID, 549,529"]
+  },
+  {
+    "name": "MH20",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCS"],
+    "colorname": ["MCS : MULTICOLORSOLID, 619,599"]
+  },
+  {
+    "name": "MS01",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["MCS"],
+    "colorname": ["MCS : MULTICOLORSOLID, 299,289"]
+  },
+  {
+    "name": "PH40",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["JETBLK","NUDE","QUP"],
+    "colorname": ["JETBLK : JET BLACK, 459,449","NUDE : NUDE, 459,449","QUP : QUEEN PINK, 459,449"]
+  },
+  {
+    "name": "PP12",
+    "sizes": ["S","M","L","XL","2XL"],
+    "colors": ["BLACK","GRW"],
+    "colorname": ["BLACK : BLACK, 469,449","GRW : GRAPE WINE, 469,449"]
+  }
+]
+
   
   
 
@@ -2412,92 +3059,326 @@ function createCategoryRadios(categories) {
   
  
 /*
-Sub ExtractDataToJsonFile()
+
+
+*/
+// Variables for modal control
+let colorDetailsTimeout;
+const colorDetailsModal = document.getElementById('colorDetailsModal');
+const colorDetailsOverlay = document.getElementById('colorDetailsOverlay');
+const colorPaletteIcon = document.getElementById('colorPaletteIcon');
+const colorDetailsClose = document.getElementById('colorDetailsClose');
+
+// Function to show modal
+function showColorDetailsModal(item) {
+    if (!item || !item.colorname) return;
+    
+    const colorDetailsList = document.getElementById('colorDetailsList');
+    colorDetailsList.innerHTML = '';
+    
+    // Populate color details
+    item.colorname.forEach(colorInfo => {
+        const li = document.createElement('li');
+        li.className = 'enamor-color-details-item';
+        li.textContent = colorInfo;
+        colorDetailsList.appendChild(li);
+    });
+    
+    // Show modal and overlay
+    colorDetailsModal.style.display = 'block';
+    colorDetailsOverlay.style.display = 'block';
+    
+    // Set auto-close timeout
+    clearTimeout(colorDetailsTimeout);
+    colorDetailsTimeout = setTimeout(closeColorDetailsModal, 4500);
+}
+
+// Function to close modal
+function closeColorDetailsModal() {
+    colorDetailsModal.style.display = 'none';
+    colorDetailsOverlay.style.display = 'none';
+    clearTimeout(colorDetailsTimeout);
+}
+
+// Function to update color palette icon visibility
+function updateColorPaletteIcon() {
+    const itemDetailsContainer = document.getElementById('itemDetailsContainer');
+    if (itemDetailsContainer) {
+        const itemName = itemDetailsContainer.querySelector('h3')?.textContent;
+        const currentItem = items.find(i => i.name === itemName);
+        colorPaletteIcon.style.display = currentItem?.colorname ? 'inline' : 'none';
+    } else {
+        colorPaletteIcon.style.display = 'none';
+    }
+}
+
+// Event listeners
+colorPaletteIcon.addEventListener('click', () => {
+    const itemName = document.querySelector('#itemDetailsContainer h3')?.textContent;
+    const currentItem = items.find(i => i.name === itemName);
+    showColorDetailsModal(currentItem);
+});
+
+colorDetailsClose.addEventListener('click', closeColorDetailsModal);
+colorDetailsOverlay.addEventListener('click', closeColorDetailsModal);
+
+// Observe DOM changes to update color palette icon visibility
+const colorDetailsObserver = new MutationObserver(updateColorPaletteIcon);
+colorDetailsObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Initial check for icon visibility
+updateColorPaletteIcon();
+
+
+//data extraction
+/*
+Sub ConvertToJSON()
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
     Dim ws As Worksheet
+    Set ws = ActiveSheet
+    
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' Create standard size order dictionary
+    Dim sizeOrder As Object
+    Set sizeOrder = CreateObject("Scripting.Dictionary")
+    sizeOrder.Add "XS", 1
+    sizeOrder.Add "S", 2
+    sizeOrder.Add "M", 3
+    sizeOrder.Add "L", 4
+    sizeOrder.Add "XL", 5
+    sizeOrder.Add "2XL", 6
+    
     Dim lastRow As Long
-    Dim styleDict As Object
-    Dim rowIndex As Long
-    Dim styleName As String
-    Dim color As String
-    Dim size As String
-    Dim sizeSet As Object
-    Dim colorSet As Object
-    Dim jsonOutput As String
-    Dim key As Variant
-    Dim sizes As Variant
-    Dim colors As Variant
-    Dim sizeList As String
-    Dim colorList As String
-    Dim fso As Object
-    Dim jsonFile As Object
+    lastRow = ws.Cells(ws.Rows.Count, "D").End(xlUp).Row
+    
+    ' Read all data into arrays first for faster processing
+    Dim dataRange As Range
+    Set dataRange = ws.Range("D2:K" & lastRow)
+    Dim data As Variant
+    data = dataRange.Value
+    
+    ' Process all rows in one pass
+    Dim i As Long
+    For i = 1 To UBound(data, 1)
+        Dim currentName As String
+        currentName = CStr(data(i, 1)) ' Column D
+        
+        If Not dict.exists(currentName) Then
+            Dim item As Object
+            Set item = CreateObject("Scripting.Dictionary")
+            
+            Set item("sizes") = CreateObject("Scripting.Dictionary")
+            Set item("colors") = CreateObject("Scripting.Dictionary")
+            Set item("colorname") = CreateObject("Scripting.Dictionary")
+            
+            item.Add "name", currentName
+            dict.Add currentName, item
+        End If
+        
+        ' Add size if not exists
+        Dim currentSize As String
+        currentSize = CStr(data(i, 7)) ' Column J
+        If Len(Trim(currentSize)) > 0 Then
+            If Not dict(currentName)("sizes").exists(currentSize) Then
+                dict(currentName)("sizes").Add currentSize, currentSize
+            End If
+        End If
+        
+        ' Add color if not exists
+        Dim currentColor As String
+        currentColor = CStr(data(i, 3)) ' Column F
+        If Len(Trim(currentColor)) > 0 Then
+            If Not dict(currentName)("colors").exists(currentColor) Then
+                dict(currentName)("colors").Add currentColor, currentColor
+            End If
+        End If
+        
+        ' Create base colorname key (combining F and G columns)
+        Dim baseColorKey As String
+        baseColorKey = currentColor & " : " & CStr(data(i, 4)) ' F and G columns
+        
+        ' Handle K column values with deduplication
+        Dim kValue As String
+        kValue = CStr(data(i, 8)) ' Column K
+        
+        If Len(Trim(baseColorKey)) > 0 Then
+            Dim finalColorKey As String
+            finalColorKey = baseColorKey
+            
+            If Len(Trim(kValue)) > 0 Then
+                ' Check if we already have this base color
+                Dim existingKey As Variant
+                Dim foundKey As String
+                foundKey = ""
+                
+                For Each existingKey In dict(currentName)("colorname").Keys
+                    If Left(existingKey, Len(baseColorKey)) = baseColorKey Then
+                        foundKey = existingKey
+                        Exit For
+                    End If
+                Next existingKey
+                
+                If foundKey <> "" Then
+                    ' Remove existing entry
+                    dict(currentName)("colorname").Remove foundKey
+                    ' Add combined K values with deduplication
+                    Dim existingNumbers As String
+                    If InStr(foundKey, ", ") > 0 Then
+                        existingNumbers = Mid(foundKey, InStr(foundKey, ", ") + 2)
+                        finalColorKey = baseColorKey & ", " & DeduplicateNumbers(existingNumbers & "," & kValue)
+                    Else
+                        finalColorKey = baseColorKey & ", " & kValue
+                    End If
+                Else
+                    finalColorKey = baseColorKey & ", " & kValue
+                End If
+            End If
+            
+            If Not dict(currentName)("colorname").exists(finalColorKey) Then
+                dict(currentName)("colorname").Add finalColorKey, finalColorKey
+            End If
+        End If
+    Next i
+    
+    ' Generate JSON string
+    Dim json As String
+    json = "[" & vbNewLine
+    
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim dictKey As Variant
+    For Each dictKey In dict.Keys
+        If Not isFirst Then json = json & "," & vbNewLine
+        
+        Dim currentItem As Object
+        Set currentItem = dict(dictKey)
+        
+        json = json & Space(2) & "{" & vbNewLine & _
+               Space(4) & """name"": """ & currentItem("name") & """," & vbNewLine & _
+               Space(4) & """sizes"": " & SortedSizesToJSON(currentItem("sizes"), sizeOrder) & "," & vbNewLine & _
+               Space(4) & """colors"": " & DictToJSONArray(currentItem("colors")) & "," & vbNewLine & _
+               Space(4) & """colorname"": " & DictToJSONArray(currentItem("colorname")) & vbNewLine & _
+               Space(2) & "}"
+        
+        isFirst = False
+    Next dictKey
+    
+    json = json & vbNewLine & "]"
+    
+    ' Get Desktop path and create file path
+    Dim desktopPath As String
+    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
     Dim filePath As String
+    filePath = desktopPath & "\output.json"
     
-    ' Set the worksheet
-    Set ws = ThisWorkbook.Sheets(1)
+    ' Write to file
+    Dim fileNum As Integer
+    fileNum = FreeFile
     
-    ' Find the last row of data in Column C (Style)
-    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    Open filePath For Output As #fileNum
+        Print #fileNum, json
+    Close #fileNum
     
-    ' Create a dictionary to store unique styles, sizes, and colors
-    Set styleDict = CreateObject("Scripting.Dictionary")
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
     
-    ' Loop through each row and extract style, color, and size
-    For rowIndex = 2 To lastRow ' Assuming headers are in the first row
-        styleName = ws.Cells(rowIndex, 3).Value ' Style in Column C
-        color = ws.Cells(rowIndex, 5).Value ' Color in Column E
-        size = ws.Cells(rowIndex, 8).Value ' Size in Column H
-        
-        ' Check if the style already exists in the dictionary
-        If Not styleDict.Exists(styleName) Then
-            ' Add new entry for the style
-            Set sizeSet = CreateObject("Scripting.Dictionary")
-            Set colorSet = CreateObject("Scripting.Dictionary")
-            styleDict.Add styleName, Array(sizeSet, colorSet)
+    MsgBox "JSON file has been created at: " & filePath, vbInformation
+End Sub
+
+' New function to deduplicate numbers
+Private Function DeduplicateNumbers(ByVal numberString As String) As String
+    Dim numbers() As String
+    Dim uniqueDict As Object
+    Set uniqueDict = CreateObject("Scripting.Dictionary")
+    
+    ' Split the string into an array
+    numbers = Split(numberString, ",")
+    
+    ' Add each number to dictionary (automatically handles duplicates)
+    Dim num As Variant
+    For Each num In numbers
+        num = Trim(num)
+        If Len(num) > 0 Then
+            If Not uniqueDict.exists(num) Then
+                uniqueDict.Add num, num
+            End If
         End If
-        
-        ' Add size and color to their respective dictionaries
-        If Not styleDict(styleName)(0).Exists(size) Then
-            styleDict(styleName)(0).Add size, Nothing
-        End If
-        If Not styleDict(styleName)(1).Exists(color) Then
-            styleDict(styleName)(1).Add color, Nothing
-        End If
-    Next rowIndex
+    Next num
     
-    ' Build the JSON output string
-    jsonOutput = "["
-    For Each key In styleDict.Keys
-        sizes = styleDict(key)(0).Keys
-        colors = styleDict(key)(1).Keys
-        
-        ' Convert size and color arrays to comma-separated strings
-        sizeList = Join(sizes, """, """)
-        colorList = Join(colors, """, """)
-        
-        ' Format the JSON output
-        jsonOutput = jsonOutput & "{""name"": """ & key & """, " & vbCrLf
-        jsonOutput = jsonOutput & """sizes"": [""" & sizeList & """], " & vbCrLf
-        jsonOutput = jsonOutput & """colors"": [""" & colorList & """]}," & vbCrLf
+    ' Join unique numbers back together
+    DeduplicateNumbers = Join(uniqueDict.Items, ",")
+End Function
+
+Private Function SortedSizesToJSON(dict As Object, sizeOrder As Object) As String
+    ' First, separate standard and custom sizes
+    Dim standardSizes As Object
+    Dim customSizes As Object
+    Set standardSizes = CreateObject("Scripting.Dictionary")
+    Set customSizes = CreateObject("Scripting.Dictionary")
+    
+    Dim size As Variant
+    For Each size In dict.Keys
+        If sizeOrder.exists(size) Then
+            standardSizes.Add sizeOrder(size), size
+        Else
+            customSizes.Add size, size
+        End If
+    Next size
+    
+    ' Combine sorted standard sizes with custom sizes
+    Dim json As String
+    json = "["
+    
+    ' Add standard sizes in order
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim i As Long
+    For i = 1 To sizeOrder.Count
+        For Each size In standardSizes.Keys
+            If size = i Then
+                If Not isFirst Then json = json & ","
+                json = json & """" & standardSizes(size) & """"
+                isFirst = False
+            End If
+        Next size
+    Next i
+    
+    ' Add custom sizes
+    For Each size In customSizes.Keys
+        If Not isFirst Then json = json & ","
+        json = json & """" & customSizes(size) & """"
+        isFirst = False
+    Next size
+    
+    json = json & "]"
+    SortedSizesToJSON = json
+End Function
+
+Private Function DictToJSONArray(dict As Object) As String
+    Dim json As String
+    json = "["
+    
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim key As Variant
+    For Each key In dict.Keys
+        If Not isFirst Then json = json & ","
+        json = json & """" & dict(key) & """"
+        isFirst = False
     Next key
     
-    ' Remove the trailing comma from the last entry
-    If Len(jsonOutput) > 0 Then
-        jsonOutput = Left(jsonOutput, Len(jsonOutput) - 3) ' Remove the trailing comma and new line
-    End If
-    jsonOutput = jsonOutput & vbCrLf & "]"
-    
-    ' Set the file path to save the JSON file
-    filePath = Application.DefaultFilePath & "\ExtractedData.json"
-    
-    ' Write the JSON output to a file
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set jsonFile = fso.CreateTextFile(filePath, True, False) ' Create a new file (overwrite if exists)
-    jsonFile.WriteLine jsonOutput
-    jsonFile.Close
-    
-    ' Inform the user
-    MsgBox "JSON file created successfully at: " & filePath
-    
-End Sub
+    json = json & "]"
+    DictToJSONArray = json
+End Function
 
 */
