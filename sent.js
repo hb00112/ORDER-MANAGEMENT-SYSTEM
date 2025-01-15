@@ -175,9 +175,7 @@ function createSentOrderElement(order, index) {
     orderDiv.innerHTML = `
         <div class="order-header">
             <h5 class="font-bold">Order No: ${order.orderNumber} 
-<span class="${statusClass}">
-                    (${order.deliveryStatus})
-                </span>
+
             </h5>
             <p>Order Date: ${formatDate(order.date)}</p>
             <p>Bill Date: ${formatDate(order.billingDate)}</p>
