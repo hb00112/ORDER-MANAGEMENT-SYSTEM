@@ -1525,13 +1525,18 @@ project/
     display: flex;
     align-items: center;
 }
-
+/* old input
 .srq-input-group .srq-input {
     width: 40px;
     text-align: center;
     margin: 0 5px;
+}*/
+.srq-input-group .srq-input {
+    width: auto;
+    text-align: center;
+    margin: 0 5px;
+    align-content: center;
 }
-
 .srq-input-group button {
     padding: 2px 6px;
 }
