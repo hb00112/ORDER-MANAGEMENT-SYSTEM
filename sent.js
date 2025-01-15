@@ -175,10 +175,9 @@ function createSentOrderElement(order, index) {
     orderDiv.innerHTML = `
         <div class="order-header">
             <h5 class="font-bold">Order No: ${order.orderNumber} 
-                /*order status hiding
 <span class="${statusClass}">
                     (${order.deliveryStatus})
-                </span>*/
+                </span>
             </h5>
             <p>Order Date: ${formatDate(order.date)}</p>
             <p>Bill Date: ${formatDate(order.billingDate)}</p>
@@ -1099,3 +1098,149 @@ document.getElementById('sentOrdersBody').addEventListener('click', function(e) 
         viewOrderDetails(e.target.getAttribute('data-order-id'));
     }
 });
+
+
+/* function with delivery status in sent order
+function createSentOrderElement(order, index) {
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.className = 'order-wrapper position-relative mb-4';
+    
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'buttons-container position-absolute w-full';
+    buttonsContainer.style.cssText = `
+        display: none;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 10px;
+        z-index: 100;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        background: transparent;
+    `;
+    
+    const imgButton = document.createElement('button');
+    imgButton.className = 'btn btn-primary btn-sm';
+    imgButton.innerHTML = 'Download as Image';
+    imgButton.onclick = () => downloadAsImage(orderDiv, `${order.partyName}_${formatDateForFile(order.billingDate)}`);
+
+    const pdfButton = document.createElement('button');
+    pdfButton.className = 'btn btn-secondary btn-sm';
+    pdfButton.innerHTML = 'Download as PDF';
+    pdfButton.onclick = () => downloadAsPDF(orderDiv, `${order.partyName}_${formatDateForFile(order.billingDate)}`);
+
+    buttonsContainer.appendChild(imgButton);
+    buttonsContainer.appendChild(pdfButton);
+
+    const orderDiv = document.createElement('div');
+    orderDiv.style.backgroundColor = index % 2 === 0 ? '#ffebee' : '#e3f2fd';
+    orderDiv.className = 'order-container p-3 rounded';
+    orderDiv.setAttribute('data-order-id', order.id);
+    orderDiv.setAttribute('data-delivery-status', order.deliveryStatus);
+
+    const totalQuantity = order.billedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const statusClass = order.deliveryStatus === 'Delivered' ? 'text-success' : 'text-danger';
+    
+    orderDiv.innerHTML = `
+        <div class="order-header">
+            <h5 class="font-bold">Order No: ${order.orderNumber} 
+<span class="${statusClass}">
+                    (${order.deliveryStatus})
+                </span>
+            </h5>
+            <p>Order Date: ${formatDate(order.date)}</p>
+            <p>Bill Date: ${formatDate(order.billingDate)}</p>
+            <p>Party Name(s): ${order.partyName}</p>
+        </div>
+
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered">
+                <thead class="bg-pink-200">
+                    <tr>
+                        <th>Item</th>
+                        <th>Color</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${createSentOrderItemRows(order.billedItems)}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right font-bold">Total Quantity:</td>
+                        <td class="font-bold">${totalQuantity}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
+
+    // New click handler implementation
+    let clickTimeout;
+    let clickCount = 0;
+    
+    orderDiv.addEventListener('click', function(e) {
+        clickCount++;
+        
+        if (clickCount === 1) {
+            clickTimeout = setTimeout(() => {
+                clickCount = 0;
+            }, 500);
+        }
+        
+        if (clickCount === 3) {
+            clearTimeout(clickTimeout);
+            clickCount = 0;
+            
+            const currentStatus = this.getAttribute('data-delivery-status');
+            const newStatus = currentStatus === 'Delivered' ? 'Undelivered' : 'Delivered';
+            
+            updateDeliveryStatus(order.id, newStatus)
+                .then(() => {
+                    this.setAttribute('data-delivery-status', newStatus);
+                    const statusSpan = this.querySelector('.order-header h5 span');
+                    statusSpan.textContent = `(${newStatus})`;
+                    statusSpan.className = newStatus === 'Delivered' ? 'text-success' : 'text-danger';
+                })
+                .catch(error => console.error('Error updating delivery status:', error));
+        }
+    });
+
+    // Press/touch handling for download buttons
+    let pressTimer;
+    let hideTimer;
+    let isPressing = false;
+
+    const startPress = () => {
+        isPressing = true;
+        pressTimer = setTimeout(() => {
+            if (isPressing) {
+                buttonsContainer.style.display = 'flex';
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                }
+                hideTimer = setTimeout(() => {
+                    buttonsContainer.style.display = 'none';
+                }, 10000);
+            }
+        }, 3000);
+    };
+
+    const endPress = () => {
+        isPressing = false;
+        clearTimeout(pressTimer);
+    };
+
+    orderDiv.addEventListener('mousedown', startPress);
+    orderDiv.addEventListener('mouseup', endPress);
+    orderDiv.addEventListener('mouseleave', endPress);
+    orderDiv.addEventListener('touchstart', startPress);
+    orderDiv.addEventListener('touchend', endPress);
+    orderDiv.addEventListener('touchcancel', endPress);
+
+    wrapperDiv.appendChild(buttonsContainer);
+    wrapperDiv.appendChild(orderDiv);
+
+    return wrapperDiv;
+}*/
