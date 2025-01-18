@@ -2740,17 +2740,190 @@ function handlePlaceOrder() {
   const placeOrderBtn = document.getElementById("placeOrderBtn");
   placeOrderBtn.disabled = true;
   placeOrderBtn.textContent = "Processing...";
-
-  const modalContent = document.querySelector("#orderSummaryModal .modal-content");
   
-  const totalQuantity = calculateTotalQuantity();
   const partyName = document.getElementById("partySearch").value;
   const dateTime = new Date().toISOString();
-  const orderDate = dateTime.split('T')[0]; // Get just the date part
-  const orderNote = document.getElementById("orderNote").value.trim(); // Get the order note
+  const orderDate = dateTime.split('T')[0];
+  const orderNote = document.getElementById("orderNote").value.trim();
 
-  html2canvas(modalContent).then((canvas) => {
-    const imgData = canvas.toDataURL("image/png");
+  // Create a canvas element
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Calculate total quantity and rows properly
+  let totalQuantity = 0;
+  let totalRows = 0;
+  cart.forEach(item => {
+    let itemHasContent = false;
+    Object.entries(item.colors).forEach(([color, sizes]) => {
+      let colorTotal = 0;
+      Object.entries(sizes).forEach(([size, qty]) => {
+        colorTotal += qty;
+      });
+      if (colorTotal > 0) {
+        totalRows++;
+        itemHasContent = true;
+        totalQuantity += colorTotal;
+      }
+    });
+    if (itemHasContent) {
+      totalRows++; // Add extra row for spacing between items
+    }
+  });
+  
+  // Set canvas dimensions
+  canvas.width = 800;
+  canvas.height = Math.max(600, 150 + (totalRows * 30));
+  
+  function createOrderSummaryImage() {
+    // Set white background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Set text styles for header
+    ctx.fillStyle = 'black';
+    ctx.font = 'bold 22px Arial';
+    
+    // Add header
+    ctx.fillText(`Order Summary - ${partyName}`, 40, 40);
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(`Date: ${orderDate}`, 40, 70);
+
+    // Draw table header line
+    ctx.beginPath();
+    ctx.moveTo(40, 85);
+    ctx.lineTo(760, 85);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Define column positions
+    const columns = {
+      item: { x: 40, width: 120 },
+      color: { x: 180, width: 120 },
+      sizeQty: { x: 320, width: 300 },
+      total: { x: 640, width: 80 }
+    };
+
+    // Draw table headers
+    let y = 110;
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText('Item', columns.item.x, y);
+    ctx.fillText('Color', columns.color.x, y);
+    ctx.fillText('Size/Quantity', columns.sizeQty.x, y);
+    ctx.fillText('Total', columns.total.x, y);
+
+    // Draw header underline
+    ctx.beginPath();
+    ctx.moveTo(40, y + 10);
+    ctx.lineTo(760, y + 10);
+    ctx.stroke();
+
+    // Set font for table content
+    ctx.font = '14px Arial';
+    y += 35;
+
+    // Track the starting y position
+    const startY = y;
+    let currentY = startY;
+
+    // Draw table content
+    cart.forEach((item, index) => {
+      let itemTotal = 0;
+      let itemHasContent = false;
+      let firstValidColor = true; // Track first valid color for item name
+
+      Object.entries(item.colors).forEach(([color, sizes]) => {
+        let colorTotal = 0;
+        let sizeQtyPairs = [];
+        
+        Object.entries(sizes).forEach(([size, qty]) => {
+          if (qty > 0) {
+            colorTotal += qty;
+            itemTotal += qty;
+            sizeQtyPairs.push(`${size}:${qty}`);
+          }
+        });
+
+        if (colorTotal > 0) {
+          itemHasContent = true;
+          
+          // Always draw item name for the first valid color
+          if (firstValidColor) {
+            ctx.fillText(item.name, columns.item.x, currentY);
+            firstValidColor = false;
+          }
+
+          // Draw color
+          ctx.fillText(color, columns.color.x, currentY);
+
+          // Draw size/quantity pairs
+          const sizeQtyText = sizeQtyPairs.join(', ');
+          ctx.fillText(sizeQtyText, columns.sizeQty.x, currentY);
+
+          // Draw total for this color
+          ctx.fillText(colorTotal.toString(), columns.total.x, currentY);
+
+          // Draw horizontal line
+          ctx.beginPath();
+          ctx.moveTo(40, currentY + 15);
+          ctx.lineTo(760, currentY + 15);
+          ctx.strokeStyle = '#e0e0e0';
+          ctx.stroke();
+
+          currentY += 30;
+        }
+      });
+
+      // Add spacing between items if this item had content
+      if (itemHasContent) {
+        currentY += 10;
+      }
+    });
+
+    // Draw final total line
+    ctx.beginPath();
+    ctx.moveTo(40, currentY + 5);
+    ctx.lineTo(760, currentY + 5);
+    ctx.strokeStyle = '#000';
+    ctx.stroke();
+
+    // Draw total quantity
+    currentY += 30;
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(`Total Quantity: ${totalQuantity}`, 40, currentY);
+
+    // Add order note if present
+    if (orderNote) {
+      currentY += 40;
+      ctx.fillText('Order Notes:', 40, currentY);
+      ctx.font = '14px Arial';
+      
+      // Handle multiline notes
+      const words = orderNote.split(' ');
+      let line = '';
+      const maxWidth = 700;
+      
+      words.forEach(word => {
+        const testLine = line + word + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && line !== '') {
+          ctx.fillText(line, 40, currentY);
+          line = word + ' ';
+          currentY += 20;
+        } else {
+          line = testLine;
+        }
+      });
+      ctx.fillText(line, 40, currentY);
+    }
+
+    return canvas.toDataURL('image/png');
+  }
+
+  try {
+    // Generate the image
+    const imgData = createOrderSummaryImage();
     
     // Save the image
     const link = document.createElement("a");
@@ -2760,11 +2933,10 @@ function handlePlaceOrder() {
     link.click();
     document.body.removeChild(link);
 
-    // Check for existing order
+    // Continue with order processing...
     checkExistingOrder(partyName, orderDate)
       .then((existingOrder) => {
         if (existingOrder) {
-          // Ask user if they want to merge
           return new Promise((resolve) => {
             if (confirm(`Another order for ${partyName} on ${orderDate} already exists. Do you want to add to the same order?`)) {
               resolve({ merge: true, existingOrder });
@@ -2778,18 +2950,16 @@ function handlePlaceOrder() {
       })
       .then(({ merge, existingOrder }) => {
         if (merge) {
-          // Merge with existing order
           const mergedOrder = mergeOrders(existingOrder, {
             partyName: partyName,
             dateTime: dateTime,
             items: cart,
             status: "Pending",
             totalQuantity: totalQuantity,
-            orderNote: orderNote // Add the order note
+            orderNote: orderNote
           });
           return saveOrderToFirebase(mergedOrder).then(() => mergedOrder);
         } else {
-          // Create new order
           return getNextOrderNumber().then((orderNumber) => {
             const newOrder = {
               orderNumber: orderNumber,
@@ -2798,7 +2968,7 @@ function handlePlaceOrder() {
               items: cart,
               status: "Pending",
               totalQuantity: totalQuantity,
-              orderNote: orderNote // Add the order note
+              orderNote: orderNote
             };
             return saveOrderToFirebase(newOrder).then(() => newOrder);
           });
@@ -2830,8 +3000,6 @@ function handlePlaceOrder() {
           console.error("Error resetting cart:", resetError);
         }
 
-        // Send notification to Telegram with image
-       
         // Update pending orders list
         loadPendingOrders();
       })
@@ -2843,9 +3011,13 @@ function handlePlaceOrder() {
         placeOrderBtn.disabled = false;
         placeOrderBtn.textContent = "Place Order";
       });
-  });
+  } catch (error) {
+    console.error("Error creating order summary image:", error);
+    alert("An error occurred while creating the order summary. Please try again.");
+    placeOrderBtn.disabled = false;
+    placeOrderBtn.textContent = "Place Order";
+  }
 }
-
 function checkExistingOrder(partyName, orderDate) {
   return firebase.database().ref("orders")
     .orderByChild("partyName")
