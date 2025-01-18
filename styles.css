@@ -496,7 +496,7 @@ body {
 
 #orders {
     position: relative;
-
+MARGIN-BOTTOM: 30PX; /*CHANGED ON 18-01*/
     /* Adjust this value based on your footer height */
     margin-top: 10px;
     
