@@ -3023,3 +3023,14 @@ th:last-of-type {
     BORDER-TOP-right-RADIUS: 12PX;
     BORDER-BOTTOM-right-RADIUS: 12PX;
 }
+
+#camera-container {
+    position: relative;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+#scanner-video {
+    border-radius: 4px;
+}
