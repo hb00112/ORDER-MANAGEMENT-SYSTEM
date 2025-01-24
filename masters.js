@@ -60,9 +60,9 @@ const partyData = [
     },
 
     {
-        partyName: "Jagannath Kavlekar LLP - Mapusa",
+        partyName: "Verenekar - Panjim",
         coordinates:null,
-        locationLink: null
+        locationLink: "https://hb00112.github.io/VERENEKAR_NAMECHANGE/"
     },
     {
         partyName: "Siddhivinayak - Mapusa",
