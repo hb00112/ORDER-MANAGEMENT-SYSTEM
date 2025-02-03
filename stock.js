@@ -2,7 +2,7 @@
 // Ensure this script is loaded after Firebase SDK and XLSX library
 
 let headerClickTimer;
-
+let ClickCountS = 0;
 let lastClickTime = 0;
 let stockIndexedDB;
 const STOCK_DB_NAME = 'StockIndexedDB';
@@ -618,7 +618,7 @@ function startHeaderClickTimer(e) {
     headerClickTimer = setTimeout(() => {
         exportCurrentStock();
         // Reset click count after long press
-        clickCount = 0;
+        ClickCountS = 0;
     }, 3000); // 3 seconds
 }
 
@@ -633,15 +633,15 @@ function handleHeaderClick(e) {
     
     // Reset count if too much time has passed since last click
     if (currentTime - lastClickTime > 500) { // 500ms threshold for clicks
-        clickCount = 0;
+        ClickCountS = 0;
     }
     
-    clickCount++;
+    ClickCountS++;
     lastClickTime = currentTime;
     
-    if (clickCount === 3) {
+    if (ClickCountS === 3) {
         exportCurrentStock();
-        clickCount = 0; // Reset count after triple click
+        ClickCountS = 0; // Reset count after triple click
     }
 }
 
@@ -650,16 +650,16 @@ function handleHeaderTouch(e) {
     
     // Reset count if too much time has passed since last touch
     if (currentTime - lastClickTime > 500) {
-        clickCount = 0;
+        ClickCountS = 0;
     }
     
-    clickCount++;
+    ClickCountS++;
     lastClickTime = currentTime;
     
-    if (clickCount === 3) {
+    if (ClickCountS === 3) {
         e.preventDefault(); // Prevent any default touch behavior
         exportCurrentStock();
-        clickCount = 0; // Reset count after triple tap
+        ClickCountS = 0; // Reset count after triple tap
     }
 }
 
