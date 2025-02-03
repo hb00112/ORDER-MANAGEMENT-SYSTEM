@@ -2,7 +2,7 @@
 // Ensure this script is loaded after Firebase SDK and XLSX library
 
 let headerClickTimer;
-let clickCount = 0;
+
 let lastClickTime = 0;
 let stockIndexedDB;
 const STOCK_DB_NAME = 'StockIndexedDB';
