@@ -1,7 +1,9 @@
 // stock.js
 // Ensure this script is loaded after Firebase SDK and XLSX library
 
-
+let headerClickTimer;
+let clickCount = 0;
+let lastClickTime = 0;
 let stockIndexedDB;
 const STOCK_DB_NAME = 'StockIndexedDB';
 const STOCK_STORE_NAME = 'stockItems';
@@ -610,7 +612,123 @@ function showTemplateInstructionsModal() {
         }
     };
 }
+function startHeaderClickTimer(e) {
+    // Prevent text selection during long press
+    e.preventDefault();
+    headerClickTimer = setTimeout(() => {
+        exportCurrentStock();
+        // Reset click count after long press
+        clickCount = 0;
+    }, 3000); // 3 seconds
+}
 
+function clearHeaderClickTimer() {
+    if (headerClickTimer) {
+        clearTimeout(headerClickTimer);
+    }
+}
+
+function handleHeaderClick(e) {
+    const currentTime = new Date().getTime();
+    
+    // Reset count if too much time has passed since last click
+    if (currentTime - lastClickTime > 500) { // 500ms threshold for clicks
+        clickCount = 0;
+    }
+    
+    clickCount++;
+    lastClickTime = currentTime;
+    
+    if (clickCount === 3) {
+        exportCurrentStock();
+        clickCount = 0; // Reset count after triple click
+    }
+}
+
+function handleHeaderTouch(e) {
+    const currentTime = new Date().getTime();
+    
+    // Reset count if too much time has passed since last touch
+    if (currentTime - lastClickTime > 500) {
+        clickCount = 0;
+    }
+    
+    clickCount++;
+    lastClickTime = currentTime;
+    
+    if (clickCount === 3) {
+        e.preventDefault(); // Prevent any default touch behavior
+        exportCurrentStock();
+        clickCount = 0; // Reset count after triple tap
+    }
+}
+
+async function exportCurrentStock() {
+    try {
+        // Get current stock data from IndexedDB
+        const stockData = await new Promise((resolve, reject) => {
+            if (!stockIndexedDB) {
+                reject(new Error("IndexedDB not initialized"));
+                return;
+            }
+
+            const transaction = stockIndexedDB.transaction([STOCK_STORE_NAME], "readonly");
+            const objectStore = transaction.objectStore(STOCK_STORE_NAME);
+            const request = objectStore.getAll();
+
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+        });
+
+        if (!stockData || stockData.length === 0) {
+            alert('No stock data available to export');
+            return;
+        }
+
+        // Format data for Excel
+        const formattedData = stockData.map(item => ({
+            'Item Name': item['item name'],
+            'Color': item.color,
+            'Size': item.size,
+            'Quantity': item.quantity
+        }));
+
+        // Create workbook and worksheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(formattedData);
+
+        // Set column widths
+        const colWidths = [
+            { wch: 30 }, // Item Name
+            { wch: 15 }, // Color
+            { wch: 10 }, // Size
+            { wch: 10 }  // Quantity
+        ];
+        ws['!cols'] = colWidths;
+
+        // Generate filename with current date and time
+        const now = new Date();
+        const filename = `stock_export_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
+
+        // Add worksheet to workbook and save
+        XLSX.utils.book_append_sheet(wb, ws, "Current Stock");
+        XLSX.writeFile(wb, filename);
+
+        // Visual feedback
+        const header = document.querySelector('#stock h2');
+        if (header) {
+            const originalColor = header.style.color;
+            header.style.color = '#4CAF50';
+            setTimeout(() => {
+                header.style.color = originalColor;
+            }, 1000);
+        }
+
+    } catch (error) {
+        console.error("Error exporting stock:", error);
+        alert('Failed to export stock data. Please try again.');
+    }
+}
 function compareStockWithDefinedItems(stockData) {
     const definedItems = new Map(items.map(item => [item.name, item]));
     const stockItems = new Map();
@@ -661,5 +779,21 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadBtn.parentNode.insertBefore(downloadBtn, uploadBtn.nextSibling);
     } else {
         console.error('Upload button or its parent not found');
+    }
+
+    const stockHeader = document.querySelector('#stock h4');
+    if (stockHeader) {
+        // Long press handlers
+        stockHeader.addEventListener('mousedown', startHeaderClickTimer);
+        stockHeader.addEventListener('mouseup', clearHeaderClickTimer);
+        stockHeader.addEventListener('mouseleave', clearHeaderClickTimer);
+        stockHeader.addEventListener('touchstart', startHeaderClickTimer);
+        stockHeader.addEventListener('touchend', clearHeaderClickTimer);
+        
+        // Triple tap handlers
+        stockHeader.addEventListener('click', handleHeaderClick);
+        stockHeader.addEventListener('touchstart', handleHeaderTouch);
+        
+        stockHeader.style.cursor = 'pointer'; // Visual indication that it's clickable
     }
 });  
