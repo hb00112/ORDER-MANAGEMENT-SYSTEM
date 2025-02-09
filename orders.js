@@ -2735,7 +2735,6 @@ function createModal(partyName, dateTime, orderNumber) {
 
 // ---------------Order Processing
 // ---------------Order Processing
-
 function handlePlaceOrder() {
   const placeOrderBtn = document.getElementById("placeOrderBtn");
   placeOrderBtn.disabled = true;
@@ -2776,6 +2775,28 @@ function handlePlaceOrder() {
   canvas.height = Math.max(600, 150 + (totalRows * 30));
   
   function createOrderSummaryImage() {
+    // Helper function for text wrapping
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(', ');
+      let line = '';
+      let lines = [];
+      
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line + (line ? ', ' : '') + words[i];
+        const metrics = ctx.measureText(testLine);
+        
+        if (metrics.width > maxWidth && line !== '') {
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      
+      return lines;
+    }
+
     // Set white background
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -2828,10 +2849,10 @@ function handlePlaceOrder() {
     let currentY = startY;
 
     // Draw table content
-    cart.forEach((item, index) => {
+    cart.forEach((item) => {
       let itemTotal = 0;
       let itemHasContent = false;
-      let firstValidColor = true; // Track first valid color for item name
+      let firstValidColor = true;
 
       Object.entries(item.colors).forEach(([color, sizes]) => {
         let colorTotal = 0;
@@ -2848,7 +2869,14 @@ function handlePlaceOrder() {
         if (colorTotal > 0) {
           itemHasContent = true;
           
-          // Always draw item name for the first valid color
+          // Calculate wrapped lines for size/quantity
+          const sizeQtyText = sizeQtyPairs.join(', ');
+          const wrappedLines = wrapText(ctx, sizeQtyText, columns.sizeQty.x, currentY, columns.sizeQty.width, 25);
+          
+          // Adjust row height based on number of wrapped lines
+          const rowHeight = Math.max(30, wrappedLines.length * 25);
+          
+          // Draw item name for first valid color
           if (firstValidColor) {
             ctx.fillText(item.name, columns.item.x, currentY);
             firstValidColor = false;
@@ -2857,21 +2885,22 @@ function handlePlaceOrder() {
           // Draw color
           ctx.fillText(color, columns.color.x, currentY);
 
-          // Draw size/quantity pairs
-          const sizeQtyText = sizeQtyPairs.join(', ');
-          ctx.fillText(sizeQtyText, columns.sizeQty.x, currentY);
+          // Draw wrapped size/quantity pairs
+          wrappedLines.forEach((line, i) => {
+            ctx.fillText(line, columns.sizeQty.x, currentY + (i * 25));
+          });
 
           // Draw total for this color
           ctx.fillText(colorTotal.toString(), columns.total.x, currentY);
 
           // Draw horizontal line
           ctx.beginPath();
-          ctx.moveTo(40, currentY + 15);
-          ctx.lineTo(760, currentY + 15);
+          ctx.moveTo(40, currentY + rowHeight - 15);
+          ctx.lineTo(760, currentY + rowHeight - 15);
           ctx.strokeStyle = '#e0e0e0';
           ctx.stroke();
 
-          currentY += 30;
+          currentY += rowHeight;
         }
       });
 
