@@ -1290,63 +1290,58 @@ function openStockRemovalModal(partyName, orders) {
         const today = new Date();
         const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
         
-        // Check if order has any items with non-zero SRQ
-        const hasNonZeroItems = order.items && Array.isArray(order.items) && 
-            order.items.some(item => {
-                const totalQuantity = Object.values(item.quantities || {})
-                    .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
-                return totalQuantity > 0;
+        modalHTML += `
+            <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="font-size: 1.1em; color: #007bff;"> ${orderDate.toLocaleDateString()}</span>
+                <span class="order-number" style="font-size: 1.1em; color: #28a745; position: relative; cursor: pointer;" 
+                      data-order-id="${order.orderNumber || 'N/A'}"
+                      data-order-index="${index}"> 
+                    ${order.orderNumber || 'N/A'}
+                    <div class="download-buttons" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1000; 
+                         background: white; border: 1px solid #ddd; border-radius: 4px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <button class="btn btn-sm btn-primary download-img-btn" style="margin-right: 5px;">Download IMG</button>
+                        <button class="btn btn-sm btn-secondary download-pdf-btn">Download PDF</button>
+                    </div>
+                </span>
+                <span style="font-size: 1.1em; color: #e73838;"> ${daysSinceOrder} days ago</span>
+            </div>
+            <table class="table table-bordered order-table" id="order-table-${index}">
+                <thead>
+                    <tr>
+                        <th>Item Name & Color</th>
+                        <th>Sizes</th>
+                        <th>SRQ</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const sizesWithQuantities = Object.entries(item.quantities || {})
+                    .map(([size, quantity]) => `${size}/${quantity}`)
+                    .join(', ');
+                const totalQuantity = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+                
+                modalHTML += `
+                    <tr>
+                        <td>${item.name}(${item.color || 'N/A'})</td>
+                        <td class="sizes-cell">${sizesWithQuantities}</td>
+                        <td>${totalQuantity}</td>
+                    </tr>
+                `;
             });
-            
-        if (hasNonZeroItems) {
-            modalHTML += `
-                <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span style="font-size: 1.1em; color: #007bff;"> ${orderDate.toLocaleDateString()}</span>
-                    <span style="font-size: 1.1em; color: #28a745;"> ${order.orderNumber || 'N/A'}</span>
-                    <span style="font-size: 1.1em; color: #e73838;"> ${daysSinceOrder} days ago</span>
-                </div>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Item Name & Color</th>
-                            <th>Sizes</th>
-                            <th>SRQ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            if (order.items && Array.isArray(order.items)) {
-                // Filter and display only items with non-zero SRQ
-                order.items.forEach(item => {
-                    const totalQuantity = Object.values(item.quantities || {})
-                        .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
-                    
-                    // Only create row if SRQ (totalQuantity) is greater than 0
-                    if (totalQuantity > 0) {
-                        const sizesWithQuantities = Object.entries(item.quantities || {})
-                            .map(([size, quantity]) => `${size}/${quantity}`)
-                            .join(', ');
-                        
-                        modalHTML += `
-                            <tr>
-                                <td>${item.name}(${item.color || 'N/A'})</td>
-                                <td class="sizes-cell">${sizesWithQuantities}</td>
-                                <td>${totalQuantity}</td>
-                            </tr>
-                        `;
-                    }
-                });
-            }
-            
-            modalHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            if (index < orders.length - 1) {
-                modalHTML += '<hr>'; // Add a separator between orders
-            }
+        } else {
+            modalHTML += '<tr><td colspan="3">No items found or error in data structure</td></tr>';
+        }
+        
+        modalHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        if (index < orders.length - 1) {
+            modalHTML += '<hr>'; // Add a separator between orders
         }
     });
     
@@ -1358,7 +1353,392 @@ function openStockRemovalModal(partyName, orders) {
     modalContent.style.margin = '1% auto';
     
     modal.style.display = 'block';
+    
+    // Store orders data in a global variable for access by download functions
+    window.currentModalOrders = orders;
+    
+    // Add event listeners for double click and long press
+    setupOrderNumberInteractions();
 }
+
+function setupOrderNumberInteractions() {
+    const orderNumbers = document.querySelectorAll('.order-number');
+    let pressTimer;
+    
+    orderNumbers.forEach(orderNumber => {
+        // Double click handler
+        orderNumber.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            showDownloadButtons(this);
+        });
+        
+        // Long press handler
+        orderNumber.addEventListener('mousedown', function() {
+            pressTimer = window.setTimeout(() => {
+                showDownloadButtons(this);
+            }, 3000); // 3 seconds long press
+        });
+        
+        // Touch events for mobile
+        orderNumber.addEventListener('touchstart', function(e) {
+            pressTimer = window.setTimeout(() => {
+                showDownloadButtons(this);
+            }, 3000); // 3 seconds long press
+        });
+        
+        orderNumber.addEventListener('touchend', function() {
+            clearTimeout(pressTimer);
+        });
+        
+        orderNumber.addEventListener('mouseup', function() {
+            clearTimeout(pressTimer);
+        });
+        
+        orderNumber.addEventListener('mouseleave', function() {
+            clearTimeout(pressTimer);
+        });
+    });
+}
+
+function showDownloadButtons(orderNumberElement) {
+    const downloadButtons = orderNumberElement.querySelector('.download-buttons');
+    if (downloadButtons) {
+        // Hide any other visible download buttons first
+        document.querySelectorAll('.download-buttons').forEach(btn => {
+            if (btn !== downloadButtons) {
+                btn.style.display = 'none';
+            }
+        });
+        
+        downloadButtons.style.display = 'block';
+        
+        // Setup download button event handlers - we do this here to ensure we have the latest data
+        const imgBtn = downloadButtons.querySelector('.download-img-btn');
+        const pdfBtn = downloadButtons.querySelector('.download-pdf-btn');
+        const orderIndex = orderNumberElement.getAttribute('data-order-index');
+        const orderId = orderNumberElement.getAttribute('data-order-id');
+        
+        if (imgBtn) {
+            // Remove any existing event listeners
+            imgBtn.replaceWith(imgBtn.cloneNode(true));
+            const newImgBtn = downloadButtons.querySelector('.download-img-btn');
+            newImgBtn.addEventListener('click', function() {
+                pendingOrderImg(orderId, parseInt(orderIndex));
+            });
+        }
+        
+        if (pdfBtn) {
+            // Remove any existing event listeners
+            pdfBtn.replaceWith(pdfBtn.cloneNode(true));
+            const newPdfBtn = downloadButtons.querySelector('.download-pdf-btn');
+            newPdfBtn.addEventListener('click', function() {
+                pendingOrderPdf(orderId, parseInt(orderIndex));
+            });
+        }
+        
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+            downloadButtons.style.display = 'none';
+        }, 4000);
+    }
+}
+function pendingOrderImg(orderId, orderIndex) {
+    console.log(`Generating image for order: ${orderId} at index ${orderIndex}`);
+    
+    if (!window.currentModalOrders || !window.currentModalOrders[orderIndex]) {
+        console.error('Order data not found');
+        return;
+    }
+    
+    const order = window.currentModalOrders[orderIndex];
+    const partyName = document.querySelector('#stockRemovalModal .modal-title').textContent;
+    const orderDate = new Date(order.dateTime);
+    
+    // Create a temporary div for the order content
+    const tempDiv = document.createElement('div');
+    tempDiv.style.width = '375px'; // Mobile-friendly width
+    tempDiv.style.padding = '15px';
+    tempDiv.style.backgroundColor = 'white';
+    tempDiv.style.fontFamily = 'Arial, sans-serif';
+    
+    // Create order header with party name as main heading
+    tempDiv.innerHTML = `
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="color: #333; margin-bottom: 5px; font-size: 18px;">${partyName}</h2>
+            <p style="color: #666; margin: 5px 0; font-size: 14px;">Order #${order.orderNumber || 'N/A'}</p>
+            <p style="color: #666; margin: 5px 0; font-size: 14px;">Date: ${orderDate.toLocaleDateString()}</p>
+        </div>
+    `;
+    
+    // Add table with proper styling
+    tempDiv.innerHTML += `
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 45%;">Item Name & Color</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 40%;">Sizes</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center; width: 15%;">Qty</th>
+                </tr>
+            </thead>
+            <tbody id="order-items">
+            </tbody>
+        </table>
+    `;
+    
+    // Append the temporary div to the body (hidden)
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    // Get the tbody element to add rows
+    const tbody = tempDiv.querySelector('#order-items');
+    
+    // Variables for totals
+    let totalItems = 0;
+    let totalQuantity = 0;
+    
+    // Add order items - process all at once without splitting
+    if (order.items && Array.isArray(order.items)) {
+        order.items.forEach((item) => {
+            const sizesWithQuantities = Object.entries(item.quantities || {})
+                .map(([size, quantity]) => `${size}/${quantity}`)
+                .join(', ');
+            const itemQty = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+            
+            totalQuantity += itemQty;
+            totalItems++;
+            
+            // Create row
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 12px; word-wrap: break-word;">${item.name} (${item.color || 'N/A'})</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 12px; word-wrap: break-word;">${sizesWithQuantities}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 12px;">${itemQty}</td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        // Add totals at the end - only once
+        const totalsDiv = document.createElement('div');
+        totalsDiv.style.textAlign = 'right';
+        totalsDiv.style.marginTop = '15px';
+        totalsDiv.innerHTML = `
+            <p style="font-weight: bold; margin: 5px 0;">Total Items: ${totalItems}</p>
+            <p style="font-weight: bold; margin: 5px 0;">Total Quantity: ${totalQuantity}</p>
+        `;
+        tempDiv.appendChild(totalsDiv);
+        
+        // Generate single image from the complete element
+        generateImageFromElement(tempDiv).then(imgData => {
+            // Download single image
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = `Order-${orderId}.png`;
+            link.click();
+            
+            // Remove temporary element
+            setTimeout(() => {
+                document.body.removeChild(tempDiv);
+            }, 1000);
+        }).catch(error => {
+            console.error('Error generating image:', error);
+            document.body.removeChild(tempDiv);
+        });
+    } else {
+        // No items, generate single image
+        const noItemsRow = document.createElement('tr');
+        noItemsRow.innerHTML = '<td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No items found</td>';
+        tbody.appendChild(noItemsRow);
+        
+        generateImageFromElement(tempDiv).then(imgData => {
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = `Order-${orderId}.png`;
+            link.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(tempDiv);
+            }, 1000);
+        }).catch(error => {
+            console.error('Error generating image:', error);
+            document.body.removeChild(tempDiv);
+        });
+    }
+}
+function generateImageFromElement(element) {
+    return new Promise((resolve, reject) => {
+        html2canvas(element, {
+            scale: 2, // For better quality
+            backgroundColor: 'white',
+            logging: false,
+            width: element.offsetWidth,
+            height: element.offsetHeight
+        }).then(canvas => {
+            resolve(canvas.toDataURL('image/png'));
+        }).catch(error => {
+            // Try alternate method if html2canvas fails
+            if (typeof domtoimage !== 'undefined') {
+                domtoimage.toPng(element)
+                    .then(function (dataUrl) {
+                        resolve(dataUrl);
+                    })
+                    .catch(function (error) {
+                        reject(error);
+                    });
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+function pendingOrderPdf(orderId, orderIndex) {
+    console.log(`Generating PDF for order: ${orderId} at index ${orderIndex}`);
+    
+    if (!window.currentModalOrders || !window.currentModalOrders[orderIndex]) {
+        console.error('Order data not found');
+        return;
+    }
+    
+    const order = window.currentModalOrders[orderIndex];
+    
+    // Check if jsPDF is available
+    if (typeof jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+        // Fallback: try to dynamically load jsPDF if not available
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = function() {
+            generatePdf(order, orderId);
+        };
+        script.onerror = function() {
+            alert('PDF generation requires jsPDF library. Please include it in your project.');
+        };
+        document.head.appendChild(script);
+        return;
+    }
+    
+    generatePdf(order, orderId);
+}
+
+function generatePdf(order, orderId) {
+    // Initialize jsPDF
+    const { jsPDF } = window.jspdf || window;
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+    
+    // Set font sizes
+    const titleSize = 16;
+    const subtitleSize = 12;
+    const normalSize = 10;
+    const smallSize = 8;
+    
+    // Set page dimensions
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Get current date and time
+    const orderDate = new Date(order.dateTime);
+    const partyName = document.querySelector('#stockRemovalModal .modal-title').textContent;
+    
+    // Add header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(titleSize);
+    doc.text(`Party: ${partyName}`, pageWidth / 2, margin, { align: 'center' });
+   
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(subtitleSize);
+    doc.text(`Date: ${orderDate.toLocaleDateString()}`, pageWidth / 2, margin + 7, { align: 'center' });
+    doc.text(`Order #${order.orderNumber || 'N/A'}`, pageWidth / 2, margin + 12, { align: 'center' });
+    
+    // Table header position
+    let yPos = margin + 20;
+    
+    // Draw table header
+    doc.setFillColor(240, 240, 240);
+    doc.rect(margin, yPos, contentWidth, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(normalSize);
+    doc.text('Item Name & Color', margin + 2, yPos + 5);
+    doc.text('Sizes', margin + contentWidth * 0.5, yPos + 5);
+    doc.text('Qty', margin + contentWidth - 10, yPos + 5, { align: 'right' });
+    
+    // Draw horizontal line
+    yPos += 7;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, yPos, margin + contentWidth, yPos);
+    
+    // Add items
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(smallSize);
+    
+    if (order.items && Array.isArray(order.items)) {
+        let totalQty = 0;
+        
+        order.items.forEach(item => {
+            const sizesWithQuantities = Object.entries(item.quantities || {})
+                .map(([size, quantity]) => `${size}/${quantity}`)
+                .join(', ');
+            const itemQty = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+            totalQty += itemQty;
+            
+            // Check if we need a new page
+            if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                doc.addPage();
+                yPos = margin;
+            }
+            
+            // Draw item row
+            yPos += 5;
+            doc.text(`${item.name} (${item.color || 'N/A'})`, margin + 2, yPos);
+            doc.text(sizesWithQuantities, margin + contentWidth * 0.5, yPos);
+            doc.text(itemQty.toString(), margin + contentWidth - 10, yPos, { align: 'right' });
+            yPos += 3;
+            
+            // Draw horizontal line
+            doc.line(margin, yPos, margin + contentWidth, yPos);
+            yPos += 2;
+        });
+        
+        // Add footer with totals
+        yPos += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total Items: ${order.items.length}`, margin + contentWidth - 40, yPos);
+        yPos += 5;
+        doc.text(`Total Quantity: ${totalQty}`, margin + contentWidth - 40, yPos);
+    } else {
+        yPos += 5;
+        doc.text('No items found', margin + 2, yPos);
+    }
+    
+    // Save the PDF
+    doc.save(`Order-${orderId}.pdf`);
+}
+
+// Check if required libraries are available and load them if not
+function checkAndLoadRequiredLibraries() {
+    // Check for html2canvas
+    if (typeof html2canvas === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        document.head.appendChild(script);
+    }
+    
+    // Check for jsPDF
+    if (typeof jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        document.head.appendChild(script);
+    }
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', checkAndLoadRequiredLibraries);
+
 
 function initializeModal() {
     const modal = document.getElementById('stockRemovalModal');
