@@ -976,13 +976,268 @@ let items =
     "colorname": ["JBKABT : JBK ABSTRACT ALCHEMY, 1399,1499","NVYABT : NAVY ABSTRACT, 1399,1499","OLVFLO : OLIVE FLORAL, 1399,1499"]
   }
 ]
-
-
-  
-  
-
  ;
+/* EXTRACTING VBA CODE JUST PASTE IN ANY AI PREFERABNLY COPILOT AND TELL HIM TO CHANGE Name Column: Column D (4th column)
 
+Size Column: Column K (11th column)
+
+Color Column: Column F (6th column)
+
+Base Color Key: Columns F and G (6th and 7th columns) COLOR AND COLOR NAME
+
+KValue: Column L (12th column) MRP
+
+TELL HIM COLUMN ACCORDINLY
+
+
+*********************************************************************************************
+
+Sub ConvertToJSON()
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+    
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' Create standard size order dictionary
+    Dim sizeOrder As Object
+    Set sizeOrder = CreateObject("Scripting.Dictionary")
+    sizeOrder.Add "XS", 1
+    sizeOrder.Add "S", 2
+    sizeOrder.Add "M", 3
+    sizeOrder.Add "L", 4
+    sizeOrder.Add "XL", 5
+    sizeOrder.Add "2XL", 6
+    
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, 4).End(xlUp).Row ' Column D
+    
+    ' Read all data into arrays first for faster processing
+    Dim dataRange As Range
+    Set dataRange = ws.Range("D2:L" & lastRow)
+    Dim data As Variant
+    data = dataRange.Value
+    
+    ' Process all rows in one pass
+    Dim i As Long
+    For i = 1 To UBound(data, 1)
+        Dim currentName As String
+        currentName = CStr(data(i, 1)) ' Column D
+        
+        If Not dict.exists(currentName) Then
+            Dim item As Object
+            Set item = CreateObject("Scripting.Dictionary")
+            
+            Set item("sizes") = CreateObject("Scripting.Dictionary")
+            Set item("colors") = CreateObject("Scripting.Dictionary")
+            Set item("colorname") = CreateObject("Scripting.Dictionary")
+            
+            item.Add "name", currentName
+            dict.Add currentName, item
+        End If
+        
+        ' Add size if not exists
+        Dim currentSize As String
+        currentSize = CStr(data(i, 8)) ' Column K
+        If Len(Trim(currentSize)) > 0 Then
+            If Not dict(currentName)("sizes").exists(currentSize) Then
+                dict(currentName)("sizes").Add currentSize, currentSize
+            End If
+        End If
+        
+        ' Add color if not exists
+        Dim currentColor As String
+        currentColor = CStr(data(i, 3)) ' Column F
+        If Len(Trim(currentColor)) > 0 Then
+            If Not dict(currentName)("colors").exists(currentColor) Then
+                dict(currentName)("colors").Add currentColor, currentColor
+            End If
+        End If
+        
+        ' Create base color key (combining F and G columns)
+        Dim baseColorKey As String
+        baseColorKey = currentColor & " : " & CStr(data(i, 4)) ' Columns F and G
+        
+        ' Handle L column values with deduplication
+        Dim kValue As String
+        kValue = CStr(data(i, 9)) ' Column L
+        
+        If Len(Trim(baseColorKey)) > 0 Then
+            Dim finalColorKey As String
+            finalColorKey = baseColorKey
+            
+            If Len(Trim(kValue)) > 0 Then
+                ' Check if we already have this base color
+                Dim existingKey As Variant
+                Dim foundKey As String
+                foundKey = ""
+                
+                For Each existingKey In dict(currentName)("colorname").Keys
+                    If Left(existingKey, Len(baseColorKey)) = baseColorKey Then
+                        foundKey = existingKey
+                        Exit For
+                    End If
+                Next existingKey
+                
+                If foundKey <> "" Then
+                    ' Remove existing entry
+                    dict(currentName)("colorname").Remove foundKey
+                    ' Add combined L values with deduplication
+                    Dim existingNumbers As String
+                    If InStr(foundKey, ", ") > 0 Then
+                        existingNumbers = Mid(foundKey, InStr(foundKey, ", ") + 2)
+                        finalColorKey = baseColorKey & ", " & DeduplicateNumbers(existingNumbers & "," & kValue)
+                    Else
+                        finalColorKey = baseColorKey & ", " & kValue
+                    End If
+                Else
+                    finalColorKey = baseColorKey & ", " & kValue
+                End If
+            End If
+            
+            If Not dict(currentName)("colorname").exists(finalColorKey) Then
+                dict(currentName)("colorname").Add finalColorKey, finalColorKey
+            End If
+        End If
+    Next i
+    
+    ' Generate JSON string
+    Dim json As String
+    json = "[" & vbNewLine
+    
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim dictKey As Variant
+    For Each dictKey In dict.Keys
+        If Not isFirst Then json = json & "," & vbNewLine
+        
+        Dim currentItem As Object
+        Set currentItem = dict(dictKey)
+        
+        json = json & Space(2) & "{" & vbNewLine & _
+               Space(4) & """name"": """ & currentItem("name") & """," & vbNewLine & _
+               Space(4) & """sizes"": " & SortedSizesToJSON(currentItem("sizes"), sizeOrder) & "," & vbNewLine & _
+               Space(4) & """colors"": " & DictToJSONArray(currentItem("colors")) & "," & vbNewLine & _
+               Space(4) & """colorname"": " & DictToJSONArray(currentItem("colorname")) & vbNewLine & _
+               Space(2) & "}"
+        
+        isFirst = False
+    Next dictKey
+    
+    json = json & vbNewLine & "]"
+    
+    ' Get Desktop path and create file path
+    Dim desktopPath As String
+    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
+    Dim filePath As String
+    filePath = desktopPath & "\output.json"
+    
+    ' Write to file
+    Dim fileNum As Integer
+    fileNum = FreeFile
+    
+    Open filePath For Output As #fileNum
+        Print #fileNum, json
+    Close #fileNum
+    
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    
+    MsgBox "JSON file has been created at: " & filePath, vbInformation
+End Sub
+
+' New function to deduplicate numbers
+Private Function DeduplicateNumbers(ByVal numberString As String) As String
+    Dim numbers() As String
+    Dim uniqueDict As Object
+    Set uniqueDict = CreateObject("Scripting.Dictionary")
+    
+    ' Split the string into an array
+    numbers = Split(numberString, ",")
+    
+    ' Add each number to dictionary (automatically handles duplicates)
+    Dim num As Variant
+    For Each num In numbers
+        num = Trim(num)
+        If Len(num) > 0 Then
+            If Not uniqueDict.exists(num) Then
+                uniqueDict.Add num, num
+            End If
+        End If
+    Next num
+    
+    ' Join unique numbers back together
+    DeduplicateNumbers = Join(uniqueDict.Items, ",")
+End Function
+
+Private Function SortedSizesToJSON(dict As Object, sizeOrder As Object) As String
+    ' First, separate standard and custom sizes
+    Dim standardSizes As Object
+    Dim customSizes As Object
+    Set standardSizes = CreateObject("Scripting.Dictionary")
+    Set customSizes = CreateObject("Scripting.Dictionary")
+    
+    Dim size As Variant
+    For Each size In dict.Keys
+        If sizeOrder.exists(size) Then
+            standardSizes.Add sizeOrder(size), size
+        Else
+            customSizes.Add size, size
+        End If
+    Next size
+    
+    ' Combine sorted standard sizes with custom sizes
+    Dim json As String
+    json = "["
+    
+    ' Add standard sizes in order
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim i As Long
+    For i = 1 To sizeOrder.Count
+        For Each size In standardSizes.Keys
+            If size = i Then
+                If Not isFirst Then json = json & ","
+                json = json & """" & standardSizes(size) & """"
+                isFirst = False
+            End If
+        Next size
+    Next i
+    
+    ' Add custom sizes
+    For Each size In customSizes.Keys
+        If Not isFirst Then json = json & ","
+        json = json & """" & customSizes(size) & """"
+        isFirst = False
+    Next size
+    
+    json = json & "]"
+    SortedSizesToJSON = json
+End Function
+
+Private Function DictToJSONArray(dict As Object) As String
+    Dim json As String
+    json = "["
+    
+    Dim isFirst As Boolean
+    isFirst = True
+    
+    Dim key As Variant
+    For Each key In dict.Keys
+        If Not isFirst Then json = json & ","
+        json = json & """" & dict(key) & """"
+        isFirst = False
+    Next key
+    
+    json = json & "]"
+    DictToJSONArray = json
+End Function
+*/
 // Predefined parties
 let parties = [
    "Avni Traders Phonda",
