@@ -637,7 +637,7 @@ function exportOrderToExcel(order) {
     unmatchedCount = 0
     
     ' Loop through each input row starting from 5842
-    For inputRow = 5842 To lastRow
+    For inputRow = 4680 To lastRow
         found = False
         
         ' Get input values
@@ -662,7 +662,7 @@ function exportOrderToExcel(order) {
                 
                 formStyle = ws.Cells(formRow, "D").Value   ' Style column (changed from C to D)
                 formColor = ws.Cells(formRow, "F").Value   ' Color column (changed from E to F)
-                formSize = ws.Cells(formRow, "J").Value    ' Size column (changed from I to J)
+                formSize = ws.Cells(formRow, "k").Value    ' Size column (changed from I to J)
                 
                 ' Check if all criteria match
                 If formStyle = inputStyle And _
@@ -670,7 +670,7 @@ function exportOrderToExcel(order) {
                    formSize = inputSize Then
                     
                     ' Update quantity in column M
-                    ws.Cells(formRow, "M").Value = inputQty
+                    ws.Cells(formRow, "O").Value = inputQty
                     found = True
                     Exit For
                 End If
@@ -701,7 +701,9 @@ function exportOrderToExcel(order) {
         MsgBox "Update complete! All entries were successfully matched.", _
                vbInformation
     End If
-End Sub`]
+End Sub
+
+`]
     ];
 
     // Add instructions to worksheet starting from the row after the data plus spacing
