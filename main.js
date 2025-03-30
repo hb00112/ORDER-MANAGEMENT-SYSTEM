@@ -167,4 +167,76 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     setupFirebaseListener();
+
+    initWelcomeScreen();
+    
+    // Update date and time
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+    
+    // Animate counter
+    function animateCounter(elementId, target, duration = 2000) {
+        const element = document.getElementById(elementId);
+        const start = 0;
+        const increment = target / (duration / 16);
+        let current = start;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                clearInterval(timer);
+                current = target;
+            }
+            element.textContent = Math.floor(current);
+        }, 16);
+    }
+    
+    // Initialize welcome screen
+    function initWelcomeScreen() {
+        // Set username
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('userNameDisplay').textContent = username;
+        
+        // Update date/time
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // Animate counters (replace with real data)
+        animateCounter('ordersCount', 42);
+        animateCounter('pendingCount', 15);
+        animateCounter('completedCount', 27);
+        
+        // Add click handlers for action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                // Your code to switch sections
+                switchSection(section);
+            });
+        });
+    }
+    
+    // Example section switching function
+    function switchSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show selected section
+        document.getElementById(sectionId).classList.add('active');
+    }
+
 });
