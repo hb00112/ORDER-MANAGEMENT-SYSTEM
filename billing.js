@@ -1,11 +1,13 @@
-const barcodeMapping = {
-    '8902625553430': {
-        itemName: 'A202',
-        color: 'CHIVIO',
-        size: 'S'
-    }
-    // Add more barcode mappings as needed
-};
+const COMMON_REMARKS = [
+    'STOCK NOT FOUND IN GODOWN',
+    'WAITING FOR APPROVAL',
+    'PT FILE BILLING',
+    'STOCK ON SHOP BUT WAITING APPROVAL',
+    'CANCEL',
+    'DUPLICATE ITEMS',
+    'STOCK NOT FOUND IN SHOP'
+];
+
 
 let isScanning = false;
 let scanTimeout = null;
@@ -38,10 +40,16 @@ function loadBillingOrders() {
         });
 }
 
-
 function createOrderElement(order, orderId) {
     const orderDiv = document.createElement('div');
     orderDiv.className = 'order-container mb-4';
+    
+    // Format remarks with highlighted style
+    const formattedRemarks = order.remarks ? 
+        `<div class="order-remarks bg-warning bg-opacity-10 p-2 rounded border border-warning border-opacity-25">
+            <strong class="text-warning">📌 Remarks:</strong> ${order.remarks}
+        </div>` : 
+        '';
     
     orderDiv.innerHTML = `
         <div class="order-header d-flex justify-content-between align-items-center">
@@ -59,9 +67,15 @@ function createOrderElement(order, orderId) {
                         <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
                         <rect x="7" y="7" width="10" height="10"></rect>
                     </svg>
-                </button>
+               <button class="btn btn-outline-warning add-remark-btn ms-2" data-order-id="${orderId}" title="Add Remarks">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text" viewBox="0 0 16 16">
+        <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+        <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+    </svg>
+</button>
             </div>
         </div>
+        ${formattedRemarks}
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -83,6 +97,101 @@ function createOrderElement(order, orderId) {
 
     return orderDiv;
 }
+
+
+// Add this modal HTML for remarks
+const remarkModalHTML = `
+<div class="modal fade" id="remarkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">📝 Order Remarks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="current-remarks mb-3 p-3 bg-warning bg-opacity-10 rounded" style="display:none;">
+                    <h6>Current Remarks:</h6>
+                    <p id="currentRemarkText" class="mb-0"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select common remarks or type your own:</label>
+                    <div class="common-remarks mb-3">
+                        ${COMMON_REMARKS.map(remark => 
+                            `<button type="button" class="btn btn-sm btn-outline-warning me-2 mb-2 remark-btn" data-remark="${remark}">${remark}</button>`
+                        ).join('')}
+                    </div>
+                    <textarea class="form-control" id="remarkText" rows="3" placeholder="Enter custom remarks..." style="border-color: #ffc107;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning save-remark-btn">Save Remarks</button>
+            </div>
+        </div>
+    </div>
+</div>`;
+
+
+// Add the modal to the document body
+document.body.insertAdjacentHTML('beforeend', remarkModalHTML);
+const remarkModal = new bootstrap.Modal(document.getElementById('remarkModal'));
+
+// Add event listener for the remark button
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.add-remark-btn')) {
+        const orderId = e.target.closest('.add-remark-btn').getAttribute('data-order-id');
+        openRemarkModal(orderId);
+    }
+});
+function openRemarkModal(orderId) {
+    currentOrderId = orderId;
+    
+    // Get current remarks if any
+    firebase.database().ref('billingOrders').child(orderId).once('value')
+        .then(snapshot => {
+            const order = snapshot.val();
+            const currentRemarksContainer = document.querySelector('.current-remarks');
+            const currentRemarkText = document.getElementById('currentRemarkText');
+            
+            if (order && order.remarks) {
+                currentRemarkText.textContent = order.remarks;
+                currentRemarksContainer.style.display = 'block';
+                document.getElementById('remarkText').value = order.remarks;
+            } else {
+                currentRemarksContainer.style.display = 'none';
+                document.getElementById('remarkText').value = '';
+            }
+            remarkModal.show();
+        });
+}
+
+// Add event listener for common remark buttons
+document.querySelectorAll('.remark-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const remark = this.getAttribute('data-remark');
+        document.getElementById('remarkText').value = remark;
+    });
+});
+
+// Save remarks to Firebase
+document.querySelector('.save-remark-btn').addEventListener('click', function() {
+    const remarkText = document.getElementById('remarkText').value.trim();
+    
+    if (currentOrderId) {
+        firebase.database().ref('billingOrders').child(currentOrderId).update({
+            remarks: remarkText
+        })
+        .then(() => {
+            showToast('Remarks saved successfully', 'success');
+            remarkModal.hide();
+            loadBillingOrders(); // Refresh the orders list
+        })
+        .catch(error => {
+            console.error('Error saving remarks:', error);
+            showToast('Failed to save remarks', 'error');
+        });
+    }
+});
 
 // Create Modal HTML
 const modalHTML = `
@@ -913,7 +1022,8 @@ async function billOrder(orderId, isModal = false) {
             date: originalOrder.dateTime,
             billingDate: new Date().toISOString(),
             billedItems: billedItems,
-            status: 'completed'
+            status: 'completed',
+            remarks: originalOrder.remarks || '' // Add remarks to sent order
         };
 
         // Start Firebase operations
@@ -963,7 +1073,6 @@ async function billOrder(orderId, isModal = false) {
         alert(`Error processing order: ${error.message}`);
     }
 }
-
 function normalizeOrderData(order, orderId) {
     if (!order) return null;
     
@@ -986,9 +1095,11 @@ function normalizeOrderData(order, orderId) {
         billingDate: order.billingDate || null,
         billedItems: billedItems,
         status: order.status || 'completed',
-        deliveryStatus: order.deliveryStatus || 'Delivered' // Add delivery status with default value
+        deliveryStatus: order.deliveryStatus || 'Delivered',
+        remarks: order.remarks || '' // Add remarks here
     };
 }
+
 
 
 
