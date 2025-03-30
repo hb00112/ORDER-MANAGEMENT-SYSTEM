@@ -11,18 +11,32 @@ function loadSentOrders() {
         return;
     }
 
-    firebase.database().ref('sentOrders').once('value')
+    const sentOrdersRef = firebase.database().ref('sentOrders');
+    
+    sentOrdersRef.once('value')
         .then(snapshot => {
             if (snapshot.exists()) {
                 const orders = [];
+                const updates = {};
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                
                 try {
                     snapshot.forEach(childSnapshot => {
                         try {
                             const order = childSnapshot.val();
                             if (order && typeof order === 'object') {
-                                const normalizedOrder = normalizeOrderData(order, childSnapshot.key);
-                                if (normalizedOrder) {
-                                    orders.push(normalizedOrder);
+                                // Check if order is older than 30 days
+                                const orderDate = order.billingDate ? new Date(order.billingDate) : new Date(0);
+                                
+                                if (orderDate < thirtyDaysAgo) {
+                                    // Mark for deletion
+                                    updates[childSnapshot.key] = null;
+                                } else {
+                                    const normalizedOrder = normalizeOrderData(order, childSnapshot.key);
+                                    if (normalizedOrder) {
+                                        orders.push(normalizedOrder);
+                                    }
                                 }
                             }
                         } catch (orderError) {
@@ -30,6 +44,14 @@ function loadSentOrders() {
                         }
                     });
                     
+                    // Perform batch delete of old orders
+                    if (Object.keys(updates).length > 0) {
+                        console.log(`Deleting ${Object.keys(updates).length} old orders`);
+                        sentOrdersRef.update(updates)
+                            .catch(error => console.error("Error deleting old orders:", error));
+                    }
+                    
+                    // Sort remaining orders by date (newest first)
                     orders.sort((a, b) => {
                         const dateA = a.billingDate ? new Date(a.billingDate) : new Date(0);
                         const dateB = b.billingDate ? new Date(b.billingDate) : new Date(0);
