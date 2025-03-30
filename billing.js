@@ -44,6 +44,20 @@ function createOrderElement(order, orderId) {
     const orderDiv = document.createElement('div');
     orderDiv.className = 'order-container mb-4';
     
+    // Format the original order date in DD/MM/YYYY format
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'N/A';
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+    
+    const orderDate = formatDate(order.dateTime);
+    
     // Format remarks with highlighted style
     const formattedRemarks = order.remarks ? 
         `<div class="order-remarks bg-warning bg-opacity-10 p-2 rounded border border-warning border-opacity-25">
@@ -56,7 +70,7 @@ function createOrderElement(order, orderId) {
             <div>
                 <h5>Order No: ${order.orderNumber || 'N/A'}</h5>
                 <p>Party Name: ${order.partyName || 'N/A'}</p>
-                <p>Date: ${order.date || new Date().toLocaleDateString()}</p>
+                <p>Order Date: ${orderDate}</p>
             </div>
             <div>
                 <button class="btn btn-outline-primary barcode-scan-btn" data-order-id="${orderId}">
@@ -67,12 +81,13 @@ function createOrderElement(order, orderId) {
                         <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
                         <rect x="7" y="7" width="10" height="10"></rect>
                     </svg>
-               <button class="btn btn-outline-warning add-remark-btn ms-2" data-order-id="${orderId}" title="Add Remarks">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text" viewBox="0 0 16 16">
-        <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-        <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
-    </svg>
-</button>
+                </button>
+                <button class="btn btn-outline-warning add-remark-btn ms-2" data-order-id="${orderId}" title="Add Remarks">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text" viewBox="0 0 16 16">
+                        <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                        <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </button>
             </div>
         </div>
         ${formattedRemarks}
