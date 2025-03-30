@@ -1,5 +1,7 @@
 // Ensure the DOM is fully loaded before initializing
 document.addEventListener('DOMContentLoaded', function() {
+
+    checkAndDeleteExpiredOrders();
     initializeDB()
         .then(() => {
             console.log("IndexedDB initialized");
@@ -2264,7 +2266,6 @@ function updateOrderState(orderId, itemName, color, size, srqValue) {
 
 
 //DELETE
-
 function openDeleteModal1(orderId) {
     console.log('openDeleteModal1 called with orderId:', orderId);
     const modalId = `deleteConfirmationDialog-${orderId}`;
@@ -2329,7 +2330,7 @@ function openDeleteModal2(orderId, deleteReason) {
         <div class="delete-confirmation-dialog-content">
             <h2>Confirm Delete</h2>
             <p>Are you sure you want to delete this order?</p>
-            <p>The order will remain in the Delete section for 20 days and then be automatically deleted.</p>
+            <p>The order will remain in the Delete section for 30 days and then be automatically deleted.</p>
             <div class="modal-actions">
                 <button id="${confirmFinalDeleteId}">Yes, Delete</button>
                 <button id="${cancelFinalDeleteId}">Cancel</button>
@@ -2351,6 +2352,7 @@ function openDeleteModal2(orderId, deleteReason) {
     });
 }
 
+
 function showDeleteConfirmation() {
     const modal = document.createElement('div');
     modal.id = 'deleteConfirmationModal';
@@ -2370,7 +2372,6 @@ function showDeleteConfirmation() {
         loadPendingOrders(); // Refresh the orders section
     });
 }
-
 function deleteOrder(orderId, deleteReason) {
     const orderRef = firebase.database().ref('orders').child(orderId);
     orderRef.once('value')
@@ -2383,7 +2384,7 @@ function deleteOrder(orderId, deleteReason) {
                     deleteReason: deleteReason,
                     deleteDate: new Date().toISOString(),
                     deletedFrom: 'Pending',
-                    scheduledDeletionDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString() // 20 days from now
+                    scheduledDeletionDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
                 }).then(() => {
                     return orderRef.remove();
                 });
@@ -2397,6 +2398,35 @@ function deleteOrder(orderId, deleteReason) {
             console.error("Error deleting order: ", error);
         });
 }
+
+// Add this function to check and delete expired orders automatically
+function checkAndDeleteExpiredOrders() {
+    const now = new Date();
+    firebase.database().ref('deletedOrders').once('value')
+        .then(snapshot => {
+            if (snapshot.exists()) {
+                const promises = [];
+                snapshot.forEach(childSnapshot => {
+                    const order = childSnapshot.val();
+                    const deletionDate = new Date(order.scheduledDeletionDate);
+                    if (deletionDate <= now) {
+                        // Order has expired, delete it completely
+                        promises.push(
+                            firebase.database().ref('deletedOrders').child(childSnapshot.key).remove()
+                                .then(() => {
+                                    console.log(`Automatically deleted order ${childSnapshot.key} as it passed 30 days`);
+                                })
+                        );
+                    }
+                });
+                return Promise.all(promises);
+            }
+        })
+        .catch(error => {
+            console.error("Error checking for expired orders: ", error);
+        });
+}
+
 
 function loadDeletedOrders() {
     const deletedOrdersContainer = document.getElementById('deletedOrders');
@@ -2421,83 +2451,177 @@ function loadDeletedOrders() {
             deletedOrdersContainer.innerHTML += '<p>Error loading deleted orders. Please try again.</p>';
         });
 }
-
 function displayDeletedOrders(orders, container) {
     // Clear existing content
     container.innerHTML = '<h4>Deleted Orders</h4>';
 
-    // Create a Set to store unique order IDs
+    // Sort orders by deleteDate (newest first)
+    orders.sort((a, b) => {
+        const dateA = new Date(a.deleteDate || 0);
+        const dateB = new Date(b.deleteDate || 0);
+        return dateB - dateA;
+    });
+
     const displayedOrderIds = new Set();
 
     orders.forEach(order => {
-        // Check if this order has already been displayed
         if (displayedOrderIds.has(order.id)) {
             console.warn(`Duplicate order detected: ${order.id}`);
-            return; // Skip this iteration
+            return;
         }
-
-        // Add the order ID to the Set
         displayedOrderIds.add(order.id);
 
         const orderDiv = document.createElement('div');
-        orderDiv.className = 'deleted-order-container mb-4';
+        orderDiv.className = 'deleted-order-container mb-4 p-3 border rounded';
         orderDiv.dataset.orderId = order.id;
 
         const deletionDate = new Date(order.scheduledDeletionDate);
+        const deleteDate = order.deleteDate ? new Date(order.deleteDate) : null;
         const daysUntilDeletion = Math.ceil((deletionDate - new Date()) / (1000 * 60 * 60 * 24));
 
-        // Generate HTML for items
+        // Generate HTML for items in table format
         let itemsHtml = '';
         if (order.items && order.items.length > 0) {
-            itemsHtml = '<div class="order-items mt-2"><h5>Items:</h5>';
+            itemsHtml = `
+            <div class="order-items mt-3">
+                <h5 class="mb-3">Items:</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Color</th>
+                                <th>Size Quantities</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
             order.items.forEach(item => {
-                itemsHtml += `<div class="item-details">
-                    <strong>${item.name}</strong><br>`;
-                
-                if (item.colors) {
-                    Object.entries(item.colors).forEach(([color, sizes]) => {
-                        itemsHtml += `<div class="color-details ms-3">
-                            ${color}:<br>`;
-                        Object.entries(sizes).forEach(([size, quantity]) => {
-                            itemsHtml += `<span class="ms-4">${size}: ${quantity}</span><br>`;
-                        });
-                        itemsHtml += '</div>';
+                if (item.colors && Object.keys(item.colors).length > 0) {
+                    const colors = Object.keys(item.colors);
+                    let isFirstColor = true;
+                    
+                    colors.forEach(color => {
+                        // Add separator line between colors of same item
+                        if (!isFirstColor) {
+                            itemsHtml += `
+                            <tr class="color-separator">
+                                <td colspan="3"><hr class="m-0"></td>
+                            </tr>`;
+                        }
+                        isFirstColor = false;
+                        
+                        const sizes = item.colors[color];
+                        const sizeQuantities = Object.entries(sizes).map(
+                            ([size, qty]) => `<span class="size-qty">${size}:${qty}</span>`
+                        ).join(' ');
+                        
+                        itemsHtml += `
+                        <tr>
+                            <td><strong>${item.name || 'N/A'}</strong></td>
+                            <td>
+                                <span class="color-badge" style="background-color: ${getColorHex(color)}">
+                                    ${color}
+                                </span>
+                            </td>
+                            <td>${sizeQuantities}</td>
+                        </tr>`;
                     });
+                } else {
+                    itemsHtml += `
+                    <tr>
+                        <td><strong>${item.name || 'N/A'}</strong></td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                    </tr>`;
                 }
-                
-                itemsHtml += '</div>';
             });
-            itemsHtml += '</div>';
+            
+            itemsHtml += `</tbody></table></div></div>`;
         }
 
+        // Format the delete date for display
+        const formattedDeleteDate = deleteDate ? 
+            `${deleteDate.toLocaleDateString()} ${deleteDate.toLocaleTimeString()}` : 
+            'Unknown deletion time';
+
         orderDiv.innerHTML = `
-            <div class="order-header mb-2">
-                <strong>Order No. ${order.orderNumber || 'N/A'}</strong><br>
-                Party Name: ${order.partyName || 'N/A'}<br>
-                Delete Reason: ${order.deleteReason || 'N/A'}<br>
-                Deleted From: ${order.deletedFrom || 'Unknown'}<br>
-                Days until permanent deletion: ${daysUntilDeletion}<br>
-                Total Quantity: ${order.totalQuantity || 0}
+            <div class="order-header mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Order No. ${order.orderNumber || 'N/A'}</h5>
+                    <span class="badge ${daysUntilDeletion <= 5 ? 'bg-danger' : 'bg-secondary'}">
+                        Days Left: ${daysUntilDeletion}
+                    </span>
+                </div>
+                <div class="order-meta mt-2">
+                    <div><strong>Party:</strong> ${order.partyName || 'N/A'}</div>
+                    <div><strong>Deleted From:</strong> ${order.deletedFrom || 'Unknown'}</div>
+                    <div><strong>Deleted On:</strong> ${formattedDeleteDate}</div>
+                    <div><strong>Reason:</strong> ${order.deleteReason || 'N/A'}</div>
+                    <div><strong>Total Qty:</strong> ${order.totalQuantity || 0}</div>
+                </div>
             </div>
             ${itemsHtml}
-            <div class="order-actions mt-2">
-                <button class="btn btn-sm btn-danger permanent-delete" data-order-id="${order.id}">Permanently Delete</button>
-                <button class="btn btn-sm btn-primary revert-to-pending" data-order-id="${order.id}">Revert to Pending</button>
+            <div class="order-actions mt-3 d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-outline-primary revert-to-pending" data-order-id="${order.id}">
+                    <i class="bi bi-arrow-counterclockwise"></i> Revert
+                </button>
+                <button class="btn btn-sm btn-outline-danger permanent-delete" data-order-id="${order.id}">
+                    <i class="bi bi-trash-fill"></i> Delete Permanently
+                </button>
             </div>
-            <hr>
+            <style>
+                .color-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    margin: 2px 0;
+                    color: white;
+                    font-weight: bold;
+                    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+                }
+                .size-qty {
+                    display: inline-block;
+                    padding: 2px 6px;
+                    margin: 2px;
+                    border-radius: 4px;
+                    border: 1px solid #dee2e6;
+                }
+                .color-separator hr {
+                    border-top: 1px dashed #aaa;
+                    margin: 3px 0;
+                }
+                .table th {
+                    border-bottom-width: 2px;
+                }
+            </style>
         `;
 
         container.appendChild(orderDiv);
 
-        // Add event listeners for the buttons
+        // Add event listeners
         orderDiv.querySelector('.permanent-delete').addEventListener('click', () => permanentlyDeleteOrder(order.id));
         orderDiv.querySelector('.revert-to-pending').addEventListener('click', () => revertToPending(order.id));
     });
 
-    // Log the number of unique orders displayed
     console.log(`Displayed ${displayedOrderIds.size} unique deleted orders`);
 }
-
+// Helper function to get color hex codes (simplified version)
+function getColorHex(colorName) {
+    const colorMap = {
+        'red': '#dc3545',
+        'blue': '#0d6efd',
+        'green': '#198754',
+        'yellow': '#ffc107',
+        'black': '#212529',
+        'white': '#f8f9fa',
+        'gray': '#6c757d',
+        'pink': '#d63384',
+        'orange': '#fd7e14',
+        'purple': '#6f42c1'
+    };
+    return colorMap[colorName.toLowerCase()] || '#6c757d'; // Default to gray if not found
+}
 function permanentlyDeleteOrder(orderId) {
     if (confirm('Are you sure you want to permanently delete this order? This action cannot be undone.')) {
         firebase.database().ref('deletedOrders').child(orderId).remove()
