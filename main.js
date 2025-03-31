@@ -293,6 +293,90 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('DOMContentLoaded', function() {
         initWelcomeScreen();
     });
+    const newOrderCard = document.querySelector('.action-card[data-section="orders"]');
+    if (newOrderCard) {
+        newOrderCard.addEventListener('click', function() {
+            // Get the section id from the card
+            const sectionId = this.getAttribute('data-section');
+            
+            // Call the same showSection function that the nav links use
+            showSection(sectionId);
+            
+            // Also update the active state of the corresponding nav link
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            
+            const navLink = document.querySelector(`.nav-link[data-section="orders"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+        });
+    }
 
+    const newPending = document.querySelector('.action-card[data-section="pendingOrders"]');
+    if (newPending) {
+        newPending.addEventListener('click', function() {
+            // Get the section id from the card
+            const sectionId = this.getAttribute('data-section');
+            
+            // Call the same showSection function that the nav links use
+            showSection(sectionId);
+            
+            // Also update the active state of the corresponding nav link
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            
+            const navLink = document.querySelector(`.nav-link[data-section="pendingOrders"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+        });
+    }
 
+    const newBilling = document.querySelector('.action-card[data-section="billing"]');
+    if (newBilling) {
+        newBilling.addEventListener('click', function() {
+            // Get the section id from the card
+            const sectionId = this.getAttribute('data-section');
+            
+            // Call the same showSection function that the nav links use
+            showSection(sectionId);
+            
+            // Also update the active state of the corresponding nav link
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            
+            const navLink = document.querySelector(`.nav-link[data-section="billing"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+        });
+    }
+    const stockCard = document.querySelector('.action-card[data-section="stock"]');
+if (stockCard) {
+    stockCard.addEventListener('click', function() {
+        // Get the section id from the card
+        const sectionId = this.getAttribute('data-section');
+        
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'none';
+        });
+        
+        // Show the stock section
+        const stockSection = document.getElementById('stock');
+        if (stockSection) {
+            stockSection.style.display = 'block';
+        }
+        
+        // Close the slide menu if it's open
+        const slideMenu = document.getElementById('slideMenu');
+        if (slideMenu) {
+            slideMenu.style.width = '0';
+        }
+    });
+}
 });
