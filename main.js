@@ -1,34 +1,6 @@
 let username = null;
 let orderCounter = 0;
-const navigationStack = {
-    history: ['homeScreen'],
-    currentIndex: 0,
-    
-    push: function(sectionId) {
-        // If we're not at the end of history, truncate forward history
-        if (this.currentIndex < this.history.length - 1) {
-            this.history = this.history.slice(0, this.currentIndex + 1);
-        }
-        
-        this.history.push(sectionId);
-        this.currentIndex++;
-    },
-    
-    pop: function() {
-        if (this.currentIndex > 0) {
-            this.currentIndex--;
-            return this.history[this.currentIndex];
-        }
-        return null;
-    },
-    
-    getCurrent: function() {
-        return this.history[this.currentIndex];
-    }
-};
 
-// Track if transition is in progress
-let isTransitioning = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize core menu items
@@ -122,63 +94,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeBtn = document.querySelector('.close-btn');
 
     // Unified section handling
-    function showSection(sectionId, fromWelcomeScreen = false) {
-        if (isTransitioning || sectionId === navigationStack.getCurrent()) return;
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'none';
+        });
         
-        isTransitioning = true;
-        
-        // Add to history unless it's from welcome screen (we want back to go home)
-        if (!fromWelcomeScreen) {
-            navigationStack.push(sectionId);
-        } else {
-            // Coming from welcome screen, replace current if it's home
-            if (navigationStack.getCurrent() === 'homeScreen') {
-                navigationStack.history[navigationStack.currentIndex] = sectionId;
-            } else {
-                navigationStack.push(sectionId);
-            }
-        }
-        
-        // Get current and target sections
-        const currentSection = document.getElementById(navigationStack.getCurrent());
         const targetSection = document.getElementById(sectionId);
-        
-        if (!targetSection) {
-            isTransitioning = false;
-            return;
-        }
-        
-        // Set up initial states
-        targetSection.style.display = 'block';
-        targetSection.style.opacity = '0';
-        targetSection.style.transform = 'translateX(30px)';
-        targetSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        
-        if (currentSection) {
-            currentSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            currentSection.style.opacity = '0';
-            currentSection.style.transform = 'translateX(-30px)';
-        }
-        
-        // Force reflow
-        void targetSection.offsetHeight;
-        
-        // Animate in new section
-        targetSection.style.opacity = '1';
-        targetSection.style.transform = 'translateX(0)';
-        
-        // After animation completes
-        setTimeout(() => {
-            if (currentSection) {
-                currentSection.style.display = 'none';
-                currentSection.style.opacity = '';
-                currentSection.style.transform = '';
-            }
+        if (targetSection) {
+            targetSection.style.display = 'block';
             
-            targetSection.style.opacity = '';
-            targetSection.style.transform = '';
-            
-            // Update active nav link
+            // Update active states
             document.querySelectorAll('.nav-link').forEach(navLink => {
                 navLink.classList.remove('active');
             });
@@ -187,71 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (activeLink) {
                 activeLink.classList.add('active');
             }
-            
-            isTransitioning = false;
-        }, 300);
-    }
-    
-    // Handle back navigation (Android back button)
-    function handleBackNavigation() {
-        if (isTransitioning || navigationStack.currentIndex === 0) return;
-        
-        const currentSectionId = navigationStack.getCurrent();
-        const previousSectionId = navigationStack.pop();
-        
-        if (!previousSectionId) return;
-        
-        isTransitioning = true;
-        
-        const currentSection = document.getElementById(currentSectionId);
-        const previousSection = document.getElementById(previousSectionId);
-        
-        if (!currentSection || !previousSection) {
-            isTransitioning = false;
-            return;
         }
-        
-        // Set up initial states for back transition
-        previousSection.style.display = 'block';
-        previousSection.style.opacity = '0';
-        previousSection.style.transform = 'translateX(-30px)';
-        previousSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        
-        currentSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        currentSection.style.opacity = '0';
-        currentSection.style.transform = 'translateX(30px)';
-        
-        // Force reflow
-        void previousSection.offsetHeight;
-        
-        // Animate in previous section
-        previousSection.style.opacity = '1';
-        previousSection.style.transform = 'translateX(0)';
-        
-        // After animation completes
-        setTimeout(() => {
-            currentSection.style.display = 'none';
-            currentSection.style.opacity = '';
-            currentSection.style.transform = '';
-            
-            previousSection.style.opacity = '';
-            previousSection.style.transform = '';
-            
-            // Update active nav link
-            document.querySelectorAll('.nav-link').forEach(navLink => {
-                navLink.classList.remove('active');
-            });
-            
-            const activeLink = document.querySelector(`.nav-link[data-section="${previousSectionId}"]`);
-            if (activeLink) {
-                activeLink.classList.add('active');
-            }
-            
-            isTransitioning = false;
-        }, 300);
     }
-    
-    
 
     // Menu navigation setup
     document.querySelectorAll('.nav-link, #slideMenu a[data-section]').forEach(link => {
@@ -427,37 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show selected section
         document.getElementById(sectionId).classList.add('active');
     }
-    // Handle Android back button
-    document.addEventListener('backbutton', handleBackNavigation, false);
     
-    // Handle browser back button for web version
-    window.addEventListener('popstate', function() {
-        handleBackNavigation();
-    });
-    
-    // Modify all navigation links to use our showSection
-    document.querySelectorAll('[data-section]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const sectionId = this.getAttribute('data-section');
-            const fromWelcome = this.closest('.welcome-screen') !== null;
-            showSection(sectionId, fromWelcome);
-            
-            // For mobile menu close
-            const slideMenu = document.getElementById('slideMenu');
-            if (slideMenu) {
-                slideMenu.style.width = '0';
-            }
-        });
-    });
-    
-    // Special handling for welcome screen action cards
-    document.querySelectorAll('.action-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const sectionId = this.getAttribute('data-section');
-            showSection(sectionId, true);
-        });
-    });
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         initWelcomeScreen();
