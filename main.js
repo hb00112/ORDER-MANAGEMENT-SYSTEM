@@ -168,66 +168,116 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setupFirebaseListener();
 
-    initWelcomeScreen();
-    
-    // Update date and time
-    function updateDateTime() {
-        const now = new Date();
-        const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
-        document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        let greeting;
+        
+        if (hour < 12) greeting = "Good morning";
+        else if (hour < 18) greeting = "Good afternoon";
+        else greeting = "Good evening";
+        
+        document.getElementById('greetingText').textContent = greeting;
+    }
+
+    // Generate User Avatar Initial
+    function updateUserAvatar() {
+        const username = localStorage.getItem('username') || 'User';
+        const avatar = document.getElementById('userAvatar');
+        avatar.textContent = username.charAt(0).toUpperCase();
+        
+        // Generate a color based on username
+        const colors = ['#667eea', '#764ba2', '#ff4757', '#2ed573', '#ffa502'];
+        const colorIndex = username.length % colors.length;
+        avatar.style.background = colors[colorIndex];
+        avatar.style.color = 'white';
+    }
+
+    // Load Recent Activity
+    function loadRecentActivity() {
+        // Simulated data - replace with actual data from your system
+        const activities = [
+            { party: "Fashion Trends", items: 12, time: "2h ago" },
+            { party: "Urban Styles", items: 8, time: "5h ago" },
+            { party: "Elite Boutique", items: 15, time: "Yesterday" },
+            { party: "Trendsetters", items: 5, time: "Yesterday" },
+            { party: "Modern Wear", items: 10, time: "2 days ago" }
+        ];
+        
+        const container = document.getElementById('recentActivityList');
+        container.innerHTML = '';
+        
+        activities.forEach(activity => {
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-party">${activity.party}</div>
+                <div class="activity-meta">
+                    <span>${activity.items} items</span>
+                    <span>${activity.time}</span>
+                </div>
+            `;
+            item.addEventListener('click', () => {
+                // Add functionality to view this order
+                console.log(`Viewing order from ${activity.party}`);
+            });
+            container.appendChild(item);
         });
     }
-    
-    // Animate counter
-    function animateCounter(elementId, target, duration = 2000) {
-        const element = document.getElementById(elementId);
-        const start = 0;
-        const increment = target / (duration / 16);
-        let current = start;
-        
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                clearInterval(timer);
-                current = target;
-            }
-            element.textContent = Math.floor(current);
-        }, 16);
-    }
-    
+
     // Initialize welcome screen
     function initWelcomeScreen() {
-        // Set username
+        // Reset body margins and padding
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        
+        // Update greeting
+        updateGreeting();
+        
+        // Update user avatar
+        updateUserAvatar();
+        
+        // Load recent activity
+        loadRecentActivity();
+        
+        // Set username display
         const username = localStorage.getItem('username') || 'User';
         document.getElementById('userNameDisplay').textContent = username;
         
-        // Update date/time
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
-        
-        // Animate counters (replace with real data)
-        animateCounter('ordersCount', 42);
-        animateCounter('pendingCount', 15);
-        animateCounter('completedCount', 27);
-        
-        // Add click handlers for action buttons
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+        // Add click handlers for action cards
+        document.querySelectorAll('.action-card').forEach(card => {
+            card.addEventListener('click', function() {
                 const section = this.getAttribute('data-section');
-                // Your code to switch sections
                 switchSection(section);
             });
         });
+        
+        // Adjust welcome screen positioning
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        if (welcomeScreen) {
+            welcomeScreen.style.marginTop = '0';
+            welcomeScreen.style.paddingTop = '0';
+        }
+        
+        // Adjust navbar positioning
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.style.marginBottom = '0';
+        }
+        
+        // Adjust welcome content container
+        const welcomeContent = document.querySelector('.welcome-content');
+        if (welcomeContent) {
+            welcomeContent.style.marginTop = '0';
+            welcomeContent.style.paddingTop = '20px'; // Adjust as needed
+        }
+        
+        // Adjust quick actions container
+        const quickActions = document.querySelector('.quick-actions');
+        if (quickActions) {
+            quickActions.style.marginTop = '20px'; // Adjust as needed
+        }
     }
-    
+
     // Example section switching function
     function switchSection(sectionId) {
         // Hide all sections
@@ -238,5 +288,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show selected section
         document.getElementById(sectionId).classList.add('active');
     }
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initWelcomeScreen();
+    });
+
 
 });
