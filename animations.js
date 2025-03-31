@@ -3,7 +3,6 @@ let gradientAngle = 0;
 
 function updateGradient() {
     gradientAngle += 1; // Adjust the speed by changing the increment
-    hcText.style.backgroundImage = `linear-gradient(${gradientAngle}deg, #8B0000, #0000FF)`;
 }
 
 setInterval(updateGradient, 50); // Update every 50 milliseconds (adjust as needed)
