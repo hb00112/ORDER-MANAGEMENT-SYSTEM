@@ -70,103 +70,58 @@
         </div>
     </nav>
     <div id="homeScreen" class="section active welcome-screen">
-        <!-- Animated Gradient Background -->
-        <div class="gradient-bg"></div>
+        <!-- Animated Background Shapes -->
+        <div class="bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
         
-        <!-- Main Content Container -->
-        <div class="welcome-container">
-            <!-- Animated Logo -->
-            <div class="logo-container">
-                <div class="logo-circle"></div>
-                <div class="logo-initials">KA</div>
+        <!-- Header with User Profile -->
+        <div class="welcome-header">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-name" id="userNameDisplay">User</div>
             </div>
-            
-            <!-- Welcome Message -->
-            <div class="welcome-message">
-                <h1 class="welcome-text">
-                    <span class="welcome-line">Welcome to</span>
-                    <span class="company-name">
-                        <span class="letter">K</span>
-                        <span class="letter">A</span>
-                        <span class="letter">M</span>
-                        <span class="letter">B</span>
-                        <span class="letter">E</span>
-                        <span class="letter">S</span>
-                        <span class="letter">H</span>
-                        <span class="letter">W</span>
-                        <span class="letter">A</span>
-                        <span class="letter">R</span>
-                        <span class="space"></span>
-                        <span class="letter">A</span>
-                        <span class="letter">G</span>
-                        <span class="letter">E</span>
-                        <span class="letter">N</span>
-                        <span class="letter">C</span>
-                        <span class="letter">I</span>
-                        <span class="letter">E</span>
-                        <span class="letter">S</span>
-                    </span>
-                </h1>
-                <p class="welcome-subtext">Order Management System</p>
-            </div>
-            
-            <!-- User Greeting -->
-            <div class="user-greeting">
-                <h2>Hello, <span id="userNameDisplay" class="username"></span></h2>
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span class="status-text">Connected</span>
-                </div>
-            </div>
-            
-            <!-- Quick Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value" id="ordersCount">0</div>
-                    <div class="stat-label">Today's Orders</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⏳</div>
-                    <div class="stat-value" id="pendingCount">0</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-value" id="completedCount">0</div>
-                    <div class="stat-label">Completed</div>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="action-buttons">
-                <button class="action-btn" data-section="orders">
-                    <span class="action-icon">+</span>
-                    <span class="action-text">New Order</span>
-                </button>
-                <button class="action-btn" data-section="pendingOrders">
-                    <span class="action-icon">📋</span>
-                    <span class="action-text">View Pending</span>
-                </button>
-                <button class="action-btn" data-section="stock">
-                    <span class="action-icon">📦</span>
-                    <span class="action-text">Check Stock</span>
-                </button>
+            <div class="notification-bell">
+                <span>🔔</span>
+                <div class="notification-badge">3</div>
             </div>
         </div>
         
-        <!-- Footer -->
-        <div class="welcome-footer">
-            <div class="datetime">
-                <div id="current-date" class="date"></div>
-                <div id="current-time" class="time"></div>
+        <!-- Main Welcome Content -->
+        <div class="welcome-content">
+            <div class="greeting-text" id="greetingText">Good morning</div>
+            <h1 class="welcome-title">Welcome to KAOMS</h1>
+            <p class="welcome-subtitle">Your complete order management solution for seamless operations</p>
+        </div>
+        
+        <!-- Quick Action Cards -->
+        <div class="quick-actions">
+            <div class="action-card" data-section="orders">
+                <div class="action-icon">➕</div>
+                <div class="action-title">New Order</div>
+                <div class="action-desc">Create purchase orders</div>
             </div>
-            <div class="system-info">
-                <span class="version">v2.4.1</span>
-                <span class="separator">|</span>
-                <span class="connection-status">Secure Connection</span>
+            <div class="action-card" data-section="pendingOrders">
+                <div class="action-icon">⏳</div>
+                <div class="action-title">Pending</div>
+                <div class="action-desc">Review awaiting approval</div>
+            </div>
+            <div class="action-card" data-section="stock">
+                <div class="action-icon">🧾</div>
+                <div class="action-title">Billing</div>
+                <div class="action-desc">Bill Orders</div>
+            </div>
+            <div class="action-card" data-section="reports">
+                <div class="action-icon">📦</div>
+                <div class="action-title">Stock</div>
+                <div class="action-desc">Check stock levels</div>
             </div>
         </div>
+        
+        <!-- Recent Activity Section -->
+       
     </div>
     <div id="slideMenu" class="slide-menu">
         <a href="#" class="close-btn">&times;</a>
