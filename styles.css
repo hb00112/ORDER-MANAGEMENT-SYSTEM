@@ -3474,7 +3474,39 @@ th:last-of-type {
     border-radius: 4px;
     transition: border-color 0.3s ease;
 }
+/* Delete Order Modal Styles */
+#deleteOrderModal .modal-header {
+    background-color: #dc3545;
+    color: white;
+}
 
+#deleteOrderModal .modal-body {
+    padding: 1.5rem;
+}
+
+#deleteOrderModal .order-details {
+    border-left: 4px solid #dc3545;
+}
+
+#deleteOrderModal .confirm-delete-btn {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#deleteOrderModal .confirm-delete-btn:hover {
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+}
+
+.delete-order-btn {
+    transition: all 0.2s ease;
+}
+
+.delete-order-btn:hover {
+    background-color: #dc3545;
+    color: white !important;
+    transform: scale(1.05);
+}
 #scanner-video {
     border-radius: 4px;
 }
