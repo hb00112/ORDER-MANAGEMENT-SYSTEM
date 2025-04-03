@@ -88,6 +88,12 @@ function createOrderElement(order, orderId) {
                         <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
                     </svg>
                 </button>
+                <button class="btn btn-outline-danger delete-order-btn ms-2" data-order-id="${orderId}" title="Delete Order">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                </button>
             </div>
         </div>
         ${formattedRemarks}
@@ -113,6 +119,77 @@ function createOrderElement(order, orderId) {
     return orderDiv;
 }
 
+
+// Add this modal HTML for delete confirmation
+const deleteModalHTML = `
+<div class="modal fade" id="deleteOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">⚠️ Delete Order Confirmation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete this order?</p>
+                <p class="fw-bold">This action cannot be undone!</p>
+                <div class="order-details mt-3 p-2 bg-light rounded">
+                    <p><strong>Order No:</strong> <span id="deleteOrderNumber">N/A</span></p>
+                    <p><strong>Party Name:</strong> <span id="deletePartyName">N/A</span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger confirm-delete-btn">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+</div>`;
+
+// Add the modal to the document body
+document.body.insertAdjacentHTML('beforeend', deleteModalHTML);
+const deleteOrderModal = new bootstrap.Modal(document.getElementById('deleteOrderModal'));
+let orderToDeleteId = null;
+
+// Event listener for delete order button
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-order-btn')) {
+        const orderId = e.target.closest('.delete-order-btn').getAttribute('data-order-id');
+        openDeleteOrderModal(orderId);
+    }
+});
+
+// Function to open delete confirmation modal
+async function openDeleteOrderModal(orderId) {
+    orderToDeleteId = orderId;
+    
+    // Get order data to display in modal
+    const orderSnapshot = await firebase.database().ref('billingOrders').child(orderId).once('value');
+    const order = orderSnapshot.val();
+    
+    if (order) {
+        document.getElementById('deleteOrderNumber').textContent = order.orderNumber || 'N/A';
+        document.getElementById('deletePartyName').textContent = order.partyName || 'N/A';
+    }
+    
+    deleteOrderModal.show();
+}
+
+// Event listener for confirm delete button
+document.querySelector('.confirm-delete-btn').addEventListener('click', async function() {
+    if (orderToDeleteId) {
+        try {
+            await firebase.database().ref('billingOrders').child(orderToDeleteId).remove();
+            showToast('Order deleted successfully', 'success');
+            loadBillingOrders(); // Refresh the orders list
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            showToast('Failed to delete order', 'error');
+        } finally {
+            deleteOrderModal.hide();
+            orderToDeleteId = null;
+        }
+    }
+});
 
 // Add this modal HTML for remarks
 const remarkModalHTML = `
