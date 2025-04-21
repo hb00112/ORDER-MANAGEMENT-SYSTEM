@@ -1217,20 +1217,206 @@ function updateTotals(modal) {
     modal.querySelector('#totalPending').textContent = `${totalPending}pc`;
 }
 
-// Add these helper functions
-
-
-
-
-
 function displaySummarizedOrders(orders, container) {
     console.log('Displaying summarized orders. Total orders:', orders.length);
     container.innerHTML = '';
+    
+    // Create a premium table structure
+    const table = document.createElement('table');
+    table.className = 'luxury-order-table';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th class="luxury-header">PARTY NAME</th>
+                <th class="luxury-header">ORDER DETAILS</th>
+                <th class="luxury-header">TOTAL QTY</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    container.appendChild(table);
+    const tbody = table.querySelector('tbody');
+
+    // Add luxury styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .luxury-order-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .luxury-header {
+            background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
+            color: white;
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 13px;
+            border: none;
+            position: sticky;
+            top: 0;
+        }
+        
+        .luxury-order-table td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            vertical-align: middle;
+            background: white;
+            position: relative;
+        }
+        
+        .luxury-order-table tbody tr {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+        
+        .luxury-order-table tbody tr:hover {
+            background: linear-gradient(to right, rgba(250,250,252,1) 0%, rgba(255,255,255,1) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        
+        .luxury-order-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .luxury-order-table tbody tr:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.03) 50%, transparent 100%);
+        }
+        
+        .party-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+        
+        .order-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .order-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        
+        .order-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        .order-colon {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin: 0 8px;
+        }
+        
+        .order-number {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 500;
+            text-align: left;
+        }
+        
+        .order-date {
+            font-size: 12px;
+            color: #95a5a6;
+            letter-spacing: 0.2px;
+        }
+        
+        .item-names {
+            display: block;
+            line-height: 1.5;
+            font-size: 13px;
+            color: #34495e;
+            font-weight: 400;
+        }
+        
+        .item-list {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+        
+        .item-list li {
+            padding: 2px 0;
+        }
+        
+        .total-quantity {
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            font-size: 15px;
+            position: relative;
+        }
+        
+        .total-quantity:after {
+            content: "";
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #3498db;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+        
+        /* Sent to billing indicator */
+        .sent-to-billing td:first-child {
+            border-left: 4px solid #27ae60;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .luxury-order-table {
+                font-size: 13px;
+            }
+            
+            .luxury-order-table td {
+                padding: 15px 12px;
+            }
+            
+            .luxury-header {
+                padding: 15px 12px;
+                font-size: 12px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
     const groupedOrders = groupOrdersByParty(orders);
-    console.log('Grouped orders:', groupedOrders);
     
     for (const [partyName, group] of Object.entries(groupedOrders)) {
-        // Get only items with non-zero SRQ
+        // Sort group by date (newest first)
+        group.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        
+        const newestOrder = group[0];
+        const oldestOrder = group[group.length - 1];
+        
         const nonZeroItems = group.flatMap(order => 
             (order.items || []).filter(item => {
                 const totalQuantity = Object.values(item.quantities || {})
@@ -1239,130 +1425,416 @@ function displaySummarizedOrders(orders, container) {
             })
         );
         
-        // Calculate total quantity only for non-zero SRQ items
         const totalQty = nonZeroItems.reduce((sum, item) => {
             const itemTotal = Object.values(item.quantities || {})
                 .reduce((itemSum, qty) => itemSum + parseInt(qty) || 0, 0);
             return sum + itemTotal;
         }, 0);
 
-        // Get unique item codes (without color) only for items with non-zero SRQ
-        const itemCodes = [...new Set(nonZeroItems.map(item => {
-            // Extract just the item code part (before the parenthesis)
-            const itemName = item.name;
-            return itemName.split('(')[0];
-        }))].join(', ');
+        // Get unique item codes without truncation
+        const uniqueItemCodes = [...new Set(nonZeroItems.map(item => 
+            item.name.split('(')[0].trim()
+        ))];
         
-        console.log('Creating row for:', partyName, 'Total Quantity:', totalQty, 'Items:', itemCodes);
+        // Create HTML list for items
+        const itemListHTML = `
+            <ul class="item-list">
+                ${uniqueItemCodes.map(code => `<li>${code}</li>`).join('')}
+            </ul>
+        `;
+
+        const newestOrderDate = new Date(newestOrder.dateTime);
+        const oldestOrderDate = new Date(oldestOrder.dateTime);
+        
+        const dateRange = newestOrderDate.toLocaleDateString() === oldestOrderDate.toLocaleDateString() ? 
+            newestOrderDate.toLocaleDateString() : 
+            `${oldestOrderDate.toLocaleDateString()} - ${newestOrderDate.toLocaleDateString()}`;
+
         const row = document.createElement('tr');
-        
-        // Check if any order in the group has been sent to billing
-        const sentToBilling = group.some(order => order.status === 'Sent to Billing');
-        if (sentToBilling) {
-            row.classList.add('sent-to-billing');
-        }
+        row.classList.toggle('sent-to-billing', group.some(o => o.status === 'Sent to Billing'));
         
         row.innerHTML = `
-            <td>${partyName}</td>
             <td>
-                <span class="item-names">${itemCodes}</span>
+                <div class="party-name">${partyName}</div>
+                <div class="order-date">${dateRange}</div>
             </td>
-            <td>${totalQty}</td>
+            <td>
+                <div class="order-details">
+                   
+                    <div class="item-names">${itemListHTML}</div>
+                </div>
+            </td>
+            <td class="total-quantity">${totalQty}</td>
         `;
+        
+        // Add subtle animation on hover
+        row.style.transition = 'all 0.3s ease';
+        
+        // Add click handler for the entire row
         row.addEventListener('click', () => {
-            openStockRemovalModal(partyName, group);
+            row.style.transform = 'scale(0.99)';
+            setTimeout(() => {
+                row.style.transform = '';
+                openPremiumStockRemovalModal(partyName, group);
+            }, 150);
         });
-        container.appendChild(row);
+        
+        tbody.appendChild(row);
     }
 }
-
-function openStockRemovalModal(partyName, orders) {
-    console.log('Opening modal for party:', partyName);
-    console.log('Orders:', orders);
-
-    const modal = document.getElementById('stockRemovalModal');
-    const modalContent = document.querySelector('#stockRemovalModal .modal-content');
-    const modalBody = document.querySelector('#stockRemovalModal .modal-body');
+function openPremiumStockRemovalModal(partyName, orders) {
+    console.log('Opening premium modal for party:', partyName);
     
-    // Set modal title
-    document.querySelector('#stockRemovalModal .modal-title').textContent = partyName;
+    // Create modal container with glass morphism effect
+    const modal = document.createElement('div');
+    modal.className = 'premium-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
     
-    // Create content for each order
-    let modalHTML = '';
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'premium-modal-content';
+    modalContent.style.cssText = `
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        width: 90%;
+        max-width: 1200px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        transform: translateY(20px);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+    
+    // Add header with close button
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'premium-modal-header';
+    modalHeader.style.cssText = `
+        padding: 20px 30px;
+        background: linear-gradient(135deg, rgba(58, 74, 107, 0.9) 0%, rgba(44, 62, 80, 0.95) 100%);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    `;
+    
+    const modalTitle = document.createElement('h2');
+    modalTitle.textContent = partyName;
+    modalTitle.style.cssText = `
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    `;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = `
+        background: none;
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    `;
+    closeBtn.addEventListener('mouseover', () => {
+        closeBtn.style.transform = 'rotate(90deg)';
+    });
+    closeBtn.addEventListener('mouseout', () => {
+        closeBtn.style.transform = 'rotate(0)';
+    });
+    closeBtn.addEventListener('click', () => {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(modal);
+        }, 300);
+    });
+    
+    modalHeader.appendChild(modalTitle);
+    modalHeader.appendChild(closeBtn);
+    
+    // Create modal body with tabs for each order
+    const modalBody = document.createElement('div');
+    modalBody.className = 'premium-modal-body';
+    modalBody.style.cssText = `
+        padding: 0;
+        overflow-y: auto;
+        max-height: calc(90vh - 70px);
+    `;
+    
+    // Create tabs container
+    const tabsContainer = document.createElement('div');
+    tabsContainer.style.cssText = `
+        display: flex;
+        background: rgba(240,240,240,0.7);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 0 20px;
+    `;
+    
+    // Create content container
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = `
+        padding: 20px 30px;
+    `;
+    
+    // Create tabs and content for each order
     orders.forEach((order, index) => {
         const orderDate = new Date(order.dateTime);
         const today = new Date();
         const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
         
-        modalHTML += `
-            <div class="order-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span style="font-size: 1.1em; color: #007bff;"> ${orderDate.toLocaleDateString()}</span>
-                <span class="order-number" style="font-size: 1.1em; color: #28a745; position: relative; cursor: pointer;" 
-                      data-order-id="${order.orderNumber || 'N/A'}"
-                      data-order-index="${index}"> 
-                    ${order.orderNumber || 'N/A'}
-                    <div class="download-buttons" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1000; 
-                         background: white; border: 1px solid #ddd; border-radius: 4px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                        <button class="btn btn-sm btn-primary download-img-btn" style="margin-right: 5px;">Download IMG</button>
-                        <button class="btn btn-sm btn-secondary download-pdf-btn">Download PDF</button>
-                    </div>
-                </span>
-                <span style="font-size: 1.1em; color: #e73838;"> ${daysSinceOrder} days ago</span>
-            </div>
-            <table class="table table-bordered order-table" id="order-table-${index}">
-                <thead>
-                    <tr>
-                        <th>Item Name & Color</th>
-                        <th>Sizes</th>
-                        <th>SRQ</th>
-                    </tr>
-                </thead>
-                <tbody>
+        // Create tab
+        const tab = document.createElement('button');
+        tab.className = 'premium-modal-tab';
+        tab.textContent = `Order #${order.orderNumber || 'N/A'}`;
+        tab.style.cssText = `
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
         `;
         
+        if (index === 0) {
+            tab.style.borderBottomColor = '#3498db';
+            tab.style.color = '#2c3e50';
+            tab.style.fontWeight = '600';
+        }
+        
+        tab.addEventListener('click', () => {
+            // Update active tab
+            document.querySelectorAll('.premium-modal-tab').forEach(t => {
+                t.style.borderBottomColor = 'transparent';
+                t.style.color = '#7f8c8d';
+                t.style.fontWeight = '500';
+            });
+            tab.style.borderBottomColor = '#3498db';
+            tab.style.color = '#2c3e50';
+            tab.style.fontWeight = '600';
+            
+            // Show corresponding content
+            document.querySelectorAll('.premium-order-content').forEach(c => {
+                c.style.display = 'none';
+            });
+            document.getElementById(`order-content-${index}`).style.display = 'block';
+        });
+        
+        tabsContainer.appendChild(tab);
+        
+        // Create content
+        const orderContent = document.createElement('div');
+        orderContent.className = 'premium-order-content';
+        orderContent.id = `order-content-${index}`;
+        orderContent.style.cssText = `
+            display: ${index === 0 ? 'block' : 'none'};
+        `;
+        
+        // Add order header
+        const orderHeader = document.createElement('div');
+        orderHeader.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        `;
+        
+        const orderDateElement = document.createElement('div');
+        orderDateElement.style.cssText = `
+            font-size: 14px;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+        `;
+        orderDateElement.innerHTML = `
+            <span style="margin-right: 10px; font-size: 18px;">📅</span>
+            ${orderDate.toLocaleDateString()} (${daysSinceOrder} days ago)
+        `;
+        
+        const orderActions = document.createElement('div');
+        orderActions.style.cssText = `
+            display: flex;
+            gap: 10px;
+        `;
+        
+        const downloadImgBtn = document.createElement('button');
+        downloadImgBtn.textContent = 'Download IMG';
+        downloadImgBtn.style.cssText = `
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        `;
+        downloadImgBtn.addEventListener('mouseover', () => {
+            downloadImgBtn.style.transform = 'translateY(-2px)';
+            downloadImgBtn.style.boxShadow = '0 6px 15px rgba(52, 152, 219, 0.4)';
+        });
+        downloadImgBtn.addEventListener('mouseout', () => {
+            downloadImgBtn.style.transform = 'translateY(0)';
+            downloadImgBtn.style.boxShadow = '0 4px 10px rgba(52, 152, 219, 0.3)';
+        });
+        downloadImgBtn.addEventListener('click', () => {
+            pendingOrderImg(order.orderNumber, index);
+        });
+        
+        const downloadPdfBtn = document.createElement('button');
+        downloadPdfBtn.textContent = 'Download PDF';
+        downloadPdfBtn.style.cssText = `
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        `;
+        downloadPdfBtn.addEventListener('mouseover', () => {
+            downloadPdfBtn.style.transform = 'translateY(-2px)';
+            downloadPdfBtn.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+        });
+        downloadPdfBtn.addEventListener('mouseout', () => {
+            downloadPdfBtn.style.transform = 'translateY(0)';
+            downloadPdfBtn.style.boxShadow = '0 4px 10px rgba(231, 76, 60, 0.3)';
+        });
+        downloadPdfBtn.addEventListener('click', () => {
+            pendingOrderPdf(order.orderNumber, index);
+        });
+        
+        orderActions.appendChild(downloadImgBtn);
+        orderActions.appendChild(downloadPdfBtn);
+        orderHeader.appendChild(orderDateElement);
+        orderHeader.appendChild(orderActions);
+        orderContent.appendChild(orderHeader);
+        
+        // Add items table
         if (order.items && Array.isArray(order.items)) {
+            const table = document.createElement('table');
+            table.style.cssText = `
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                margin-bottom: 20px;
+            `;
+            
+            const thead = document.createElement('thead');
+            thead.style.cssText = `
+                background: rgba(240,240,240,0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                position: sticky;
+                top: 0;
+            `;
+            
+            thead.innerHTML = `
+                <tr>
+                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid rgba(0,0,0,0.1);">Item Name & Color</th>
+                    <th style="padding: 15px; text-align: left; border-bottom: 2px solid rgba(0,0,0,0.1);">Sizes</th>
+                    <th style="padding: 15px; text-align: right; border-bottom: 2px solid rgba(0,0,0,0.1);">Quantity</th>
+                </tr>
+            `;
+            
+            const tbody = document.createElement('tbody');
+            
             order.items.forEach(item => {
                 const sizesWithQuantities = Object.entries(item.quantities || {})
                     .map(([size, quantity]) => `${size}/${quantity}`)
                     .join(', ');
-                const totalQuantity = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
+                const itemQty = Object.values(item.quantities || {}).reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
                 
-                modalHTML += `
-                    <tr>
-                        <td>${item.name}(${item.color || 'N/A'})</td>
-                        <td class="sizes-cell">${sizesWithQuantities}</td>
-                        <td>${totalQuantity}</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.style.cssText = `
+                    transition: background-color 0.3s ease;
                 `;
+                row.addEventListener('mouseover', () => {
+                    row.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+                });
+                row.addEventListener('mouseout', () => {
+                    row.style.backgroundColor = '';
+                });
+                
+                row.innerHTML = `
+                    <td style="padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <div style="font-weight: 500;">${item.name}</div>
+                        <div style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">
+                            Color: ${item.color || 'N/A'}
+                        </div>
+                    </td>
+                    <td style="padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        ${sizesWithQuantities}
+                    </td>
+                    <td style="padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: right; font-weight: 500;">
+                        ${itemQty}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
             });
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            orderContent.appendChild(table);
         } else {
-            modalHTML += '<tr><td colspan="3">No items found or error in data structure</td></tr>';
+            orderContent.innerHTML += '<p>No items found or error in data structure</p>';
         }
         
-        modalHTML += `
-                </tbody>
-            </table>
-        `;
-        
-        if (index < orders.length - 1) {
-            modalHTML += '<hr>'; // Add a separator between orders
+        contentContainer.appendChild(orderContent);
+    });
+    
+    modalBody.appendChild(tabsContainer);
+    modalBody.appendChild(contentContainer);
+    
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Animate modal in
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(modal);
+            }, 300);
         }
     });
     
-    modalBody.innerHTML = modalHTML;
-    
-    // Set modal to full screen with small margins
-    modalContent.style.width = '98%';
-    modalContent.style.height = '96%';
-    modalContent.style.margin = '1% auto';
-    
-    modal.style.display = 'block';
-    
     // Store orders data in a global variable for access by download functions
     window.currentModalOrders = orders;
-    
-    // Add event listeners for double click and long press
-    setupOrderNumberInteractions();
 }
 
 function setupOrderNumberInteractions() {
@@ -1821,28 +2293,6 @@ function viewOrderDetails(orderId) {
             console.error("Error fetching order details: ", error);
         });
 }
-
-/*
-document.addEventListener('DOMContentLoaded', function() {
-    const allSections = document.querySelectorAll('.section');
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-    const slideMenuLinks = document.querySelectorAll('.slide-menu a:not(.close-btn)');
-
-    // Remove archived order button event listener
-    // Remove hideArchivedOrderSection function
-
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            // Handle navigation without archived orders
-        });
-    });
-
-    slideMenuLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            // Handle navigation without archived orders
-        });
-    });
-});*/
 
 
 
