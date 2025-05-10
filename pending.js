@@ -627,19 +627,22 @@ function exportOrderToExcel(order) {
     
     Set ws = ActiveSheet
     
-    ' Find last row of the form (searching up to row 5840)
-    formLastRow = 5840
+    ' Form data starts at row 3, header is on row 2, ends at row 4351
+    formLastRow = 4351
     
-    ' Find last row of input data (starting from row 5842)
+    ' Find last row of input data
     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     
+    ' Debug message to confirm data range
+    MsgBox "Starting process. Input data from row 4352 to " & lastRow, vbInformation
+    
     ' Clear any previous highlighting in the input area
-    ws.Range("A5842:D" & lastRow).Interior.ColorIndex = xlNone
+    ws.Range("A4352:D" & lastRow).Interior.ColorIndex = xlNone
     
     unmatchedCount = 0
     
-    ' Loop through each input row starting from 5842
-    For inputRow = 4680 To lastRow
+    ' Loop through each input row starting from 4352
+    For inputRow = 4352 To lastRow
         found = False
         
         ' Get input values
@@ -648,32 +651,36 @@ function exportOrderToExcel(order) {
         Dim inputSize As String
         Dim inputQty As Variant
         
-        inputStyle = ws.Cells(inputRow, 1).Value  ' Column A
-        inputColor = ws.Cells(inputRow, 2).Value  ' Column B
-        inputSize = ws.Cells(inputRow, 3).Value   ' Column C
-        inputQty = ws.Cells(inputRow, 4).Value    ' Column D
+        inputStyle = ws.Cells(inputRow, 1).Value ' Column A
+        inputColor = ws.Cells(inputRow, 2).Value ' Column B
+        inputSize = ws.Cells(inputRow, 3).Value  ' Column C
+        inputQty = ws.Cells(inputRow, 4).Value   ' Column D
         
         ' Skip empty rows
         If Trim(inputStyle) <> "" Then
             ' Loop through form rows to find matching entry
-            For formRow = 1 To formLastRow
+            For formRow = 3 To formLastRow  ' Start from row 3 (after header row 2)
                 ' Get form values
                 Dim formStyle As String
                 Dim formColor As String
                 Dim formSize As String
                 
-                formStyle = ws.Cells(formRow, "D").Value   ' Style column (changed from C to D)
-                formColor = ws.Cells(formRow, "F").Value   ' Color column (changed from E to F)
-                formSize = ws.Cells(formRow, "k").Value    ' Size column (changed from I to J)
+                formStyle = ws.Cells(formRow, "D").Value ' Style column D
+                formColor = ws.Cells(formRow, "F").Value ' Color column F
+                formSize = ws.Cells(formRow, "K").Value  ' Size column K
                 
                 ' Check if all criteria match
                 If formStyle = inputStyle And _
                    formColor = inputColor And _
                    formSize = inputSize Then
-                    
-                    ' Update quantity in column M
+                   
+                    ' Update quantity in column O
                     ws.Cells(formRow, "O").Value = inputQty
                     found = True
+                    Debug.Print "Match found for Style=" & inputStyle & _
+                            ", Color=" & inputColor & _
+                            ", Size=" & inputSize & _
+                            " at row " & formRow
                     Exit For
                 End If
             Next formRow
@@ -682,14 +689,15 @@ function exportOrderToExcel(order) {
             If Not found Then
                 ' Highlight entire row in light red
                 With ws.Range("A" & inputRow & ":D" & inputRow).Interior
-                    .Color = RGB(255, 200, 200)  ' Light red color
+                    .Color = RGB(255, 200, 200) ' Light red color
                 End With
+                
                 unmatchedCount = unmatchedCount + 1
                 
                 ' Log unmatched entry details
                 Debug.Print "No match found for: Style=" & inputStyle & _
-                           ", Color=" & inputColor & _
-                           ", Size=" & inputSize
+                            ", Color=" & inputColor & _
+                            ", Size=" & inputSize
             End If
         End If
     Next inputRow
@@ -697,10 +705,12 @@ function exportOrderToExcel(order) {
     ' Show completion message with count of unmatched entries
     If unmatchedCount > 0 Then
         MsgBox "Update complete!" & vbNewLine & _
-               unmatchedCount & " unmatched entries were found and highlighted in red.", _
+               unmatchedCount & " unmatched entries were found and highlighted in red." & vbNewLine & _
+               "(Check Immediate Window for details - Press Ctrl+G in VBA Editor)", _
                vbInformation
     Else
-        MsgBox "Update complete! All entries were successfully matched.", _
+        MsgBox "Update complete! All entries were successfully matched." & vbNewLine & _
+               "(Check Immediate Window for match details - Press Ctrl+G in VBA Editor)", _
                vbInformation
     End If
 End Sub
