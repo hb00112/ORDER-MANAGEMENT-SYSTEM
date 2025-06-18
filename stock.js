@@ -114,12 +114,19 @@ function handleFileUpload() {
             const workbook = XLSX.read(data, {type: 'array'});
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
+            
+            // Convert to JSON starting from row 8 (assuming row 7 has headers)
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {range: 7});
+            
             if (validateFileFormat(jsonData)) {
-                uploadStockData(jsonData);
+                const processedData = processRawStockData(jsonData);
+                if (processedData.length > 0) {
+                    uploadStockData(processedData);
+                } else {
+                    alert('No valid stock items found in the file. Please check if CLS values are valid (not blank and < 100).');
+                }
             } else {
-                alert('Invalid file format. Please ensure the XLS file has the correct column headers: "item name", "color", "size", "quantity".');
+                alert('Invalid file format. Please ensure the XLS file has the correct column headers: "Product Name" and "CLS".');
             }
         };
         reader.readAsArrayBuffer(file);
@@ -128,9 +135,71 @@ function handleFileUpload() {
     }
 }
 
+function processRawStockData(rawData) {
+    const processedData = [];
+    
+    for (const row of rawData) {
+        const productName = row['Product Name'];
+        const clsValue = row['CLS'];
+        
+        // Skip if either field is blank or CLS is >= 100
+        if (!productName || !clsValue || clsValue >= 100) {
+            continue;
+        }
+        
+        // Extract components from product name
+        const itemName = extractItemName(productName);
+        const color = extractColor(productName);
+        const size = extractSize(productName);
+        
+        if (itemName && color && size) {
+            processedData.push({
+                'item name': itemName,
+                'color': color,
+                'size': size,
+                'quantity': clsValue
+            });
+        }
+    }
+    
+    return processedData;
+}
+
+function extractItemName(rawData) {
+    try {
+        const dashIndex = rawData.indexOf('-');
+        return dashIndex > 0 ? rawData.substring(0, dashIndex) : '';
+    } catch (e) {
+        console.error('Error extracting item name:', e);
+        return '';
+    }
+}
+
+function extractColor(rawData) {
+    try {
+        // Split by commas and get the second last element
+        const parts = rawData.split(',');
+        return parts.length >= 2 ? parts[parts.length - 2].trim() : '';
+    } catch (e) {
+        console.error('Error extracting color:', e);
+        return '';
+    }
+}
+
+function extractSize(rawData) {
+    try {
+        // Get everything after the last comma
+        const lastComma = rawData.lastIndexOf(',');
+        return lastComma > 0 ? rawData.substring(lastComma + 1).trim() : '';
+    } catch (e) {
+        console.error('Error extracting size:', e);
+        return '';
+    }
+}
+
 function validateFileFormat(data) {
     if (data.length === 0) return false;
-    const requiredHeaders = ['item name', 'color', 'size', 'quantity'];
+    const requiredHeaders = ['Product Name', 'CLS'];
     const fileHeaders = Object.keys(data[0]);
     return requiredHeaders.every(header => fileHeaders.includes(header));
 }
@@ -518,62 +587,11 @@ function setupFirebaseListener() {
 
 // Add this code to your existing stock.js file
 
-function generateStockTemplate() {
-    // Create a new workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Create headers
-    const headers = [["item name", "color", "size", "quantity", "Raw Input"]];
-    
-    // Create an array for formulas
-    let data = headers;
-    
-    // Generate formulas for 2000 rows
-    for (let i = 2; i <= 2000; i++) {
-        data.push([
-            {f: `=LEFT(E${i},FIND("-",E${i})-1)`},  // Column A formula
-            {f: `=TRIM(MID(SUBSTITUTE(E${i},",",REPT(" ",LEN(E${i}))), LEN(E${i})*(COUNTA(MID(E${i},FIND(",",E${i})+1,LEN(E${i})),",")-1), LEN(E${i})))`},  // Column B formula
-            {f: `=TRIM(RIGHT(SUBSTITUTE(E${i},",",REPT(" ",LEN(E${i}))),LEN(E${i})))`},  // Column C formula
-            "",  // Column D (empty for user input)
-            ""   // Column E (empty for user input)
-        ]);
 
-    
-    }
-    
-    // Create worksheet and add data
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    
-    // Set column widths
-    const colWidths = [
-        {wch: 15},  // A
-        {wch: 15},  // B
-        {wch: 10},  // C
-        {wch: 10},  // D
-        {wch: 30},  // E
-    ];
-    ws['!cols'] = colWidths;
-    
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Stock Template");
-    
-    // Generate filename with current date and time
-    const now = new Date();
-    const filename = `stockupload_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
-    
-    // Save the file
-    XLSX.writeFile(wb, filename);
-
-    const modal = document.getElementById('templateInstructionsModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
 
 function showTemplateInstructionsModal() {
     let modal = document.getElementById('templateInstructionsModal');
     
-    // Create the modal if it doesn't exist
     if (!modal) {
         modal = document.createElement('div');
         modal.className = 'instructionModal';
@@ -581,31 +599,24 @@ function showTemplateInstructionsModal() {
         modal.innerHTML = `
             <div class="instructionModal-content">
                 <span class="instructionClose">&times;</span>
-                <h2>Template Instructions</h2>
+                <h2>Upload Instructions</h2>
                 <ol>
-    <li>Download the template using the button below.</li>
-    <li>In column D, enter the CLS (Closing Stock) from the DIXDMS-generated stock file.</li>
-    <li>In column E, enter the product name in the format: "A014-BRA-NPNW-P1,CMG,34D". Follow the same format for all items.</li>
-    <li>After all data is entered correctly, copy the entire dataset and paste it as     **Paste as Value** in a new XLS file.</li>
-    <li>Delete column E (Raw Data column).</li>
-    <li>Save the file and upload it using the "Upload Stock Data" button in the Stock Updation section.</li>
-</ol>
-                <button id="downloadTemplateBtn" class="btn btn-primary">Download Template</button>
+                    <li>Upload the raw stock file directly from DIXDMS</li>
+                    <li>The file must contain columns "Product Name" (B) and "CLS" (L)</li>
+                    <li>Only rows with CLS values (not blank and less than 100) will be processed</li>
+                    <li>The system will automatically extract item name, color, and size from the Product Name column</li>
+                    <li>Data processing starts from row 8 (row 7 should contain headers)</li>
+                </ol>
             </div>
         `;
         document.body.appendChild(modal);
 
         const closeBtn = modal.querySelector('.instructionClose');
         closeBtn.onclick = () => modal.style.display = 'none';
-
-        const downloadBtn = modal.querySelector('#downloadTemplateBtn');
-        downloadBtn.addEventListener('click', generateStockTemplate);
     }
 
-    // Show the modal
     modal.style.display = 'block';
 
-    // Close modal when clicking outside
     window.onclick = (event) => {
         if (event.target == modal) {
             modal.style.display = 'none';
