@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.createElement('button');
     downloadBtn.className = 'btn btn-secondary mt-2';
     downloadBtn.id = 'showTemplateInstructionsBtn';
-    downloadBtn.textContent = 'Download Template';
+    downloadBtn.textContent = 'How to Upload?';
     downloadBtn.addEventListener('click', showTemplateInstructionsModal);
     
     const uploadBtn = document.getElementById('uploadStockBtn');
