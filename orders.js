@@ -1473,7 +1473,7 @@ function createColorContainer(item, color) {
                 .map(
                   (size) => `
                   <div class="size-quantity-row">
-                      <label class="size-label">${size}</label>
+                      <label class="size-label" data-size="${size}">${size}</label>
                       <input type="number" name="qty_${color}_${size}" min="0" class="quantity-input">
                   </div>
               `
@@ -1483,6 +1483,69 @@ function createColorContainer(item, color) {
       </div>
   `;
 }
+
+function setupSizeLabelInteractions() {
+  document.querySelectorAll('.size-label').forEach(label => {
+    let pressTimer;
+    let isLongPress = false;
+    
+    // Handle mouse down (for long press)
+    label.addEventListener('mousedown', function(e) {
+      isLongPress = false;
+      const input = this.nextElementSibling;
+      
+      // Set timer for long press
+      pressTimer = setTimeout(() => {
+        isLongPress = true;
+        // Long press action - reset to 0
+        input.value = 0;
+        input.dispatchEvent(new Event('change'));
+      }, 1000); // 1 second for long press
+    });
+    
+    // Handle mouse up (cancel long press if released early)
+    label.addEventListener('mouseup', function(e) {
+      clearTimeout(pressTimer);
+    });
+    
+    // Handle mouse leave (cancel long press if mouse leaves)
+    label.addEventListener('mouseleave', function(e) {
+      clearTimeout(pressTimer);
+    });
+    
+    // Handle click (short press)
+    label.addEventListener('click', function(e) {
+      if (!isLongPress) {
+        const input = this.nextElementSibling;
+        const currentValue = parseInt(input.value) || 0;
+        input.value = currentValue + 1;
+        input.dispatchEvent(new Event('change'));
+      }
+      isLongPress = false;
+    });
+    
+    // Touch events for mobile devices
+    label.addEventListener('touchstart', function(e) {
+      isLongPress = false;
+      const input = this.nextElementSibling;
+      
+      pressTimer = setTimeout(() => {
+        isLongPress = true;
+        input.value = 0;
+        input.dispatchEvent(new Event('change'));
+      }, 1000);
+    });
+    
+    label.addEventListener('touchend', function(e) {
+      clearTimeout(pressTimer);
+    });
+    
+    label.addEventListener('touchcancel', function(e) {
+      clearTimeout(pressTimer);
+    });
+  });
+}
+
 
 function handleNewColorClick(event) {
   event.stopPropagation();
@@ -1514,9 +1577,7 @@ function returnToHomepage() {
 }
 
 function showItemDetails(item) {
-  const existingDetailsContainer = document.getElementById(
-    "itemDetailsContainer"
-  );
+  const existingDetailsContainer = document.getElementById("itemDetailsContainer");
   if (existingDetailsContainer) {
     existingDetailsContainer.remove();
   }
@@ -1544,7 +1605,13 @@ function showItemDetails(item) {
   // Add event listener for the [new color] container
   const newColorContainer = detailsContainer.querySelector('.color-container[data-color="[new color]"]');
   newColorContainer.addEventListener("click", handleNewColorClick);
-} 
+  
+  // Set up the size label interactions after a small delay to ensure DOM is ready
+  setTimeout(() => {
+    setupSizeLabelInteractions();
+  }, 50);
+}
+
 
 function resetItemSelection() {
   document.getElementById("itemSearch").value = "";
