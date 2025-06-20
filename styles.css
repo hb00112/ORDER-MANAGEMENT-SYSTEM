@@ -3354,7 +3354,7 @@ body.modal-open {
 .modal-footer {
     border-top: none;
     padding-top: 0;
-    position: fixed;
+   /* position: fixed;*/
     bottom: 0;
     left: 0;
     right: 0;
