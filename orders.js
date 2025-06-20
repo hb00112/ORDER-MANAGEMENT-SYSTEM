@@ -2540,9 +2540,9 @@ function showOrderConfirmationModal(order, imgData) {
 
   // Play advanced confirmation sound
   playAdvancedConfirmationSound();
-  sendWebPushNotification(order.partyName);
+  //sendWebPushNotification(order.partyName);
   // Send notification to Telegram
-  sendTelegramNotification(order.partyName, order.totalQuantity, order.orderNumber, imgData);
+  //sendTelegramNotification(order.partyName, order.totalQuantity, order.orderNumber, imgData);
 
   // Update pending orders list
   loadPendingOrders();
@@ -2615,233 +2615,130 @@ function handlePlaceOrder() {
   placeOrderBtn.textContent = "Processing...";
   
   const partyName = document.getElementById("partySearch").value;
-  const dateTime = new Date().toISOString();
-  const orderDate = dateTime.split('T')[0];
+  const dateTime = new Date();
+  const formattedDate = dateTime.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
   const orderNote = document.getElementById("orderNote").value.trim();
 
-  // Create a canvas element
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  // Calculate total quantity and rows properly
-  let totalQuantity = 0;
-  let totalRows = 0;
-  cart.forEach(item => {
-    let itemHasContent = false;
-    Object.entries(item.colors).forEach(([color, sizes]) => {
-      let colorTotal = 0;
-      Object.entries(sizes).forEach(([size, qty]) => {
-        colorTotal += qty;
-      });
-      if (colorTotal > 0) {
-        totalRows++;
-        itemHasContent = true;
-        totalQuantity += colorTotal;
-      }
+  try {
+    // Create a new PDF document
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
     });
-    if (itemHasContent) {
-      totalRows++; // Add extra row for spacing between items
-    }
-  });
-  
-  // Set canvas dimensions
-  canvas.width = 800;
-  canvas.height = Math.max(600, 150 + (totalRows * 30));
-  
-  function createOrderSummaryImage() {
-    // Helper function for text wrapping
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(', ');
-      let line = '';
-      let lines = [];
-      
-      for (let i = 0; i < words.length; i++) {
-        const testLine = line + (line ? ', ' : '') + words[i];
-        const metrics = ctx.measureText(testLine);
-        
-        if (metrics.width > maxWidth && line !== '') {
-          lines.push(line);
-          line = words[i];
-        } else {
-          line = testLine;
-        }
-      }
-      lines.push(line);
-      
-      return lines;
-    }
 
-    // Set white background
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Set text styles for header
-    ctx.fillStyle = 'black';
-    ctx.font = 'bold 22px Arial';
-    
+    // Set document metadata
+    doc.setProperties({
+      title: `Order for ${partyName}`,
+      subject: 'Order Summary',
+      author: 'KA OMS',
+      keywords: 'order, summary',
+      creator: 'KA OMS System'
+    });
+
     // Add header
-    ctx.fillText(`Order Summary - ${partyName}`, 40, 40);
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(`Date: ${orderDate}`, 40, 70);
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Order Summary - ${partyName}`, 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`Date: ${formattedDate}         -`, 105, 30, { align: 'right' });
+    doc.text(`-       Created by: ${username}`, 105, 30, { align: 'left' }); 
 
-    // Draw table header line
-    ctx.beginPath();
-    ctx.moveTo(40, 85);
-    ctx.lineTo(760, 85);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // Add a line separator
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 35, 190, 35);
 
-    // Define column positions
-    const columns = {
-      item: { x: 40, width: 120 },
-      color: { x: 180, width: 120 },
-      sizeQty: { x: 320, width: 300 },
-      total: { x: 640, width: 80 }
-    };
+    // Prepare data for the table
+    const tableData = [];
+    let totalQuantity = 0;
 
-    // Draw table headers
-    let y = 110;
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('Item', columns.item.x, y);
-    ctx.fillText('Color', columns.color.x, y);
-    ctx.fillText('Size/Quantity', columns.sizeQty.x, y);
-    ctx.fillText('Total', columns.total.x, y);
-
-    // Draw header underline
-    ctx.beginPath();
-    ctx.moveTo(40, y + 10);
-    ctx.lineTo(760, y + 10);
-    ctx.stroke();
-
-    // Set font for table content
-    ctx.font = '14px Arial';
-    y += 35;
-
-    // Track the starting y position
-    const startY = y;
-    let currentY = startY;
-
-    // Draw table content
-    cart.forEach((item) => {
-      let itemTotal = 0;
-      let itemHasContent = false;
-      let firstValidColor = true;
-
+    cart.forEach(item => {
       Object.entries(item.colors).forEach(([color, sizes]) => {
         let colorTotal = 0;
-        let sizeQtyPairs = [];
+        const sizeDetails = [];
         
         Object.entries(sizes).forEach(([size, qty]) => {
           if (qty > 0) {
+            sizeDetails.push(`${size}: ${qty}`);
             colorTotal += qty;
-            itemTotal += qty;
-            sizeQtyPairs.push(`${size}:${qty}`);
+            totalQuantity += qty;
           }
         });
 
         if (colorTotal > 0) {
-          itemHasContent = true;
-          
-          // Calculate wrapped lines for size/quantity
-          const sizeQtyText = sizeQtyPairs.join(', ');
-          const wrappedLines = wrapText(ctx, sizeQtyText, columns.sizeQty.x, currentY, columns.sizeQty.width, 25);
-          
-          // Adjust row height based on number of wrapped lines
-          const rowHeight = Math.max(30, wrappedLines.length * 25);
-          
-          // Draw item name for first valid color
-          if (firstValidColor) {
-            ctx.fillText(item.name, columns.item.x, currentY);
-            firstValidColor = false;
-          }
-
-          // Draw color
-          ctx.fillText(color, columns.color.x, currentY);
-
-          // Draw wrapped size/quantity pairs
-          wrappedLines.forEach((line, i) => {
-            ctx.fillText(line, columns.sizeQty.x, currentY + (i * 25));
+          tableData.push({
+            item: item.name,
+            color: color,
+            sizes: sizeDetails.join(', '),
+            total: colorTotal
           });
-
-          // Draw total for this color
-          ctx.fillText(colorTotal.toString(), columns.total.x, currentY);
-
-          // Draw horizontal line
-          ctx.beginPath();
-          ctx.moveTo(40, currentY + rowHeight - 15);
-          ctx.lineTo(760, currentY + rowHeight - 15);
-          ctx.strokeStyle = '#e0e0e0';
-          ctx.stroke();
-
-          currentY += rowHeight;
         }
       });
+    });
 
-      // Add spacing between items if this item had content
-      if (itemHasContent) {
-        currentY += 10;
+    // Add the table
+    doc.autoTable({
+      startY: 40,
+      head: [['Item', 'Color', 'Size/Qty', 'Total']],
+      body: tableData.map(row => [row.item, row.color, row.sizes, row.total]),
+      theme: 'grid',
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 'auto' },
+        3: { cellWidth: 20 }
+      },
+      margin: { top: 40 },
+      didDrawPage: function(data) {
+        // Footer
+        doc.setFontSize(10);
+        doc.setTextColor(150);
+        doc.text(`Page ${data.pageCount}`, 105, 285, { align: 'center' });
       }
     });
 
-    // Draw final total line
-    ctx.beginPath();
-    ctx.moveTo(40, currentY + 5);
-    ctx.lineTo(760, currentY + 5);
-    ctx.strokeStyle = '#000';
-    ctx.stroke();
+    // Add totals
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Total Quantity: ${totalQuantity}`, 20, finalY);
 
-    // Draw total quantity
-    currentY += 30;
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(`Total Quantity: ${totalQuantity}`, 40, currentY);
-
-    // Add order note if present
+    // Add order notes if present
     if (orderNote) {
-      currentY += 40;
-      ctx.fillText('Order Notes:', 40, currentY);
-      ctx.font = '14px Arial';
+      const notesY = finalY + 10;
+      doc.setFontSize(12);
+      doc.text('Order Notes:', 20, notesY);
       
-      // Handle multiline notes
-      const words = orderNote.split(' ');
-      let line = '';
-      const maxWidth = 700;
-      
-      words.forEach(word => {
-        const testLine = line + word + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && line !== '') {
-          ctx.fillText(line, 40, currentY);
-          line = word + ' ';
-          currentY += 20;
-        } else {
-          line = testLine;
-        }
-      });
-      ctx.fillText(line, 40, currentY);
+      // Split notes into multiple lines if needed
+      const splitNotes = doc.splitTextToSize(orderNote, 170);
+      doc.setFontSize(10);
+      doc.text(splitNotes, 20, notesY + 7);
     }
 
-    return canvas.toDataURL('image/png');
-  }
-
-  try {
-    // Generate the image
-    const imgData = createOrderSummaryImage();
-    
-    // Save the image
-    const link = document.createElement("a");
-    link.href = imgData;
-    link.download = `${partyName.replace(/\s+/g, "_")}_${dateTime.replace(/[:.]/g, "-")}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Save the PDF
+    const fileName = `${partyName.replace(/[^a-z0-9]/gi, '_')}_${formattedDate.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+    doc.save(fileName);
 
     // Continue with order processing...
-    checkExistingOrder(partyName, orderDate)
+    checkExistingOrder(partyName, formattedDate)
       .then((existingOrder) => {
         if (existingOrder) {
           return new Promise((resolve) => {
-            if (confirm(`Another order for ${partyName} on ${orderDate} already exists. Do you want to add to the same order?`)) {
+            if (confirm(`Another order for ${partyName} on ${formattedDate} already exists. Do you want to add to the same order?`)) {
               resolve({ merge: true, existingOrder });
             } else {
               resolve({ merge: false });
@@ -2855,7 +2752,7 @@ function handlePlaceOrder() {
         if (merge) {
           const mergedOrder = mergeOrders(existingOrder, {
             partyName: partyName,
-            dateTime: dateTime,
+            dateTime: dateTime.toISOString(),
             items: cart,
             status: "Pending",
             totalQuantity: totalQuantity,
@@ -2867,7 +2764,7 @@ function handlePlaceOrder() {
             const newOrder = {
               orderNumber: orderNumber,
               partyName: partyName,
-              dateTime: dateTime,
+              dateTime: dateTime.toISOString(),
               items: cart,
               status: "Pending",
               totalQuantity: totalQuantity,
@@ -2888,7 +2785,7 @@ function handlePlaceOrder() {
 
         // Show the order confirmation modal
         try {
-          showOrderConfirmationModal(order, imgData);
+          showOrderConfirmationModal(order);
         } catch (error) {
           console.error("Error showing confirmation modal:", error);
           alert("Your order has been placed successfully, but there was an error showing the confirmation. Order number: " + order.orderNumber);
@@ -2915,8 +2812,8 @@ function handlePlaceOrder() {
         placeOrderBtn.textContent = "Place Order";
       });
   } catch (error) {
-    console.error("Error creating order summary image:", error);
-    alert("An error occurred while creating the order summary. Please try again.");
+    console.error("Error creating PDF:", error);
+    alert("An error occurred while creating the PDF. Please try again.");
     placeOrderBtn.disabled = false;
     placeOrderBtn.textContent = "Place Order";
   }
