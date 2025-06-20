@@ -1500,7 +1500,7 @@ function setupSizeLabelInteractions() {
         // Long press action - reset to 0
         input.value = 0;
         input.dispatchEvent(new Event('change'));
-      }, 1000); // 1 second for long press
+      }, 800); // 1 second for long press
     });
     
     // Handle mouse up (cancel long press if released early)
