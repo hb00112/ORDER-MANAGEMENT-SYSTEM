@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeUI();
             loadPendingOrders(); // This will now also load archived orders
             startSyncCycle();
+            
+// Call this after loading orders
+checkPendingOrdersForExpiry();
         })
         .catch(error => console.error("Error initializing IndexedDB:", error));
 });
@@ -64,6 +67,48 @@ function initializeUI() {
 
     // Set up realtime listener for new pending orders
     setupRealtimeListener();
+}
+
+function checkPendingOrdersForExpiry() {
+    const now = new Date();
+    const warningThreshold = new Date(now.getTime() + (10 * 24 * 60 * 60 * 1000)); // 10 days before expiry
+    const criticalThreshold = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000)); // 5 days before expiry
+    
+    getOrdersFromIndexedDB()
+        .then(orders => {
+            orders.forEach(order => {
+                if (order.expiryDate) {
+                    const expiryDate = new Date(order.expiryDate);
+                    const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    const orderElement = document.querySelector(`[data-order-id="${order.id}"]`);
+                    if (orderElement) {
+                        // Remove existing classes
+                        orderElement.classList.remove(
+                            'expiry-normal', 'expiry-warning', 'expiry-critical', 'expiry-expired'
+                        );
+                        
+                        // Add appropriate class
+                        if (expiryDate <= now) {
+                            orderElement.classList.add('expiry-expired');
+                        } else if (expiryDate <= criticalThreshold) {
+                            orderElement.classList.add('expiry-critical');
+                        } else if (expiryDate <= warningThreshold) {
+                            orderElement.classList.add('expiry-warning');
+                        } else {
+                            orderElement.classList.add('expiry-normal');
+                        }
+                        
+                        // Add tooltip
+                        orderElement.setAttribute('data-bs-toggle', 'tooltip');
+                        orderElement.setAttribute('title', 
+                            `Expires in ${daysRemaining} days (${expiryDate.toLocaleDateString()})`);
+                    }
+                }
+            });
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
 }
 
 function syncWithFirebase() {
