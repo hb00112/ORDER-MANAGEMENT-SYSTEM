@@ -132,7 +132,7 @@
         <a href="#" data-section="userManagement">User Management</a>
         <a href="#" data-section="stockUpdation">Stock Updation</a>
         <a href="#" data-section="stock">Stock</a>
-        <a href="#" data-section="purchaseorder">Purchase Order</a>
+       <a href="#" data-section="expiredOrders">Expired Orders</a>
         <a href="#" data-section="toTempOrder">TEMP Order</a>
         <a href="#" data-section="orderapprove">Order Approval</a>
         <a href="#" data-section="pdf">PDF Editor</a>
@@ -305,75 +305,24 @@
             <strong>NOTE:</strong> Once the XLS file is uploaded, the current stock data will be completely reset and replaced with the new data from the file. This action cannot be undone, so please ensure that the file is accurate before proceeding. Any errors may result in incorrect stock levels. Upload the file carefully to avoid potential issues.
         </div>
     </div>
-    <div id="purchaseorder" class="section">
-        <h4>Purchase Orders</h4>
-        <p>Purchase orders will be displayed here.</p>
-        <button id="purchaseFormatBtn" class="purchase-order-button">Purchase Format</button>
-        <button id="placeOrder2Btn" class="place-order-button">Place Order</button>
-    
-        <!-- Place Order Modal -->
-        <div id="placeOrderModal" class="po-modal">
-            <div class="po-modal-content">
-                <span class="po-modal-close">&times;</span>
-                <h2>Place Order</h2>
-                <div id="poStyleGrid" class="po-grid"></div>
-            </div>
-        </div>
-    
-        <!-- Color Modal -->
-        <div id="poColorModal" class="po-modal">
-            <div class="po-modal-content">
-                <span class="po-modal-close">&times;</span>
-                <h2 id="poColorModalTitle">Colors for Style</h2>
-                <div id="poColorGrid" class="po-grid"></div>
-            </div>
-        </div>
-    
-        <!-- Size Modal -->
-        <div id="poSizeModal" class="po-modal">
-            <div class="po-modal-content">
-                <span class="po-modal-close">&times;</span>
-                <h2 id="poSizeModalTitle">Sizes for Style</h2>
-                <h3 id="poSizeModalSubtitle">Color</h3>
-                <div id="poSizeGrid" class="po-size-grid"></div>
-                <button id="poSaveButton" class="po-button">Save to Cart</button>
-            </div>
-        </div>
-    
-        <!-- Cart Summary -->
-        <div id="poCartSummary" class="po-cart-summary">
-            <span id="poCartItemCount">Cart: 0 items</span>
-            <button id="poViewOrderBtn" class="po-button">View Order</button>
-        </div>
-    
-        <!-- Cart Modal -->
-        <div id="poCartModal" class="po-modal">
-            <div class="po-modal-content">
-                <span class="po-modal-close">&times;</span>
-                <h2>Cart Summary</h2>
-                <table id="poCartTable" class="po-table">
-                    <thead>
-                        <tr>
-                            <th>Material Code</th>
-                            <th>Category</th>
-                            <th>Style</th>
-                            <th>Description</th>
-                            <th>Color</th>
-                            <th>Color Name</th>
-                            <th>Stylecol</th>
-                            <th>Size</th>
-                            <th>MRP</th>
-                            <th>Pack Size</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody id="poCartTableBody"></tbody>
-                </table>
-                <button id="poExportBtn" class="po-button">Export to Excel</button>
-            </div>
+  <div id="expiredOrders" class="section">
+    <div class="section-header">
+        <h2>Expired Orders</h2>
+        <div class="header-actions">
+            <button id="refreshExpiredBtn" class="btn btn-refresh">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
         </div>
     </div>
-
+    
+    <div class="expired-orders-container">
+        <!-- Will be populated by JavaScript -->
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading expired orders...</p>
+        </div>
+    </div>
+</div>
     <div id="stock" class="section">
         <h4>Stock</h4>
         <div id="stockList" class="stock-grid">
@@ -570,7 +519,7 @@
     <script src="main.js"></script>
     <script src="animations.js"></script>
     <script src="stock.js"></script>
-    <script src="purchase.js"></script>
+   <script src="expired.js"></script>
     <script src="pdf.js"></script>
     <script src="temptorder.js"></script>
     <!-- start webpushr code --> <script>(function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));webpushr('setup',{'key':'BJgL8_NTH55P5mh-yTMhQCDBYDOzxLKRmkIbbk-e8myTHe_Ldm0R1Ch3q7XVAxfq3wckcYszT9BSRT6liGt0Cug' });</script><!-- end webpushr code -->
