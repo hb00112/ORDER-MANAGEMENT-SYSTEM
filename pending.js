@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     checkAndDeleteExpiredOrders();
     initializeDB()
-        .then(() => {
+        .then(() => {  
             console.log("IndexedDB initialized");
             initializeUI();
             loadPendingOrders(); // This will now also load archived orders
