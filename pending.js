@@ -416,6 +416,81 @@ function displayDetailedOrders(orders, container) {
             position: relative;
             padding-right: 40px;
         }
+        
+        /* Expiry Indicator Styles */
+        .expiry-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .expiry-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background: currentColor;
+        }
+        
+        .expiry-indicator .icon {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+        
+        .expiry-normal {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 3px solid #2e7d32;
+        }
+        
+        .expiry-warning {
+            background-color: #fff8e1;
+            color: #ff8f00;
+            border-left: 3px solid #ff8f00;
+        }
+        
+        .expiry-critical {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 3px solid #c62828;
+            animation: pulse 2s infinite;
+        }
+        
+        .expiry-expired {
+            background-color: #f5f5f5;
+            color: #616161;
+            border-left: 3px solid #616161;
+        }
+        
+        .expiry-progress {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            background: #f5f5f5;
+            margin-top: 4px;
+        }
+        
+        .expiry-progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     `;
     document.head.appendChild(styleElement);
   
@@ -423,22 +498,50 @@ function displayDetailedOrders(orders, container) {
     getStockData().then(stockData => {
         // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
+            // Sort orders by expiry status (critical first)
+            orders.sort((a, b) => {
+                const statusA = a.expiryDate ? getExpiryStatus(a.expiryDate).status : 'normal';
+                const statusB = b.expiryDate ? getExpiryStatus(b.expiryDate).status : 'normal';
+                
+                const priority = { 'expired': 0, 'critical': 1, 'warning': 2, 'normal': 3 };
+                return priority[statusA] - priority[statusB];
+            });
+
             orders.forEach(order => {
                 const orderDate = new Date(order.dateTime).toLocaleDateString();
                 const orderDiv = document.createElement('div');
                 orderDiv.className = 'order-container mb-4';
                 orderDiv.dataset.orderId = order.id;
-  
+                
                 const isExported = exportStatus[order.id] || false;
                 const statusIcon = isExported ? '✓' : '✕';
                 const statusClass = isExported ? 'status-tick' : 'status-cross';
+                
+                // Calculate expiry status
+                const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
   
                 orderDiv.innerHTML = `
                     <div class="order-header mb-2">
                         <div class="order-number-line">
                             <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
                             <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
+                            ${expiryStatus ? `
+                            <span class="expiry-indicator ${expiryStatus.class}" 
+                                  data-bs-toggle="tooltip" 
+                                  title="Expiry: ${new Date(order.expiryDate).toLocaleDateString()} (${expiryStatus.days} days remaining)">
+                                <span class="icon">${expiryStatus.icon}</span>
+                                ${expiryStatus.label}
+                            </span>
+                            ` : ''}
                         </div>
+                        ${expiryStatus ? `
+                        <div class="order-expiry-header">
+                            <div class="expiry-progress">
+                                <div class="expiry-progress-bar ${expiryStatus.class}" 
+                                     style="width: ${expiryStatus.percentage}%"></div>
+                            </div>
+                        </div>
+                        ` : ''}
                         <div class="order-details">
                             Party Name: ${order.partyName || 'N/A'}<br>
                             Date: ${orderDate}
@@ -516,9 +619,16 @@ function displayDetailedOrders(orders, container) {
   
             // Initialize SRQ inputs after adding content to the DOM
             initializeSRQInputs(container);
+            
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                boundary: 'window',
+                trigger: 'hover focus'
+            });
         });
     });
-  }
+}
+
   
   function getExportStatusFromFirebase(callback) {
     try {
@@ -1578,7 +1688,7 @@ function openPremiumStockRemovalModal(partyName, orders) {
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     `;
     
-    // Add header with close button
+    // Add header with party name as main heading
     const modalHeader = document.createElement('div');
     modalHeader.className = 'premium-modal-header';
     modalHeader.style.cssText = `
@@ -1649,11 +1759,17 @@ function openPremiumStockRemovalModal(partyName, orders) {
         padding: 20px 30px;
     `;
     
+    // Sort orders by date (newest first)
+    orders.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+    
     // Create tabs and content for each order
     orders.forEach((order, index) => {
         const orderDate = new Date(order.dateTime);
         const today = new Date();
         const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
+        
+        // Calculate expiry status
+        const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
         
         // Create tab
         const tab = document.createElement('button');
@@ -1726,6 +1842,13 @@ function openPremiumStockRemovalModal(partyName, orders) {
         orderDateElement.innerHTML = `
             <span style="margin-right: 10px; font-size: 18px;">📅</span>
             ${orderDate.toLocaleDateString()} (${daysSinceOrder} days ago)
+            ${expiryStatus ? `
+            <span class="expiry-indicator ${expiryStatus.class}" 
+                  style="margin-left: 15px; padding: 4px 10px; font-size: 12px;">
+                <span class="icon">${expiryStatus.icon}</span>
+                ${expiryStatus.label} - Expires: ${new Date(order.expiryDate).toLocaleDateString()}
+            </span>
+            ` : ''}
         `;
         
         const orderActions = document.createElement('div');
@@ -1890,6 +2013,51 @@ function openPremiumStockRemovalModal(partyName, orders) {
     
     // Store orders data in a global variable for access by download functions
     window.currentModalOrders = orders;
+}
+
+// Helper function to determine expiry status (should be defined elsewhere in your code)
+function getExpiryStatus(expiryDate) {
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const daysRemaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining <= 0) {
+        return {
+            status: 'expired',
+            class: 'expiry-expired',
+            label: 'Expired',
+            icon: '⏱️',
+            days: 0,
+            percentage: 0
+        };
+    } else if (daysRemaining <= 5) {
+        return {
+            status: 'critical',
+            class: 'expiry-critical',
+            label: `Critical (${daysRemaining}d)`,
+            icon: '⚠️',
+            days: daysRemaining,
+            percentage: Math.min(100, Math.max(0, (daysRemaining / 5) * 100))
+        };
+    } else if (daysRemaining <= 10) {
+        return {
+            status: 'warning',
+            class: 'expiry-warning',
+            label: `Warning (${daysRemaining}d)`,
+            icon: '🔔',
+            days: daysRemaining,
+            percentage: Math.min(100, Math.max(0, (daysRemaining / 10) * 100))
+        };
+    } else {
+        return {
+            status: 'normal',
+            class: 'expiry-normal',
+            label: `Normal (${daysRemaining}d)`,
+            icon: '✅',
+            days: daysRemaining,
+            percentage: Math.min(100, Math.max(0, (daysRemaining / 30) * 100))
+        };
+    }
 }
 
 function setupOrderNumberInteractions() {
@@ -3299,5 +3467,52 @@ function updateClearFiltersButtonVisibility() {
         clearFiltersButton.style.display = 'inline-block';
     } else {
         clearFiltersButton.style.display = 'none';
+    }
+}
+
+function getExpiryStatus(expiryDate) {
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const daysRemaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining <= 0) {
+        return {
+            status: 'expired',
+            class: 'expiry-expired',
+            label: 'Expired',
+            icon: '⏱️',
+            days: 0,
+            percentage: 0
+        };
+    } else if (daysRemaining <= 5) {
+        const percentage = Math.min(100, Math.max(0, (daysRemaining / 5) * 100));
+        return {
+            status: 'critical',
+            class: 'expiry-critical',
+            label: `Critical (${daysRemaining}d)`,
+            icon: '⚠️',
+            days: daysRemaining,
+            percentage: percentage
+        };
+    } else if (daysRemaining <= 10) {
+        const percentage = Math.min(100, Math.max(0, (daysRemaining / 10) * 100));
+        return {
+            status: 'warning',
+            class: 'expiry-warning',
+            label: `Warning (${daysRemaining}d)`,
+            icon: '🔔',
+            days: daysRemaining,
+            percentage: percentage
+        };
+    } else {
+        const percentage = Math.min(100, Math.max(0, (daysRemaining / 30) * 100));
+        return {
+            status: 'normal',
+            class: 'expiry-normal',
+            label: `Normal (${daysRemaining}d)`,
+            icon: '✅',
+            days: daysRemaining,
+            percentage: percentage
+        };
     }
 }
