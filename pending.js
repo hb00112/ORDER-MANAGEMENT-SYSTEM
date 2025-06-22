@@ -372,118 +372,351 @@ function fetchOrdersFromFirebase() {
         });
 }
 
-
 function displayDetailedOrders(orders, container) {
-    console.log('Displaying detailed orders. Total orders:', orders.length);
+    console.log('Displaying premium detailed orders. Total orders:', orders.length);
     container.innerHTML = '';
-  
-    // Add CSS styles for stock availability and status icon
+    
+    // Add CSS styles for premium look
     const styleElement = document.createElement('style');
     styleElement.textContent = `
-        .stock-full {
-            background-color: #FFFACD !important;
-        }
-        .stock-partial {
-            background-color: #E3F2FD !important;
-        }
-        .status-icon {
-            cursor: pointer;
-            margin-left: 8px;
-            font-size: 1em;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .status-cross {
-            color: #dc3545;
-        }
-        .status-tick {
-            color: #28a745;
-        }
-        .order-number-line {
-            display: flex;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-        .order-details {
-            margin-top: 4px;
-        }
-        .three-dot-menu {
-            position: absolute;
-            right: 15px;
-            top: 10px;
-        }
-        .order-header {
-            position: relative;
-            padding-right: 40px;
+        .dv-order-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
-        /* Expiry Indicator Styles */
-        .expiry-indicator {
+        .dv-order-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+        
+        .dv-order-header {
+            background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .dv-order-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .dv-order-number {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .dv-order-status {
             display: inline-flex;
             align-items: center;
-            padding: 4px 8px;
-            border-radius: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            margin-left: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.15);
         }
         
-        .expiry-indicator::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.1;
-            background: currentColor;
+        .dv-order-party {
+            font-size: 16px;
+            margin-bottom: 8px;
         }
         
-        .expiry-indicator .icon {
-            margin-right: 4px;
+        .dv-order-date {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        .dv-order-created {
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dv-order-created .user-icon {
+            margin-right: 6px;
             font-size: 14px;
         }
         
-        .expiry-normal {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-left: 3px solid #2e7d32;
+        .dv-order-actions {
+            position: absolute;
+            right: 15px;
+            top: 15px;
         }
         
-        .expiry-warning {
-            background-color: #fff8e1;
-            color: #ff8f00;
-            border-left: 3px solid #ff8f00;
+        .dv-order-menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
         }
         
-        .expiry-critical {
-            background-color: #ffebee;
-            color: #c62828;
-            border-left: 3px solid #c62828;
-            animation: pulse 2s infinite;
+        .dv-order-menu-btn:hover {
+            background: rgba(255,255,255,0.2);
         }
         
-        .expiry-expired {
-            background-color: #f5f5f5;
-            color: #616161;
-            border-left: 3px solid #616161;
-        }
-        
-        .expiry-progress {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
+        .dv-order-menu {
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-width: 180px;
+            z-index: 100;
+            display: none;
             overflow: hidden;
+        }
+        
+        .dv-order-menu.show {
+            display: block;
+        }
+        
+        .dv-order-menu-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dv-order-menu-item:hover {
             background: #f5f5f5;
+        }
+        
+        .dv-order-menu-item .icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .dv-order-menu-item.delete {
+            color: #e74c3c;
+        }
+        
+        .dv-order-content {
+            padding: 20px;
+        }
+        
+        .dv-order-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .dv-order-table th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .dv-order-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        
+        .dv-order-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .dv-order-table tr:hover td {
+            background: #f8f9fa;
+        }
+        
+        .dv-item-name {
+            font-weight: 500;
+            color: #212529;
+        }
+        
+        .dv-item-color {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #f1f1f1;
+            font-size: 12px;
             margin-top: 4px;
         }
         
-        .expiry-progress-bar {
-            height: 100%;
-            transition: width 0.3s ease;
+        .dv-srq-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .dv-srq-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+        
+        .dv-srq-btn:first-child {
+            border-radius: 4px 0 0 4px;
+            border-right: none;
+        }
+        
+        .dv-srq-btn:last-child {
+            border-radius: 0 4px 4px 0;
+            border-left: none;
+        }
+        
+        .dv-srq-input {
+            width: 50px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            border-left: none;
+            border-right: none;
+            font-size: 14px;
+        }
+        
+        .dv-srq-input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        
+        .dv-stock-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .dv-stock-full {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .dv-stock-partial {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .dv-stock-none {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .dv-order-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dv-expiry-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .dv-expiry-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .dv-expiry-normal {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .dv-expiry-warning {
+            background: #fff8e1;
+            color: #ff8f00;
+        }
+        
+        .dv-expiry-critical {
+            background: #ffebee;
+            color: #c62828;
+            animation: pulse 2s infinite;
+        }
+        
+        .dv-expiry-expired {
+            background: #f5f5f5;
+            color: #616161;
+        }
+        
+        .dv-expiry-icon {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+        
+        .dv-complete-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
+        }
+        
+        .dv-complete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+        
+        .dv-complete-btn.show {
+            display: inline-block;
+        }
+        
+        .dv-notes-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .dv-notes-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .dv-notes-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #6c757d;
         }
         
         @keyframes pulse {
@@ -491,9 +724,35 @@ function displayDetailedOrders(orders, container) {
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dv-order-header {
+                padding: 15px;
+            }
+            
+            .dv-order-content {
+                padding: 15px;
+            }
+            
+            .dv-order-table th,
+            .dv-order-table td {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .dv-order-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .dv-order-status {
+                margin-top: 8px;
+            }
+        }
     `;
     document.head.appendChild(styleElement);
-  
+
     // Get stock data from IndexedDB
     getStockData().then(stockData => {
         // Get export status data from Firebase
@@ -508,118 +767,141 @@ function displayDetailedOrders(orders, container) {
             });
 
             orders.forEach(order => {
-                const orderDate = new Date(order.dateTime).toLocaleDateString();
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order-container mb-4';
-                orderDiv.dataset.orderId = order.id;
+                const orderDate = new Date(order.dateTime);
+                const formattedDate = orderDate.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
                 
                 const isExported = exportStatus[order.id] || false;
-                const statusIcon = isExported ? '✓' : '✕';
-                const statusClass = isExported ? 'status-tick' : 'status-cross';
-                
-                // Calculate expiry status
                 const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
-  
+                const hasNotes = order.orderNote && order.orderNote.trim().length > 0;
+
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'dv-order-container';
+                orderDiv.dataset.orderId = order.id;
+                
                 orderDiv.innerHTML = `
-                    <div class="order-header mb-2">
-                        <div class="order-number-line">
-                            <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
-                            <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
+                    <div class="dv-order-header">
+                        <div class="dv-order-meta">
+                            <div>
+                                <div class="dv-order-number">Order #${order.orderNumber || 'N/A'}</div>
+                                <div class="dv-order-party">${order.partyName || 'N/A'}</div>
+                            </div>
+                            <div class="dv-order-status">
+                                ${isExported ? '✓ Exported' : 'Pending'}
+                            </div>
+                        </div>
+                        <div class="dv-order-date">${formattedDate}</div>
+                        <div class="dv-order-created">
+                            <span class="user-icon">👤</span>
+                            Created by: ${order.createdBy || 'Unknown'}
+                        </div>
+                        
+                        <div class="dv-order-actions">
+                            <button class="dv-order-menu-btn">⋮</button>
+                            <div class="dv-order-menu">
+                                <div class="dv-order-menu-item export-order" data-order-id="${order.id}">
+                                    <span class="icon">📤</span> Export
+                                </div>
+                                <div class="dv-order-menu-item delete-order dv-order-menu-item delete" data-order-id="${order.id}">
+                                    <span class="icon">🗑️</span> Delete
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dv-order-content">
+                        <table class="dv-order-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Order</th>
+                                    <th>Stock Status</th>
+                                    <th>SRQ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generatePremiumOrderItemRows(order.items, order.id, stockData)}
+                            </tbody>
+                        </table>
+                        
+                        ${hasNotes ? `
+                        <div class="dv-notes-section">
+                            <div class="dv-notes-label">Order Notes:</div>
+                            <div class="dv-notes-content">${order.orderNote}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="dv-order-footer">
+                        <div class="dv-expiry-status">
                             ${expiryStatus ? `
-                            <span class="expiry-indicator ${expiryStatus.class}" 
-                                  data-bs-toggle="tooltip" 
-                                  title="Expiry: ${new Date(order.expiryDate).toLocaleDateString()} (${expiryStatus.days} days remaining)">
-                                <span class="icon">${expiryStatus.icon}</span>
-                                ${expiryStatus.label}
+                            <span class="dv-expiry-indicator ${expiryStatus.class}">
+                                <span class="dv-expiry-icon">${expiryStatus.icon}</span>
+                                ${expiryStatus.label} (${new Date(order.expiryDate).toLocaleDateString()})
                             </span>
                             ` : ''}
                         </div>
-                        ${expiryStatus ? `
-                        <div class="order-expiry-header">
-                            <div class="expiry-progress">
-                                <div class="expiry-progress-bar ${expiryStatus.class}" 
-                                     style="width: ${expiryStatus.percentage}%"></div>
-                            </div>
-                        </div>
-                        ` : ''}
-                        <div class="order-details">
-                            Party Name: ${order.partyName || 'N/A'}<br>
-                            Date: ${orderDate}
-                        </div>
-                        <div class="three-dot-menu">
-                            <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
-                                &#8942;
-                            </button>
-                            <div class="dropdown-menu" id="dropdown-${order.id}">
-                                <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
-                                <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
-                            </div>
-                        </div>
+                        <button class="dv-complete-btn" data-order-id="${order.id}">
+                            Complete Order
+                        </button>
                     </div>
-                    <table class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Order</th>
-                                <th>SRQ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
-                        </tbody>
-                    </table>
-                    <div class="order-actions mt-2 text-right">
-                        <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
-                    </div>
-                    <hr>
                 `;
-  
+
                 container.appendChild(orderDiv);
-  
-                // Add existing event listeners
-                const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
-                const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
-  
-                dropdownToggle.addEventListener('click', (e) => {
+
+                // Initialize menu toggle
+                const menuBtn = orderDiv.querySelector('.dv-order-menu-btn');
+                const menu = orderDiv.querySelector('.dv-order-menu');
+                
+                menuBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+                    menu.classList.toggle('show');
                 });
-  
-                const deleteButton = orderDiv.querySelector('.delete-order');
-                deleteButton.addEventListener('click', (e) => {
+
+                // Close menu when clicking outside
+                document.addEventListener('click', () => {
+                    menu.classList.remove('show');
+                });
+
+                // Initialize menu items
+                const exportBtn = orderDiv.querySelector('.export-order');
+                exportBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Delete button clicked for order:', order.id);
-                    openDeleteModal1(order.id);
-                    dropdownMenu.style.display = 'none';
-                });
-  
-                const exportButton = orderDiv.querySelector('.export-order');
-                exportButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Export button clicked for order:', order.id);
                     exportOrderToExcel(order);
                     updateExportStatus(order.id, true);
-                    const statusIcon = orderDiv.querySelector(`#status-${order.id}`);
-                    statusIcon.textContent = '✓';
-                    statusIcon.classList.remove('status-cross');
-                    statusIcon.classList.add('status-tick');
-                    dropdownMenu.style.display = 'none';
+                    const statusElement = orderDiv.querySelector('.dv-order-status');
+                    statusElement.textContent = '✓ Exported';
+                    menu.classList.remove('show');
                 });
-  
-                document.addEventListener('click', () => {
-                    dropdownMenu.style.display = 'none';
+
+                const deleteBtn = orderDiv.querySelector('.delete-order');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openDeleteModal1(order.id);
+                    menu.classList.remove('show');
                 });
-  
-                if (currentOrders[order.id]) {
-                    updateDetailedView(order.id);
-                }
+
+                // Initialize complete button
+                const completeBtn = orderDiv.querySelector('.dv-complete-btn');
+                completeBtn.addEventListener('click', () => {
+                    openStockRemovalDetailedModal(order.id);
+                });
+
+                // Initialize SRQ inputs
+                initializePremiumSRQInputs(orderDiv);
+
+                // Show complete button if any SRQ values exist
+                updateCompleteButtonVisibility(orderDiv);
             });
-  
-            // Initialize SRQ inputs after adding content to the DOM
-            initializeSRQInputs(container);
-            
+
             // Initialize tooltips
             $('[data-bs-toggle="tooltip"]').tooltip({
                 boundary: 'window',
@@ -627,6 +909,120 @@ function displayDetailedOrders(orders, container) {
             });
         });
     });
+}
+
+function generatePremiumOrderItemRows(items, orderId, stockData) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return '<tr><td colspan="4">No items found for this order</td></tr>';
+    }
+
+    return items.flatMap(item => {
+        if (!item || !item.quantities || typeof item.quantities !== 'object') {
+            console.warn(`Invalid item structure for order ${orderId}:`, item);
+            return '';
+        }
+
+        return Object.entries(item.quantities).map(([size, quantity]) => {
+            const srqValue = item.srq && item.srq[size] ? item.srq[size] : 0;
+            
+            // Check stock availability
+            const stockItem = stockData.find(stock => 
+                stock['item name'] === item.name && 
+                stock.color === item.color && 
+                stock.size === size
+            );
+            
+            const stockQuantity = stockItem ? parseFloat(stockItem.quantity) : 0;
+            let stockClass = '';
+            let stockText = '';
+            
+            // Determine row color based on stock availability
+            if (stockQuantity >= quantity) {
+                stockClass = 'dv-stock-full';
+                stockText = 'In Stock';
+            } else if (stockQuantity > 0) {
+                stockClass = 'dv-stock-partial';
+                stockText = `Partial (${stockQuantity})`;
+            } else {
+                stockClass = 'dv-stock-none';
+                stockText = 'Out of Stock';
+            }
+
+            return `
+                <tr>
+                    <td>
+                        <div class="dv-item-name">${item.name || 'Unknown'}</div>
+                        <div class="dv-item-color">${item.color || 'N/A'}</div>
+                    </td>
+                    <td>${size}/${quantity}</td>
+                    <td>
+                        <span class="dv-stock-status ${stockClass}">${stockText}</span>
+                    </td>
+                    <td>
+                        <div class="dv-srq-group" data-max="${quantity}" data-item="${item.name || 'Unknown'}" data-color="${item.color || 'N/A'}" data-size="${size}">
+                            <div class="dv-srq-btn dv-srq-decrease">-</div>
+                            <input type="number" class="dv-srq-input" value="${srqValue}" min="0" max="${quantity}">
+                            <div class="dv-srq-btn dv-srq-increase">+</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+    }).join('');
+}
+
+function initializePremiumSRQInputs(container) {
+    container.querySelectorAll('.dv-srq-group').forEach(group => {
+        const input = group.querySelector('.dv-srq-input');
+        const decreaseBtn = group.querySelector('.dv-srq-decrease');
+        const increaseBtn = group.querySelector('.dv-srq-increase');
+        const max = parseInt(group.dataset.max);
+        const itemName = group.dataset.item;
+        const color = group.dataset.color;
+        const size = group.dataset.size;
+        const orderId = group.closest('.dv-order-container').dataset.orderId;
+
+        function updateSRQValue() {
+            const value = parseInt(input.value);
+            updateOrderState(orderId, itemName, color, size, value);
+            updateCompleteButtonVisibility(group.closest('.dv-order-container'));
+        }
+
+        decreaseBtn.addEventListener('click', () => {
+            if (parseInt(input.value) > 0) {
+                input.value = parseInt(input.value) - 1;
+                updateSRQValue();
+            }
+        });
+
+        increaseBtn.addEventListener('click', () => {
+            if (parseInt(input.value) < max) {
+                input.value = parseInt(input.value) + 1;
+                updateSRQValue();
+            }
+        });
+
+        input.addEventListener('input', () => {
+            let value = parseInt(input.value);
+            if (isNaN(value)) value = 0;
+            if (value < 0) value = 0;
+            if (value > max) value = max;
+            input.value = value;
+            updateSRQValue();
+        });
+    });
+}
+
+function updateCompleteButtonVisibility(orderContainer) {
+    const completeBtn = orderContainer.querySelector('.dv-complete-btn');
+    const srqInputs = orderContainer.querySelectorAll('.dv-srq-input');
+    const hasNonZeroInput = Array.from(srqInputs).some(input => parseInt(input.value) > 0);
+    
+    if (hasNonZeroInput) {
+        completeBtn.classList.add('show');
+    } else {
+        completeBtn.classList.remove('show');
+    }
 }
 
   
