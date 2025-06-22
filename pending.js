@@ -373,83 +373,74 @@ function fetchOrdersFromFirebase() {
 }
 
 function displayDetailedOrders(orders, container) {
-    console.log('Displaying premium detailed orders. Total orders:', orders.length);
+    console.log('Displaying final optimized orders view. Total orders:', orders.length);
     container.innerHTML = '';
     
-    // Add CSS styles for premium look
+    // Add CSS styles
     const styleElement = document.createElement('style');
     styleElement.textContent = `
         .dv-order-container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
             overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .dv-order-container:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 100%;
         }
         
         .dv-order-header {
             background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
             color: white;
-            padding: 20px;
+            padding: 12px;
             position: relative;
         }
         
         .dv-order-meta {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
             align-items: center;
-            margin-bottom: 12px;
         }
         
         .dv-order-number {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
-            letter-spacing: 0.5px;
+        }
+        
+        .dv-order-party {
+            font-size: 15px;
+            flex: 1;
+            min-width: 120px;
         }
         
         .dv-order-status {
             display: inline-flex;
             align-items: center;
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 3px 8px;
+            border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
             background: rgba(255,255,255,0.15);
         }
         
-        .dv-order-party {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
         .dv-order-date {
-            font-size: 13px;
-            opacity: 0.8;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
         }
         
         .dv-order-created {
             font-size: 12px;
-            margin-top: 8px;
             display: flex;
             align-items: center;
-        }
-        
-        .dv-order-created .user-icon {
-            margin-right: 6px;
-            font-size: 14px;
+            gap: 4px;
         }
         
         .dv-order-actions {
             position: absolute;
-            right: 15px;
-            top: 15px;
+            right: 8px;
+            top: 8px;
         }
         
         .dv-order-menu-btn {
@@ -459,27 +450,26 @@ function displayDetailedOrders(orders, container) {
             font-size: 20px;
             cursor: pointer;
             padding: 5px;
-            border-radius: 50%;
             width: 32px;
             height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
         
         .dv-order-menu-btn:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
         }
         
         .dv-order-menu {
             position: absolute;
             right: 0;
-            top: 40px;
+            top: 100%;
             background: white;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            min-width: 180px;
+            min-width: 150px;
             z-index: 100;
             display: none;
             overflow: hidden;
@@ -490,22 +480,18 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-order-menu-item {
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
             color: #333;
             cursor: pointer;
             display: flex;
             align-items: center;
-            transition: all 0.2s ease;
+            gap: 8px;
+            transition: background 0.2s;
         }
         
         .dv-order-menu-item:hover {
             background: #f5f5f5;
-        }
-        
-        .dv-order-menu-item .icon {
-            margin-right: 8px;
-            font-size: 16px;
         }
         
         .dv-order-menu-item.delete {
@@ -513,105 +499,109 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-order-content {
-            padding: 20px;
+            padding: 0;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .dv-order-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            min-width: 100%;
+            border-collapse: collapse;
         }
         
         .dv-order-table th {
             background: #f8f9fa;
-            padding: 12px 15px;
+            padding: 8px;
             text-align: left;
             font-weight: 600;
-            font-size: 13px;
-            color: #495057;
-            border-bottom: 2px solid #e9ecef;
+            font-size: 12px;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
         }
         
         .dv-order-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e9ecef;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
             vertical-align: middle;
-            font-size: 14px;
-        }
-        
-        .dv-order-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .dv-order-table tr:hover td {
-            background: #f8f9fa;
+            font-size: 13px;
         }
         
         .dv-item-name {
             font-weight: 500;
-            color: #212529;
+            display: block;
+            font-size: 13px;
         }
         
         .dv-item-color {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 2px 6px;
+            border-radius: 8px;
             background: #f1f1f1;
-            font-size: 12px;
-            margin-top: 4px;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+        
+        .dv-size-qty-cell {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
         }
         
         .dv-srq-group {
             display: flex;
             align-items: center;
+            max-width: 120px;
         }
         
         .dv-srq-btn {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            border: 1px solid #ddd;
             cursor: pointer;
-            font-size: 14px;
-            user-select: none;
-        }
-        
-        .dv-srq-btn:first-child {
-            border-radius: 4px 0 0 4px;
-            border-right: none;
-        }
-        
-        .dv-srq-btn:last-child {
-            border-radius: 0 4px 4px 0;
-            border-left: none;
+            font-size: 12px;
         }
         
         .dv-srq-input {
-            width: 50px;
-            height: 30px;
+            width: 40px;
+            height: 26px;
             text-align: center;
-            border: 1px solid #dee2e6;
+            border: 1px solid #ddd;
             border-left: none;
             border-right: none;
-            font-size: 14px;
+            font-size: 12px;
+            padding: 0;
+            -moz-appearance: textfield;
         }
         
-        .dv-srq-input:focus {
-            outline: none;
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        .dv-srq-input::-webkit-outer-spin-button,
+        .dv-srq-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .dv-stock-cell {
+            max-width: 80px;
+            min-width: 60px;
         }
         
         .dv-stock-status {
             display: inline-flex;
             align-items: center;
-            padding: 4px 8px;
+            padding: 2px 4px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 500;
+            line-height: 1.2;
+            white-space: normal;
+            word-break: break-word;
         }
         
         .dv-stock-full {
@@ -630,147 +620,99 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-order-footer {
-            padding: 15px 20px;
+            padding: 10px 12px;
             background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #eee;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .dv-expiry-status {
-            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             align-items: center;
         }
         
         .dv-expiry-indicator {
             display: inline-flex;
             align-items: center;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 600;
-            margin-right: 10px;
-        }
-        
-        .dv-expiry-normal {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .dv-expiry-warning {
-            background: #fff8e1;
-            color: #ff8f00;
-        }
-        
-        .dv-expiry-critical {
-            background: #ffebee;
-            color: #c62828;
-            animation: pulse 2s infinite;
-        }
-        
-        .dv-expiry-expired {
-            background: #f5f5f5;
-            color: #616161;
-        }
-        
-        .dv-expiry-icon {
             margin-right: 6px;
-            font-size: 14px;
         }
         
         .dv-complete-btn {
-            padding: 8px 20px;
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            padding: 6px 12px;
+            background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: 500;
+            border-radius: 4px;
+            font-size: 13px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            margin-left: auto;
             display: none;
         }
         
-        .dv-complete-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
-        }
-        
-        .dv-complete-btn.show {
-            display: inline-block;
-        }
-        
-        .dv-notes-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .dv-notes-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #495057;
-        }
-        
-        .dv-notes-content {
-            font-size: 14px;
-            line-height: 1.5;
-            color: #6c757d;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
         /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .dv-order-header {
-                padding: 15px;
-            }
-            
-            .dv-order-content {
-                padding: 15px;
-            }
-            
-            .dv-order-table th,
+        @media (max-width: 600px) {
+            .dv-order-table th, 
             .dv-order-table td {
-                padding: 10px 12px;
-                font-size: 13px;
+                padding: 6px 4px;
             }
             
-            .dv-order-meta {
-                flex-direction: column;
-                align-items: flex-start;
+            .dv-item-name {
+                font-size: 12px;
             }
             
-            .dv-order-status {
-                margin-top: 8px;
+            .dv-size-qty-cell {
+                font-size: 12px;
+            }
+            
+            .dv-srq-group {
+                max-width: 100px;
+            }
+            
+            .dv-srq-input {
+                width: 30px;
+                font-size: 11px;
+            }
+            
+            .dv-stock-cell {
+                max-width: 70px;
+            }
+            
+            .dv-stock-status {
+                font-size: 9px;
+                padding: 1px 3px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .dv-order-table th, 
+            .dv-order-table td {
+                padding: 4px 2px;
+                font-size: 11px;
+            }
+            
+            .dv-srq-group {
+                max-width: 80px;
+            }
+            
+            .dv-srq-input {
+                width: 25px;
+            }
+            
+            .dv-stock-cell {
+                max-width: 60px;
             }
         }
     `;
     document.head.appendChild(styleElement);
 
-    // Get stock data from IndexedDB
     getStockData().then(stockData => {
-        // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
-            // Sort orders by expiry status (critical first)
-            orders.sort((a, b) => {
-                const statusA = a.expiryDate ? getExpiryStatus(a.expiryDate).status : 'normal';
-                const statusB = b.expiryDate ? getExpiryStatus(b.expiryDate).status : 'normal';
-                
-                const priority = { 'expired': 0, 'critical': 1, 'warning': 2, 'normal': 3 };
-                return priority[statusA] - priority[statusB];
-            });
-
             orders.forEach(order => {
                 const orderDate = new Date(order.dateTime);
                 const formattedDate = orderDate.toLocaleDateString('en-US', {
                     weekday: 'short',
-                    year: 'numeric',
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
@@ -779,7 +721,6 @@ function displayDetailedOrders(orders, container) {
                 
                 const isExported = exportStatus[order.id] || false;
                 const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
-                const hasNotes = order.orderNote && order.orderNote.trim().length > 0;
 
                 const orderDiv = document.createElement('div');
                 orderDiv.className = 'dv-order-container';
@@ -788,18 +729,16 @@ function displayDetailedOrders(orders, container) {
                 orderDiv.innerHTML = `
                     <div class="dv-order-header">
                         <div class="dv-order-meta">
-                            <div>
-                                <div class="dv-order-number">Order #${order.orderNumber || 'N/A'}</div>
-                                <div class="dv-order-party">${order.partyName || 'N/A'}</div>
-                            </div>
+                            <div class="dv-order-number">#${order.orderNumber || 'N/A'}</div>
+                            <div class="dv-order-party">${order.partyName || 'N/A'}</div>
                             <div class="dv-order-status">
                                 ${isExported ? '✓ Exported' : 'Pending'}
                             </div>
                         </div>
                         <div class="dv-order-date">${formattedDate}</div>
                         <div class="dv-order-created">
-                            <span class="user-icon">👤</span>
-                            Created by: ${order.createdBy || 'Unknown'}
+                            <span>👤</span>
+                            <span>${order.createdBy || 'Unknown'}</span>
                         </div>
                         
                         <div class="dv-order-actions">
@@ -808,7 +747,7 @@ function displayDetailedOrders(orders, container) {
                                 <div class="dv-order-menu-item export-order" data-order-id="${order.id}">
                                     <span class="icon">📤</span> Export
                                 </div>
-                                <div class="dv-order-menu-item delete-order dv-order-menu-item delete" data-order-id="${order.id}">
+                                <div class="dv-order-menu-item delete-order delete" data-order-id="${order.id}">
                                     <span class="icon">🗑️</span> Delete
                                 </div>
                             </div>
@@ -820,42 +759,34 @@ function displayDetailedOrders(orders, container) {
                             <thead>
                                 <tr>
                                     <th>Item</th>
-                                    <th>Order</th>
-                                    <th>Stock Status</th>
+                                    <th>Size/Qty</th>
+                                    <th>Stock</th>
                                     <th>SRQ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${generatePremiumOrderItemRows(order.items, order.id, stockData)}
+                                ${generateFinalOrderRows(order.items, order.id, stockData)}
                             </tbody>
                         </table>
-                        
-                        ${hasNotes ? `
-                        <div class="dv-notes-section">
-                            <div class="dv-notes-label">Order Notes:</div>
-                            <div class="dv-notes-content">${order.orderNote}</div>
-                        </div>
-                        ` : ''}
                     </div>
                     
                     <div class="dv-order-footer">
                         <div class="dv-expiry-status">
                             ${expiryStatus ? `
                             <span class="dv-expiry-indicator ${expiryStatus.class}">
-                                <span class="dv-expiry-icon">${expiryStatus.icon}</span>
-                                ${expiryStatus.label} (${new Date(order.expiryDate).toLocaleDateString()})
+                                <span>${expiryStatus.icon} ${expiryStatus.label}</span>
                             </span>
                             ` : ''}
                         </div>
                         <button class="dv-complete-btn" data-order-id="${order.id}">
-                            Complete Order
+                            Complete
                         </button>
                     </div>
                 `;
 
                 container.appendChild(orderDiv);
 
-                // Initialize menu toggle
+                // Initialize three-dot menu
                 const menuBtn = orderDiv.querySelector('.dv-order-menu-btn');
                 const menu = orderDiv.querySelector('.dv-order-menu');
                 
@@ -895,20 +826,63 @@ function displayDetailedOrders(orders, container) {
                     openStockRemovalDetailedModal(order.id);
                 });
 
-                // Initialize SRQ inputs
                 initializePremiumSRQInputs(orderDiv);
-
-                // Show complete button if any SRQ values exist
                 updateCompleteButtonVisibility(orderDiv);
-            });
-
-            // Initialize tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip({
-                boundary: 'window',
-                trigger: 'hover focus'
             });
         });
     });
+}
+
+function generateFinalOrderRows(items, orderId, stockData) {
+    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items</td></tr>';
+    
+    return items.flatMap(item => {
+        if (!item || !item.quantities) return '';
+        
+        return Object.entries(item.quantities).map(([size, qty]) => {
+            if (qty <= 0) return '';
+            
+            const srqValue = item.srq?.[size] || 0;
+            const stockItem = stockData.find(s => 
+                s['item name'] === item.name && 
+                s.color === item.color && 
+                s.size === size
+            );
+            
+            let stockStatus = 'none';
+            let stockText = 'No Stock';
+            if (stockItem) {
+                const stockQty = parseFloat(stockItem.quantity) || 0;
+                if (stockQty >= qty) {
+                    stockStatus = 'full';
+                    stockText = 'Available';
+                } else if (stockQty > 0) {
+                    stockStatus = 'partial';
+                    stockText = `${stockQty} only`;
+                }
+            }
+
+            return `
+                <tr>
+                    <td>
+                        <span class="dv-item-name">${item.name || 'N/A'}</span>
+                        <span class="dv-item-color">${item.color || 'N/A'}</span>
+                    </td>
+                    <td class="dv-size-qty-cell">${size}/${qty}</td>
+                    <td class="dv-stock-cell">
+                        <span class="dv-stock-status dv-stock-${stockStatus}">${stockText}</span>
+                    </td>
+                    <td>
+                        <div class="dv-srq-group" data-max="${qty}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
+                            <button class="dv-srq-btn dv-srq-decrease">-</button>
+                            <input type="number" class="dv-srq-input" value="${srqValue}" min="0" max="${qty}">
+                            <button class="dv-srq-btn dv-srq-increase">+</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+    }).join('');
 }
 
 function generatePremiumOrderItemRows(items, orderId, stockData) {
