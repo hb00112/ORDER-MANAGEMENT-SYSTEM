@@ -1490,47 +1490,92 @@ function initializeSRQInputs(modal) {
     });
 }
 // Modified initializeSRQInputs function
-function initializeSRQInputs(container = document) {
-    container.querySelectorAll('.srq-input-group').forEach(group => {
-        const input = group.querySelector('.srq-input');
-        const decreaseBtn = group.querySelector('.srq-decrease');
-        const increaseBtn = group.querySelector('.srq-increase');
+function initializeSRQInputs(container) {
+    container.querySelectorAll('.sr-srq-group').forEach(group => {
+        const input = group.querySelector('.sr-srq-input');
+        const decreaseBtn = group.querySelector('.sr-srq-decrease');
+        const increaseBtn = group.querySelector('.sr-srq-increase');
         const max = parseInt(group.dataset.max);
         const itemName = group.dataset.item;
         const color = group.dataset.color;
         const size = group.dataset.size;
-        const orderId = group.closest('[data-order-id]').dataset.orderId;
+        const orderId = container.closest('.sr-modal-container').dataset.orderId;
+        
+        // Initialize currentOrders structure if not exists
+        if (!currentOrders[orderId]) currentOrders[orderId] = {};
+        if (!currentOrders[orderId][itemName]) currentOrders[orderId][itemName] = {};
+        if (!currentOrders[orderId][itemName][color]) currentOrders[orderId][itemName][color] = {};
+        
+        // Set initial value
+        const initialValue = parseInt(input.value) || 0;
+        currentOrders[orderId][itemName][color][size] = initialValue;
 
         function updateSRQValue() {
-            const value = parseInt(input.value);
+            const value = parseInt(input.value) || 0;
+            currentOrders[orderId][itemName][color][size] = value;
+            
+            // Update pending value
+            const row = group.closest('tr');
+            const pendingCell = row.querySelector('.sr-pending-value');
+            const originalQty = parseInt(row.querySelector('td:nth-child(2)').textContent.split('/')[1]);
+            pendingCell.textContent = originalQty - value;
+            
+            // Update totals
+            updateStockRemovalTotals(container);
+            
+            // Update order state
             updateOrderState(orderId, itemName, color, size, value);
-            updateAllViews(orderId);
         }
 
         decreaseBtn.addEventListener('click', () => {
-            if (parseInt(input.value) > 0) {
-                input.value = parseInt(input.value) - 1;
+            let value = parseInt(input.value) || 0;
+            if (value > 0) {
+                value--;
+                input.value = value;
                 updateSRQValue();
             }
         });
 
         increaseBtn.addEventListener('click', () => {
-            if (parseInt(input.value) < max) {
-                input.value = parseInt(input.value) + 1;
+            let value = parseInt(input.value) || 0;
+            if (value < max) {
+                value++;
+                input.value = value;
                 updateSRQValue();
             }
         });
 
         input.addEventListener('input', () => {
-            let value = parseInt(input.value);
+            let value = parseInt(input.value) || 0;
             if (isNaN(value)) value = 0;
-            if (value < 0) value = 0;
-            if (value > max) value = max;
+            value = Math.max(0, Math.min(max, value));
             input.value = value;
             updateSRQValue();
         });
+
+        input.addEventListener('change', updateSRQValue);
     });
 }
+
+function updateStockRemovalTotals(modal) {
+    let totalOrder = 0;
+    let totalRemoved = 0;
+    let totalPending = 0;
+    
+    modal.querySelectorAll('tbody tr').forEach(row => {
+        const [size, quantity] = row.querySelector('td:nth-child(2)').textContent.split('/');
+        const srqValue = parseInt(row.querySelector('.sr-srq-input').value) || 0;
+        
+        totalOrder += parseInt(quantity);
+        totalRemoved += srqValue;
+        totalPending += (parseInt(quantity) - srqValue);
+    });
+    
+    modal.querySelector('#sr-total-order').textContent = totalOrder;
+    modal.querySelector('#sr-total-removed').textContent = totalRemoved;
+    modal.querySelector('#sr-total-pending').textContent = totalPending;
+}
+
 // Function to update all views
 function updateAllViews(orderId) {
     updateDetailedView(orderId);
@@ -1624,85 +1669,371 @@ function getOrderById(orderId) {
 function openStockRemovalDetailedModal(orderId) {
     getOrderById(orderId)
         .then(order => {
+            // Create modal container
             const modal = document.createElement('div');
-            modal.className = 'stock-removal-detailed-modal';
+            modal.className = 'sr-modal-container';
             modal.dataset.orderId = orderId;
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title">${order.partyName}</h2>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+            
+            // Modal CSS (scoped to this modal only)
+            const modalCSS = `
+                .sr-modal-container {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.7);
+                    backdrop-filter: blur(5px);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+                
+                .sr-modal-container.show {
+                    opacity: 1;
+                }
+                
+                .sr-modal-content {
+                    background: white;
+                    border-radius: 12px;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 90vh;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    transform: translateY(20px);
+                    transition: transform 0.3s ease;
+                }
+                
+                .sr-modal-container.show .sr-modal-content {
+                    transform: translateY(0);
+                }
+                
+                .sr-modal-header {
+                    padding: 20px;
+                    background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
+                    color: white;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .sr-modal-title {
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 600;
+                }
+                
+                .sr-modal-close {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                    padding: 5px;
+                }
+                
+                .sr-modal-body {
+                    padding: 0;
+                    max-height: 60vh;
+                    overflow-y: auto;
+                }
+                
+                .sr-items-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                
+                .sr-items-table th {
+                    background: #f8f9fa;
+                    padding: 12px 15px;
+                    text-align: left;
+                    font-weight: 600;
+                    position: sticky;
+                    top: 0;
+                }
+                
+                .sr-items-table td {
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #eee;
+                    vertical-align: middle;
+                }
+                
+                .sr-item-name {
+                    font-weight: 500;
+                    display: block;
+                }
+                
+                .sr-item-color {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    background: #f1f1f1;
+                    font-size: 12px;
+                    margin-top: 4px;
+                }
+                
+                .sr-srq-group {
+                    display: flex;
+                    align-items: center;
+                    max-width: 120px;
+                }
+                
+                .sr-srq-btn {
+                    width: 30px;
+                    height: 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f8f9fa;
+                    border: 1px solid #ddd;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+                
+                .sr-srq-input {
+                    width: 40px;
+                    height: 30px;
+                    text-align: center;
+                    border: 1px solid #ddd;
+                    border-left: none;
+                    border-right: none;
+                    font-size: 14px;
+                    padding: 0;
+                    -moz-appearance: textfield;
+                }
+                
+                .sr-srq-input::-webkit-outer-spin-button,
+                .sr-srq-input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                
+                .sr-pending-value {
+                    font-weight: 500;
+                    color: #666;
+                }
+                
+                .sr-totals-section {
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-top: 1px solid #eee;
+                }
+                
+                .sr-totals-header {
+                    font-weight: 600;
+                    margin-bottom: 10px;
+                    color: #333;
+                }
+                
+                .sr-totals-row {
+                    display: flex;
+                    justify-content: space-between;
+                }
+                
+                .sr-total-item {
+                    text-align: center;
+                    flex: 1;
+                }
+                
+                .sr-total-label {
+                    font-size: 12px;
+                    color: #666;
+                }
+                
+                .sr-total-value {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #2c3e50;
+                }
+                
+                .sr-modal-footer {
+                    padding: 15px;
+                    display: flex;
+                    justify-content: flex-end;
+                    background: #f8f9fa;
+                    border-top: 1px solid #eee;
+                }
+                
+                .sr-send-btn {
+                    padding: 10px 20px;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                
+                .sr-send-btn:hover {
+                    background: #3e8e41;
+                    transform: translateY(-1px);
+                }
+                
+                @media (max-width: 600px) {
+                    .sr-modal-content {
+                        width: 95%;
+                    }
+                    
+                    .sr-items-table th,
+                    .sr-items-table td {
+                        padding: 8px 10px;
+                        font-size: 13px;
+                    }
+                    
+                    .sr-srq-group {
+                        max-width: 100px;
+                    }
+                    
+                    .sr-srq-btn {
+                        width: 26px;
+                        height: 26px;
+                    }
+                    
+                    .sr-srq-input {
+                        width: 30px;
+                        height: 26px;
+                    }
+                }
+            `;
+            
+            // Add CSS to the modal
+            const style = document.createElement('style');
+            style.textContent = modalCSS;
+            modal.appendChild(style);
+            
+            // Modal content
+            modal.innerHTML += `
+                <div class="sr-modal-content">
+                    <div class="sr-modal-header">
+                        <h2 class="sr-modal-title">${order.partyName || 'Order Details'}</h2>
+                        <button class="sr-modal-close">&times;</button>
                     </div>
-                    <div class="modal-body">
-                        <div class="table-container" style="max-height: 60vh; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Item Name</th>
-                                        <th>Sizes</th>
-                                        <th>SRQ</th>
-                                        <th>P</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${generateOrderItemRowsWithPending(order.items, orderId)}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="total-section">
-                            <div class="total-header">T O T A L</div>
-                            <div class="total-row">
-                                <div class="total-item">
-                                    <span>Total Order</span>
-                                    <span id="totalOrder">0pc</span>
-                                </div>
-                                <div class="total-item">
-                                    <span>Total Removed</span>
-                                    <span id="totalRemoved">0pc</span>
-                                </div>
-                                <div class="total-item">
-                                    <span>Total Pending</span>
-                                    <span id="totalPending">0pc</span>
-                                </div>
+                    
+                    <div class="sr-modal-body">
+                        <table class="sr-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Size/Qty</th>
+                                    <th>SRQ</th>
+                                    <th>Pending</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateStockRemovalItems(order.items, orderId)}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="sr-totals-section">
+                        <div class="sr-totals-header">TOTALS</div>
+                        <div class="sr-totals-row">
+                            <div class="sr-total-item">
+                                <div class="sr-total-label">Total Order</div>
+                                <div class="sr-total-value" id="sr-total-order">0</div>
+                            </div>
+                            <div class="sr-total-item">
+                                <div class="sr-total-label">Removed</div>
+                                <div class="sr-total-value" id="sr-total-removed">0</div>
+                            </div>
+                            <div class="sr-total-item">
+                                <div class="sr-total-label">Pending</div>
+                                <div class="sr-total-value" id="sr-total-pending">0</div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary send-to-billing-btn">Send to Billing</button>
+                    
+                    <div class="sr-modal-footer">
+                        <button class="sr-send-btn">Send to Billing</button>
                     </div>
                 </div>
             `;
-
+            
+            // Add modal to document
             document.body.appendChild(modal);
-
-            const closeBtn = modal.querySelector('.close');
-            closeBtn.addEventListener('click', () => {
-                document.body.removeChild(modal);
-            });
-
-            modal.querySelector('.send-to-billing-btn').addEventListener('click', () => {
-                sendToBilling(orderId);
-                document.body.removeChild(modal);
-            });
-
-            // Close modal when clicking outside
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-
-            // Calculate and update totals
-            updateTotals(modal);
-
+            
             // Initialize SRQ inputs
             initializeSRQInputs(modal);
+            
+            // Update totals initially
+            updateStockRemovalTotals(modal);
+            
+            // Show modal with animation
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            
+            // Close button handler
+            modal.querySelector('.sr-modal-close').addEventListener('click', () => {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 300);
+            });
+            
+            // Close when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(modal);
+                    }, 300);
+                }
+            });
+            
+            // Send to billing handler
+            modal.querySelector('.sr-send-btn').addEventListener('click', () => {
+                sendToBilling(orderId);
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 300);
+            });
         })
         .catch(error => {
             console.error("Error opening stock removal modal:", error);
             alert("Error opening stock removal modal. Please try again.");
         });
 }
+
+function generateStockRemovalItems(items, orderId) {
+    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items found</td></tr>';
+    
+    return items.flatMap(item => {
+        if (!item.quantities) return '';
+        
+        return Object.entries(item.quantities).map(([size, quantity]) => {
+            const srqValue = item.srq?.[size] || 0;
+            const pendingValue = quantity - srqValue;
+            
+            return `
+                <tr>
+                    <td>
+                        <span class="sr-item-name">${item.name || 'N/A'}</span>
+                        <span class="sr-item-color">${item.color || 'N/A'}</span>
+                    </td>
+                    <td>${size}/${quantity}</td>
+                    <td>
+                        <div class="sr-srq-group" data-max="${quantity}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
+                            <button class="sr-srq-btn sr-srq-decrease">-</button>
+                            <input type="number" class="sr-srq-input" value="${srqValue}" min="0" max="${quantity}">
+                            <button class="sr-srq-btn sr-srq-increase">+</button>
+                        </div>
+                    </td>
+                    <td class="sr-pending-value">${pendingValue}</td>
+                </tr>
+            `;
+        });
+    }).join('');
+}
+
+
 
 
 // Global variable to store the current state of orders
