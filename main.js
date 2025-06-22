@@ -94,26 +94,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeBtn = document.querySelector('.close-btn');
 
     // Unified section handling
-    function showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(section => {
-            section.style.display = 'none';
+  function showSection(sectionId) {
+    // Hide all sections including pending section
+    document.querySelectorAll('.section, .pending-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        
+        // Update active states
+        document.querySelectorAll('.nav-link').forEach(navLink => {
+            navLink.classList.remove('active');
         });
         
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.style.display = 'block';
-            
-            // Update active states
-            document.querySelectorAll('.nav-link').forEach(navLink => {
-                navLink.classList.remove('active');
-            });
-            
-            const activeLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
-            if (activeLink) {
-                activeLink.classList.add('active');
-            }
+        const activeLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
         }
     }
+}
 
     // Menu navigation setup
     document.querySelectorAll('.nav-link, #slideMenu a[data-section]').forEach(link => {
