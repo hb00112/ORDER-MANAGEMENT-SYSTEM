@@ -383,7 +383,6 @@ function fetchOrdersFromFirebase() {
             throw error;
         });
 }
-
 function displayDetailedOrders(orders, container) {
     console.log('Displaying final optimized orders view. Total orders:', orders.length);
     container.innerHTML = '';
@@ -413,40 +412,18 @@ function displayDetailedOrders(orders, container) {
             flex-wrap: wrap;
             gap: 8px;
             align-items: center;
+            margin-bottom: 8px;
         }
         
         .dv-order-number {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
         }
         
         .dv-order-party {
-            font-size: 15px;
+            font-size: 16px;
             flex: 1;
             min-width: 120px;
-        }
-        
-        .dv-order-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .dv-order-date {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-        
-        .dv-order-created {
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
         
         .dv-order-actions {
@@ -474,6 +451,31 @@ function displayDetailedOrders(orders, container) {
             background: rgba(255,255,255,0.1);
         }
         
+        .dv-order-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.15);
+            margin-top: 4px;
+        }
+        
+        .dv-order-date {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        
+        .dv-order-created {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        
         .dv-order-menu {
             position: absolute;
             right: 0;
@@ -492,8 +494,8 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-order-menu-item {
-            padding: 8px 12px;
-            font-size: 13px;
+            padding: 10px 12px;
+            font-size: 14px;
             color: #333;
             cursor: pointer;
             display: flex;
@@ -521,74 +523,89 @@ function displayDetailedOrders(orders, container) {
             width: 100%;
             min-width: 100%;
             border-collapse: collapse;
+            table-layout: auto;
         }
         
         .dv-order-table th {
             background: #f8f9fa;
-            padding: 8px;
+            padding: 12px 8px;
             text-align: left;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 14px;
             position: sticky;
             top: 0;
             white-space: nowrap;
         }
         
         .dv-order-table td {
-            padding: 8px;
+            padding: 12px 8px;
             border-bottom: 1px solid #eee;
             vertical-align: middle;
-            font-size: 13px;
+            font-size: 14px;
         }
         
         .dv-item-name {
-            font-weight: 500;
+            font-weight: 600;
             display: block;
-            font-size: 13px;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #333;
         }
         
         .dv-item-color {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 8px;
+            padding: 3px 8px;
+            border-radius: 10px;
             background: #f1f1f1;
-            font-size: 10px;
-            margin-top: 2px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
         }
         
         .dv-size-qty-cell {
             text-align: center;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             white-space: nowrap;
+            color: #333;
+            min-width: 80px;
         }
         
         .dv-srq-group {
             display: flex;
             align-items: center;
-            max-width: 120px;
+            justify-content: center;
+            max-width: 140px;
+            margin: 0 auto;
         }
         
         .dv-srq-btn {
-            width: 26px;
-            height: 26px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #f8f9fa;
             border: 1px solid #ddd;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .dv-srq-btn:hover {
+            background: #e9ecef;
         }
         
         .dv-srq-input {
-            width: 40px;
-            height: 26px;
+            width: 50px;
+            height: 36px;
             text-align: center;
             border: 1px solid #ddd;
             border-left: none;
             border-right: none;
-            font-size: 12px;
+            font-size: 15px;
+            font-weight: 600;
             padding: 0;
             -moz-appearance: textfield;
         }
@@ -600,20 +617,21 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-stock-cell {
-            max-width: 80px;
-            min-width: 60px;
+            min-width: 100px;
+            text-align: center;
         }
         
         .dv-stock-status {
             display: inline-flex;
             align-items: center;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 500;
+            justify-content: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
             line-height: 1.2;
-            white-space: normal;
-            word-break: break-word;
+            white-space: nowrap;
+            min-width: 80px;
         }
         
         .dv-stock-full {
@@ -632,7 +650,7 @@ function displayDetailedOrders(orders, container) {
         }
         
         .dv-order-footer {
-            padding: 10px 12px;
+            padding: 12px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
             display: flex;
@@ -644,76 +662,195 @@ function displayDetailedOrders(orders, container) {
         .dv-expiry-indicator {
             display: inline-flex;
             align-items: center;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            margin-right: 6px;
+            margin-right: 8px;
         }
         
         .dv-complete-btn {
-            padding: 6px 12px;
+            padding: 8px 16px;
             background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 13px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             margin-left: auto;
             display: none;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .dv-order-table th, 
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .dv-order-header {
+                padding: 14px;
+            }
+            
+            .dv-order-number {
+                font-size: 17px;
+            }
+            
+            .dv-order-party {
+                font-size: 17px;
+            }
+            
+            .dv-order-status {
+                font-size: 14px;
+                padding: 5px 12px;
+            }
+            
+            .dv-order-date, .dv-order-created {
+                font-size: 14px;
+            }
+            
+            .dv-order-table th {
+                padding: 14px 10px;
+                font-size: 15px;
+            }
+            
             .dv-order-table td {
-                padding: 6px 4px;
+                padding: 16px 10px;
+                font-size: 15px;
             }
             
             .dv-item-name {
-                font-size: 12px;
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+            
+            .dv-item-color {
+                font-size: 13px;
+                padding: 4px 10px;
             }
             
             .dv-size-qty-cell {
-                font-size: 12px;
+                font-size: 17px;
+                min-width: 90px;
             }
             
             .dv-srq-group {
-                max-width: 100px;
+                max-width: 150px;
+            }
+            
+            .dv-srq-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
             }
             
             .dv-srq-input {
-                width: 30px;
-                font-size: 11px;
+                width: 60px;
+                height: 40px;
+                font-size: 16px;
             }
             
             .dv-stock-cell {
-                max-width: 70px;
+                min-width: 110px;
             }
             
             .dv-stock-status {
-                font-size: 9px;
-                padding: 1px 3px;
+                font-size: 14px;
+                padding: 8px 12px;
+                min-width: 90px;
             }
         }
         
-        @media (max-width: 400px) {
-            .dv-order-table th, 
+        @media (max-width: 480px) {
+            .dv-order-container {
+                margin-bottom: 12px;
+            }
+            
+            .dv-order-header {
+                padding: 12px;
+            }
+            
+            .dv-order-table th {
+                padding: 12px 6px;
+                font-size: 14px;
+            }
+            
             .dv-order-table td {
-                padding: 4px 2px;
-                font-size: 11px;
+                padding: 14px 6px;
+            }
+            
+            .dv-item-name {
+                font-size: 15px;
+            }
+            
+            .dv-size-qty-cell {
+                font-size: 16px;
+                min-width: 70px;
             }
             
             .dv-srq-group {
-                max-width: 80px;
+                max-width: 130px;
+            }
+            
+            .dv-srq-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
             }
             
             .dv-srq-input {
-                width: 25px;
+                width: 50px;
+                height: 35px;
+                font-size: 15px;
             }
             
             .dv-stock-cell {
-                max-width: 60px;
+                min-width: 90px;
+            }
+            
+            .dv-stock-status {
+                font-size: 12px;
+                padding: 6px 8px;
+                min-width: 75px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .dv-order-table th, 
+            .dv-order-table td {
+                padding: 10px 4px;
+                font-size: 13px;
+            }
+            
+            .dv-item-name {
+                font-size: 14px;
+            }
+            
+            .dv-size-qty-cell {
+                font-size: 15px;
+                min-width: 60px;
+            }
+            
+            .dv-srq-group {
+                max-width: 110px;
+            }
+            
+            .dv-srq-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .dv-srq-input {
+                width: 40px;
+                height: 30px;
+                font-size: 13px;
+            }
+            
+            .dv-stock-cell {
+                min-width: 75px;
+            }
+            
+            .dv-stock-status {
+                font-size: 11px;
+                padding: 4px 6px;
+                min-width: 65px;
             }
         }
     `;
@@ -743,9 +880,6 @@ function displayDetailedOrders(orders, container) {
                         <div class="dv-order-meta">
                             <div class="dv-order-number">#${order.orderNumber || 'N/A'}</div>
                             <div class="dv-order-party">${order.partyName || 'N/A'}</div>
-                            <div class="dv-order-status">
-                                ${isExported ? '✓ Exported' : 'Pending'}
-                            </div>
                         </div>
                         <div class="dv-order-date">${formattedDate}</div>
                         <div class="dv-order-created">
@@ -763,6 +897,10 @@ function displayDetailedOrders(orders, container) {
                                     <span class="icon">🗑️</span> Delete
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="dv-order-status">
+                            ${isExported ? '✓ Exported' : 'Pending'}
                         </div>
                     </div>
                     
@@ -896,7 +1034,6 @@ function generateFinalOrderRows(items, orderId, stockData) {
         });
     }).join('');
 }
-
 function generatePremiumOrderItemRows(items, orderId, stockData) {
     if (!items || !Array.isArray(items) || items.length === 0) {
         return '<tr><td colspan="4">No items found for this order</td></tr>';
