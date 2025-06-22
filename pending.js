@@ -968,46 +968,67 @@ function initializePremiumSRQInputs(container) {
         const size = group.dataset.size;
         const orderId = group.closest('.dv-order-container').dataset.orderId;
 
+        // Initialize currentOrders structure if not exists
+        if (!currentOrders[orderId]) currentOrders[orderId] = {};
+        if (!currentOrders[orderId][itemName]) currentOrders[orderId][itemName] = {};
+        if (!currentOrders[orderId][itemName][color]) currentOrders[orderId][itemName][color] = {};
+
+        // Set initial value
+        const initialValue = parseInt(input.value) || 0;
+        currentOrders[orderId][itemName][color][size] = initialValue;
+
         function updateSRQValue() {
-            const value = parseInt(input.value);
+            const value = parseInt(input.value) || 0;
+            currentOrders[orderId][itemName][color][size] = value;
             updateOrderState(orderId, itemName, color, size, value);
             updateCompleteButtonVisibility(group.closest('.dv-order-container'));
         }
 
         decreaseBtn.addEventListener('click', () => {
-            if (parseInt(input.value) > 0) {
-                input.value = parseInt(input.value) - 1;
+            let value = parseInt(input.value) || 0;
+            if (value > 0) {
+                value--;
+                input.value = value;
                 updateSRQValue();
             }
         });
 
         increaseBtn.addEventListener('click', () => {
-            if (parseInt(input.value) < max) {
-                input.value = parseInt(input.value) + 1;
+            let value = parseInt(input.value) || 0;
+            if (value < max) {
+                value++;
+                input.value = value;
                 updateSRQValue();
             }
         });
 
         input.addEventListener('input', () => {
-            let value = parseInt(input.value);
+            let value = parseInt(input.value) || 0;
             if (isNaN(value)) value = 0;
-            if (value < 0) value = 0;
-            if (value > max) value = max;
+            value = Math.max(0, Math.min(max, value));
             input.value = value;
             updateSRQValue();
         });
+
+        input.addEventListener('change', updateSRQValue);
     });
 }
-
 function updateCompleteButtonVisibility(orderContainer) {
     const completeBtn = orderContainer.querySelector('.dv-complete-btn');
-    const srqInputs = orderContainer.querySelectorAll('.dv-srq-input');
-    const hasNonZeroInput = Array.from(srqInputs).some(input => parseInt(input.value) > 0);
-    
+    if (!completeBtn) return;
+
+    // Check all SRQ inputs in this order
+    const hasNonZeroInput = Array.from(orderContainer.querySelectorAll('.dv-srq-input'))
+        .some(input => {
+            const value = parseInt(input.value) || 0;
+            return value > 0;
+        });
+
+    // Toggle visibility
     if (hasNonZeroInput) {
-        completeBtn.classList.add('show');
+        completeBtn.style.display = 'block';
     } else {
-        completeBtn.classList.remove('show');
+        completeBtn.style.display = 'none';
     }
 }
 
