@@ -2673,7 +2673,6 @@ function createModal(partyName, dateTime, orderNumber) {
   return modal;
 }
 
-
 // ---------------Order Processing
 // ---------------Order Processing
 function handlePlaceOrder() {
@@ -2801,45 +2800,19 @@ function handlePlaceOrder() {
     doc.save(fileName);
 
     // Continue with order processing...
-    checkExistingOrder(partyName, formattedDate)
-      .then((existingOrder) => {
-        if (existingOrder) {
-          return new Promise((resolve) => {
-            if (confirm(`Another order for ${partyName} on ${formattedDate} already exists. Do you want to add to the same order?`)) {
-              resolve({ merge: true, existingOrder });
-            } else {
-              resolve({ merge: false });
-            }
-          });
-        } else {
-          return { merge: false };
-        }
-      })
-      .then(({ merge, existingOrder }) => {
-        if (merge) {
-          const mergedOrder = mergeOrders(existingOrder, {
-            partyName: partyName,
-            dateTime: dateTime.toISOString(),
-            items: cart,
-            status: "Pending",
-            totalQuantity: totalQuantity,
-            orderNote: orderNote
-          });
-          return saveOrderToFirebase(mergedOrder).then(() => mergedOrder);
-        } else {
-          return getNextOrderNumber().then((orderNumber) => {
-            const newOrder = {
-              orderNumber: orderNumber,
-              partyName: partyName,
-              dateTime: dateTime.toISOString(),
-              items: cart,
-              status: "Pending",
-              totalQuantity: totalQuantity,
-              orderNote: orderNote
-            };
-            return saveOrderToFirebase(newOrder).then(() => newOrder);
-          });
-        }
+    getNextOrderNumber()
+      .then((orderNumber) => {
+        const newOrder = {
+          orderNumber: orderNumber,
+          partyName: partyName,
+          dateTime: dateTime.toISOString(),
+          items: cart,
+          status: "Pending",
+          totalQuantity: totalQuantity,
+          orderNote: orderNote,
+          createdBy: username
+        };
+        return saveOrderToFirebase(newOrder).then(() => newOrder);
       })
       .then((order) => {
         console.log("Order saved successfully:", order);
@@ -2885,80 +2858,8 @@ function handlePlaceOrder() {
     placeOrderBtn.textContent = "Place Order";
   }
 }
-function checkExistingOrder(partyName, orderDate) {
-  return firebase.database().ref("orders")
-    .orderByChild("partyName")
-    .equalTo(partyName)
-    .once("value")
-    .then((snapshot) => {
-      let existingOrder = null;
-      snapshot.forEach((childSnapshot) => {
-        const order = childSnapshot.val();
-        if (order.dateTime.split('T')[0] === orderDate) {
-          existingOrder = { ...order, key: childSnapshot.key };
-          return true; // Break the loop
-        }
-      });
-      return existingOrder;
-    });
-}
 
-function mergeOrders(existingOrder, newOrder) {
-  console.log('Merging orders:', { existingOrder, newOrder });
-  
-  // Merge items by concatenating arrays instead of merging
-  existingOrder.items = [...(existingOrder.items || []), ...(newOrder.items || [])];
-  
-  // Update total quantity
-  existingOrder.totalQuantity = (existingOrder.totalQuantity || 0) + (newOrder.totalQuantity || 0);
-  
-  // Mark as modified
-  existingOrder.orderNumber = `Modified ${existingOrder.orderNumber.replace('Modified ', '')}`;
-  
-  // Add a timestamp for the modification
-  existingOrder.lastModified = new Date().toISOString();
-  
-  console.log('Merged order:', existingOrder);
-  return existingOrder;
-}
-function mergeItems(existingItems, newItems) {
-  console.log('Merging items:', { existingItems, newItems });
-  let mergedItems = [...existingItems];
-  let nextIndex = mergedItems.length;
-  
-  newItems.forEach((newItem) => {
-    const existingItemIndex = mergedItems.findIndex(item => 
-      item.id === newItem.id && item.color === newItem.color
-    );
-    
-    if (existingItemIndex !== -1) {
-      // Merge sizes for existing item
-      mergedItems[existingItemIndex] = mergeSizes(mergedItems[existingItemIndex], newItem);
-    } else {
-      // Add new item at the next available index
-      mergedItems[nextIndex] = { ...newItem };
-      nextIndex++;
-    }
-  });
-  
-  console.log('Merged items:', mergedItems);
-  return mergedItems;
-}
 
-function mergeSizes(existingItem, newItem) {
-  console.log('Merging sizes:', { existingItem, newItem });
-  const mergedItem = { ...existingItem };
-  
-  if (newItem.sizes && typeof newItem.sizes === 'object') {
-    mergedItem.sizes = mergedItem.sizes || {};
-    Object.entries(newItem.sizes).forEach(([size, quantity]) => {
-      mergedItem.sizes[size] = (mergedItem.sizes[size] || 0) + quantity;
-    });
-  }
-  
-  console.log('Merged item:', mergedItem);
-  return mergedItem;
-}
 
 function saveOrderToFirebase(order) {
   console.log('Saving order to Firebase:', order);
