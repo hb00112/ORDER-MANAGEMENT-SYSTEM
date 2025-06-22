@@ -1,4 +1,16 @@
 // Ensure the DOM is fully loaded before initializing
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the pending section element
+    const pendingSection = document.getElementById('pendingOrders');
+    
+    // Remove the 'section' class from pending section
+    pendingSection.classList.remove('section');
+    
+    // Add a unique class for pending section
+    pendingSection.classList.add('pending-section');
+});
+
 document.addEventListener('DOMContentLoaded', function() {
 
     checkAndDeleteExpiredOrders();
