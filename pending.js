@@ -383,6 +383,7 @@ function fetchOrdersFromFirebase() {
             throw error;
         });
 }
+
 function displayDetailedOrders(orders, container) {
     console.log('Displaying final optimized orders view. Total orders:', orders.length);
     container.innerHTML = '';
@@ -390,7 +391,8 @@ function displayDetailedOrders(orders, container) {
     // Add CSS styles
     const styleElement = document.createElement('style');
     styleElement.textContent = `
-        .dv-order-container {
+        /* Previous styles remain the same */
+         .dv-order-container {
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -853,6 +855,89 @@ function displayDetailedOrders(orders, container) {
                 min-width: 65px;
             }
         }
+        /* New styles for order notes */
+        .dv-order-notes {
+            padding: 12px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .dv-notes-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .dv-notes-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        
+        .dv-edit-notes-btn {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .dv-edit-notes-btn:hover {
+            background: rgba(0, 123, 255, 0.1);
+        }
+        
+        .dv-notes-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .dv-notes-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .dv-notes-save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .dv-notes-cancel-btn {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
     `;
     document.head.appendChild(styleElement);
 
@@ -920,6 +1005,14 @@ function displayDetailedOrders(orders, container) {
                         </table>
                     </div>
                     
+                    <div class="dv-order-notes">
+                        <div class="dv-notes-label">Order Notes:</div>
+                        <div class="dv-notes-content">${order.orderNote || 'No notes available'}</div>
+                        <button class="dv-edit-notes-btn" data-order-id="${order.id}">
+                            <span class="icon">✏️</span> Edit Notes
+                        </button>
+                    </div>
+                    
                     <div class="dv-order-footer">
                         <div class="dv-expiry-status">
                             ${expiryStatus ? `
@@ -976,12 +1069,79 @@ function displayDetailedOrders(orders, container) {
                     openStockRemovalDetailedModal(order.id);
                 });
 
+                // Initialize notes functionality
+                const editNotesBtn = orderDiv.querySelector('.dv-edit-notes-btn');
+                const notesContent = orderDiv.querySelector('.dv-notes-content');
+                
+                editNotesBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const currentNotes = notesContent.textContent === 'No notes available' ? '' : notesContent.textContent;
+                    const notesEditor = document.createElement('div');
+                    notesEditor.innerHTML = `
+                        <textarea class="dv-notes-textarea">${currentNotes}</textarea>
+                        <div class="dv-notes-actions">
+                            <button class="dv-notes-cancel-btn">Cancel</button>
+                            <button class="dv-notes-save-btn">Save</button>
+                        </div>
+                    `;
+                    
+                    notesContent.replaceWith(notesEditor);
+                    editNotesBtn.style.display = 'none';
+                    
+                    const cancelBtn = notesEditor.querySelector('.dv-notes-cancel-btn');
+                    const saveBtn = notesEditor.querySelector('.dv-notes-save-btn');
+                    const textarea = notesEditor.querySelector('.dv-notes-textarea');
+                    
+                    cancelBtn.addEventListener('click', () => {
+                        notesEditor.replaceWith(notesContent);
+                        editNotesBtn.style.display = 'flex';
+                    });
+                    
+                    saveBtn.addEventListener('click', () => {
+                        const newNotes = textarea.value.trim();
+                        const orderId = editNotesBtn.dataset.orderId;
+                        
+                        // Update notes in Firebase
+                        updateOrderNotes(orderId, newNotes).then(() => {
+                            notesContent.textContent = newNotes || 'No notes available';
+                            notesEditor.replaceWith(notesContent);
+                            editNotesBtn.style.display = 'flex';
+                            
+                            // Show success message
+                            showMessage('Notes updated successfully');
+                        }).catch(error => {
+                            console.error('Error updating notes:', error);
+                            showMessage('Failed to update notes', 'error');
+                        });
+                    });
+                });
+
                 initializePremiumSRQInputs(orderDiv);
                 updateCompleteButtonVisibility(orderDiv);
             });
         });
     });
 }
+
+// Helper function to update order notes in Firebase
+function updateOrderNotes(orderId, orderNotes) {
+    return firebase.database().ref(`orders/${orderId}/orderNote`).set(orderNotes);
+}
+
+// Helper function to show messages
+function showMessage(message, type = 'success') {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${type}`;
+    messageElement.textContent = message;
+    document.body.appendChild(messageElement);
+    
+    setTimeout(() => {
+        messageElement.remove();
+    }, 3000);
+}
+
+
 
 function generateFinalOrderRows(items, orderId, stockData) {
     if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items</td></tr>';
