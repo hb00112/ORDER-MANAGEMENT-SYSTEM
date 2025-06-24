@@ -1,5 +1,9 @@
 // Ensure the DOM is fully loaded before initializing
 
+
+let currentSortOrder = localStorage.getItem('orderSortPreference') || 'oldest';
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Get the pending section element
     const pendingSection = document.getElementById('pendingOrders');
@@ -186,6 +190,108 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+function sortOrdersByPreference(orders) {
+    return orders.sort((a, b) => {
+        const dateA = new Date(a.dateTime);
+        const dateB = new Date(b.dateTime);
+        
+        if (currentSortOrder === 'newest') {
+            return dateB - dateA; // Newest first
+        } else {
+            return dateA - dateB; // Oldest first (default)
+        }
+    });
+}
+
+const filterButtonStyles = `
+   .order-filter-container {
+    position: sticky;
+    top: 0;
+    z-index: 100; /* Higher than the order headers */
+    background: white;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+    .premium-filter-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .premium-filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    .premium-filter-btn.active {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+    .filter-icon {
+        font-size: 12px;
+    }
+`;
+
+// BLOCK 3: Function to Create Filter Buttons
+function addOrderFilterButtons(container) {
+    let filterContainer = container.querySelector('.order-filter-container');
+    if (!filterContainer) {
+        filterContainer = document.createElement('div');
+        filterContainer.className = 'order-filter-container';
+        
+        filterContainer.innerHTML = `
+            <button class="premium-filter-btn ${currentSortOrder === 'newest' ? 'active' : ''}" id="sortNewestBtn">
+                <span class="filter-icon">📅</span>
+                Newest First
+            </button>
+            <button class="premium-filter-btn ${currentSortOrder === 'oldest' ? 'active' : ''}" id="sortOldestBtn">
+                <span class="filter-icon">🕐</span>
+                Oldest First
+            </button>
+        `;
+        
+        // Insert at the very top of the container
+        container.insertBefore(filterContainer, container.firstChild);
+        
+        // Add event listeners
+        const newestBtn = filterContainer.querySelector('#sortNewestBtn');
+        const oldestBtn = filterContainer.querySelector('#sortOldestBtn');
+        
+        newestBtn.addEventListener('click', () => {
+            currentSortOrder = 'newest';
+            localStorage.setItem('orderSortPreference', currentSortOrder);
+            updateFilterButtonStates(filterContainer);
+            loadPendingOrders();
+        });
+        
+        oldestBtn.addEventListener('click', () => {
+            currentSortOrder = 'oldest';
+            localStorage.setItem('orderSortPreference', currentSortOrder);
+            updateFilterButtonStates(filterContainer);
+            loadPendingOrders();
+        });
+    }
+}
+
+// BLOCK 4: Function to Update Button States
+function updateFilterButtonStates(container) {
+    const buttons = container.querySelectorAll('.premium-filter-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const activeBtn = container.querySelector(`#sort${currentSortOrder.charAt(0).toUpperCase() + currentSortOrder.slice(1)}Btn`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+
 function updateIndexedDB(firebaseOrders) {
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -284,39 +390,52 @@ function loadPendingOrders() {
     
     console.log('View mode:', isDetailed ? 'Detailed' : 'Summarized');
     console.log('Current filters:', currentFilters);
-
+    console.log('Current sort order:', currentSortOrder);
+    
     pendingOrdersBody.innerHTML = '<tr><td colspan="5">Loading orders...</td></tr>';
     detailedHeader.style.display = isDetailed ? '' : 'none';
     summarizedHeader.style.display = isDetailed ? 'none' : '';
-
+    
+    // Add CSS styles if not already added
+    if (!document.querySelector('#filterButtonStyles')) {
+        const style = document.createElement('style');
+        style.id = 'filterButtonStyles';
+        style.textContent = filterButtonStyles;
+        document.head.appendChild(style);
+    }
+    
     syncWithFirebase()
         .then(() => getOrdersFromIndexedDB())
         .then(orders => {
-            // Filter orders based on quantity and current filters
-            // Remove the status filter as we're not distinguishing between pending and archived
             orders = orders.filter(order => 
                 calculateTotalQuantityForOrder(order) > 0 &&
                 (currentFilters.length === 0 || currentFilters.includes(order.partyName))
             );
-
+            
             if (!orders || orders.length === 0) {
                 pendingOrdersBody.innerHTML = '<tr><td colspan="5">No orders found</td></tr>';
                 return;
             }
-
+            
+            pendingOrdersBody.innerHTML = '';
+            
+            // Add filter buttons
+            addOrderFilterButtons(pendingOrdersBody.parentElement);
+            
             if (isDetailed) {
                 displayDetailedOrders(orders, pendingOrdersBody);
             } else {
                 displaySummarizedOrders(orders, pendingOrdersBody);
             }
+            
             loadDeletedOrders();
-  
         })
         .catch(error => {
             console.error("Error loading orders: ", error);
             pendingOrdersBody.innerHTML = '<tr><td colspan="5">Error loading orders. Please try again.</td></tr>';
         });
 }
+
 function displayOrders(orders, isDetailed) {
     console.log('Total orders:', orders.length);
     
@@ -400,6 +519,7 @@ function displayDetailedOrders(orders, container) {
             overflow: hidden;
             width: 100%;
             max-width: 100%;
+               z-index: 1; 
         }
         
         .dv-order-header {
@@ -407,6 +527,7 @@ function displayDetailedOrders(orders, container) {
             color: white;
             padding: 12px;
             position: relative;
+              z-index: 1;
         }
         
         .dv-order-meta {
@@ -941,9 +1062,12 @@ function displayDetailedOrders(orders, container) {
     `;
     document.head.appendChild(styleElement);
 
+     // Sort orders based on current preference
+    const sortedOrders = sortOrdersByPreference([...orders]);
+
     getStockData().then(stockData => {
         getExportStatusFromFirebase((exportStatus) => {
-            orders.forEach(order => {
+            sortedOrders.forEach(order => {
                 const orderDate = new Date(order.dateTime);
                 const formattedDate = orderDate.toLocaleDateString('en-US', {
                     weekday: 'short',
@@ -2604,16 +2728,18 @@ function displaySummarizedOrders(orders, container) {
     `;
     document.head.appendChild(style);
 
-    const groupedOrders = groupOrdersByParty(orders);
+     // Sort orders based on current preference and group them
+    const sortedOrders = sortOrdersByPreference([...orders]);
+    const groupedOrders = groupOrdersByParty(sortedOrders);
     
     for (const [partyName, group] of Object.entries(groupedOrders)) {
-        // Sort group by date (newest first)
-        group.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        // Sort group by current preference
+        const sortedGroup = sortOrdersByPreference([...group]);
         
-        const newestOrder = group[0];
-        const oldestOrder = group[group.length - 1];
+        const newestOrder = sortedGroup[0];
+        const oldestOrder = sortedGroup[sortedGroup.length - 1];
         
-        const nonZeroItems = group.flatMap(order => 
+        const nonZeroItems = sortedGroup.flatMap(order => 
             (order.items || []).filter(item => {
                 const totalQuantity = Object.values(item.quantities || {})
                     .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
@@ -2647,7 +2773,7 @@ function displaySummarizedOrders(orders, container) {
             `${oldestOrderDate.toLocaleDateString()} - ${newestOrderDate.toLocaleDateString()}`;
 
         const row = document.createElement('tr');
-        row.classList.toggle('sent-to-billing', group.some(o => o.status === 'Sent to Billing'));
+        row.classList.toggle('sent-to-billing', sortedGroup.some(o => o.status === 'Sent to Billing'));
         
         row.innerHTML = `
             <td>
@@ -2656,7 +2782,6 @@ function displaySummarizedOrders(orders, container) {
             </td>
             <td>
                 <div class="order-details">
-                   
                     <div class="item-names">${itemListHTML}</div>
                 </div>
             </td>
@@ -2671,7 +2796,7 @@ function displaySummarizedOrders(orders, container) {
             row.style.transform = 'scale(0.99)';
             setTimeout(() => {
                 row.style.transform = '';
-                openPremiumStockRemovalModal(partyName, group);
+                openPremiumStockRemovalModal(partyName, sortedGroup);
             }, 150);
         });
         
