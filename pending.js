@@ -2617,7 +2617,7 @@ function displaySummarizedOrders(orders, container) {
          // Sort group by date (newest first)Add commentMore actions
         group.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
         
-       const newestOrder = group[0];Add commentMore actions
+       const newestOrder = group[0];
         const oldestOrder = group[group.length - 1];
         
        const nonZeroItems = group.flatMap(order => 
