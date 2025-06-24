@@ -285,7 +285,7 @@ function loadPendingOrders() {
     
     console.log('View mode:', isDetailed ? 'Detailed' : 'Summarized');
     console.log('Current filters:', currentFilters);
-    console.log('Current sort order:', currentSortOrder);
+    
     
     pendingOrdersBody.innerHTML = '<tr><td colspan="5">Loading orders...</td></tr>';
     detailedHeader.style.display = isDetailed ? '' : 'none';
