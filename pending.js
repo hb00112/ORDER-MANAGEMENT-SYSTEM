@@ -949,7 +949,8 @@ function displayDetailedOrders(orders, container) {
     
     getStockData().then(stockData => {
         getExportStatusFromFirebase((exportStatus) => {
-            Orders.forEach(order => {
+            // Changed from Orders.forEach to orders.forEach
+            orders.forEach(order => {
                 const orderDate = new Date(order.dateTime);
                 const formattedDate = orderDate.toLocaleDateString('en-US', {
                     weekday: 'short',
@@ -1129,7 +1130,6 @@ function displayDetailedOrders(orders, container) {
         });
     });
 }
-
 // Helper function to update order notes in Firebase
 function updateOrderNotes(orderId, orderNotes) {
     return firebase.database().ref(`orders/${orderId}/orderNote`).set(orderNotes);
