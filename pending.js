@@ -1,17 +1,4 @@
 // Ensure the DOM is fully loaded before initializing
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the pending section element
-    const pendingSection = document.getElementById('pendingOrders');
-    
-    // Remove the 'section' class from pending section
-    pendingSection.classList.remove('section');
-    
-    // Add a unique class for pending section
-    pendingSection.classList.add('pending-section');
-});
-
 document.addEventListener('DOMContentLoaded', function() {
 
     checkAndDeleteExpiredOrders();
@@ -285,41 +272,39 @@ function loadPendingOrders() {
     
     console.log('View mode:', isDetailed ? 'Detailed' : 'Summarized');
     console.log('Current filters:', currentFilters);
-    
-    
+
     pendingOrdersBody.innerHTML = '<tr><td colspan="5">Loading orders...</td></tr>';
     detailedHeader.style.display = isDetailed ? '' : 'none';
     summarizedHeader.style.display = isDetailed ? 'none' : '';
-    
-   
-    
+
     syncWithFirebase()
         .then(() => getOrdersFromIndexedDB())
         .then(orders => {
+            // Filter orders based on quantity and current filters
+            // Remove the status filter as we're not distinguishing between pending and archived
             orders = orders.filter(order => 
                 calculateTotalQuantityForOrder(order) > 0 &&
                 (currentFilters.length === 0 || currentFilters.includes(order.partyName))
             );
-            
+
             if (!orders || orders.length === 0) {
                 pendingOrdersBody.innerHTML = '<tr><td colspan="5">No orders found</td></tr>';
                 return;
             }
-         
+
             if (isDetailed) {
                 displayDetailedOrders(orders, pendingOrdersBody);
             } else {
                 displaySummarizedOrders(orders, pendingOrdersBody);
             }
-            
             loadDeletedOrders();
+  
         })
         .catch(error => {
             console.error("Error loading orders: ", error);
             pendingOrdersBody.innerHTML = '<tr><td colspan="5">Error loading orders. Please try again.</td></tr>';
         });
 }
-
 function displayOrders(orders, isDetailed) {
     console.log('Total orders:', orders.length);
     
@@ -387,952 +372,261 @@ function fetchOrdersFromFirebase() {
         });
 }
 
+
 function displayDetailedOrders(orders, container) {
-    console.log('Displaying final optimized orders view. Total orders:', orders.length);
+    console.log('Displaying detailed orders. Total orders:', orders.length);
     container.innerHTML = '';
-    
-    // Add CSS styles
+  
+    // Add CSS styles for stock availability and status icon
     const styleElement = document.createElement('style');
     styleElement.textContent = `
-        /* Previous styles remain the same */
-         .dv-order-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 16px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 100%;
-               z-index: 1; 
+        .stock-full {
+            background-color: #FFFACD !important;
         }
-        
-        .dv-order-header {
-            background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
-            color: white;
-            padding: 12px;
-            position: relative;
-              z-index: 1;
+        .stock-partial {
+            background-color: #E3F2FD !important;
         }
-        
-        .dv-order-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .dv-order-number {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        .dv-order-party {
-            font-size: 16px;
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .dv-order-actions {
-            position: absolute;
-            right: 8px;
-            top: 8px;
-        }
-        
-        .dv-order-menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
+        .status-icon {
             cursor: pointer;
-            padding: 5px;
-            width: 32px;
-            height: 32px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-        
-        .dv-order-menu-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .dv-order-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            background: rgba(255,255,255,0.15);
-            margin-top: 4px;
-        }
-        
-        .dv-order-date {
-            font-size: 13px;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-        
-        .dv-order-created {
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 4px;
-        }
-        
-        .dv-order-menu {
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            min-width: 150px;
-            z-index: 100;
-            display: none;
-            overflow: hidden;
-        }
-        
-        .dv-order-menu.show {
-            display: block;
-        }
-        
-        .dv-order-menu-item {
-            padding: 10px 12px;
-            font-size: 14px;
-            color: #333;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-        
-        .dv-order-menu-item:hover {
-            background: #f5f5f5;
-        }
-        
-        .dv-order-menu-item.delete {
-            color: #e74c3c;
-        }
-        
-        .dv-order-content {
-            padding: 0;
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .dv-order-table {
-            width: 100%;
-            min-width: 100%;
-            border-collapse: collapse;
-            table-layout: auto;
-        }
-        
-        .dv-order-table th {
-            background: #f8f9fa;
-            padding: 12px 8px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            position: sticky;
-            top: 0;
-            white-space: nowrap;
-        }
-        
-        .dv-order-table td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-            font-size: 14px;
-        }
-        
-        .dv-item-name {
-            font-weight: 600;
-            display: block;
-            font-size: 15px;
-            margin-bottom: 4px;
-            color: #333;
-        }
-        
-        .dv-item-color {
+            margin-left: 8px;
+            font-size: 1em;
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 10px;
-            background: #f1f1f1;
-            font-size: 12px;
-            font-weight: 500;
-            color: #666;
+            vertical-align: middle;
         }
-        
-        .dv-size-qty-cell {
-            text-align: center;
-            font-size: 16px;
-            font-weight: 600;
-            white-space: nowrap;
-            color: #333;
-            min-width: 80px;
+        .status-cross {
+            color: #dc3545;
         }
-        
-        .dv-srq-group {
+        .status-tick {
+            color: #28a745;
+        }
+        .order-number-line {
             display: flex;
             align-items: center;
-            justify-content: center;
-            max-width: 140px;
-            margin: 0 auto;
+            margin-bottom: 4px;
+        }
+        .order-details {
+            margin-top: 4px;
+        }
+        .three-dot-menu {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+        .order-header {
+            position: relative;
+            padding-right: 40px;
         }
         
-        .dv-srq-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .dv-srq-btn:hover {
-            background: #e9ecef;
-        }
-        
-        .dv-srq-input {
-            width: 50px;
-            height: 36px;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-left: none;
-            border-right: none;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 0;
-            -moz-appearance: textfield;
-        }
-        
-        .dv-srq-input::-webkit-outer-spin-button,
-        .dv-srq-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
-        .dv-stock-cell {
-            min-width: 100px;
-            text-align: center;
-        }
-        
-        .dv-stock-status {
+        /* Expiry Indicator Styles */
+        .expiry-indicator {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 1.2;
-            white-space: nowrap;
-            min-width: 80px;
-        }
-        
-        .dv-stock-full {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .dv-stock-partial {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-        
-        .dv-stock-none {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .dv-order-footer {
-            padding: 12px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .dv-expiry-indicator {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-right: 8px;
-        }
-        
-        .dv-complete-btn {
-            padding: 8px 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: auto;
-            display: none;
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .dv-order-header {
-                padding: 14px;
-            }
-            
-            .dv-order-number {
-                font-size: 17px;
-            }
-            
-            .dv-order-party {
-                font-size: 17px;
-            }
-            
-            .dv-order-status {
-                font-size: 14px;
-                padding: 5px 12px;
-            }
-            
-            .dv-order-date, .dv-order-created {
-                font-size: 14px;
-            }
-            
-            .dv-order-table th {
-                padding: 14px 10px;
-                font-size: 15px;
-            }
-            
-            .dv-order-table td {
-                padding: 16px 10px;
-                font-size: 15px;
-            }
-            
-            .dv-item-name {
-                font-size: 16px;
-                margin-bottom: 6px;
-            }
-            
-            .dv-item-color {
-                font-size: 13px;
-                padding: 4px 10px;
-            }
-            
-            .dv-size-qty-cell {
-                font-size: 17px;
-                min-width: 90px;
-            }
-            
-            .dv-srq-group {
-                max-width: 150px;
-            }
-            
-            .dv-srq-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-            
-            .dv-srq-input {
-                width: 60px;
-                height: 40px;
-                font-size: 16px;
-            }
-            
-            .dv-stock-cell {
-                min-width: 110px;
-            }
-            
-            .dv-stock-status {
-                font-size: 14px;
-                padding: 8px 12px;
-                min-width: 90px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .dv-order-container {
-                margin-bottom: 12px;
-            }
-            
-            .dv-order-header {
-                padding: 12px;
-            }
-            
-            .dv-order-table th {
-                padding: 12px 6px;
-                font-size: 14px;
-            }
-            
-            .dv-order-table td {
-                padding: 14px 6px;
-            }
-            
-            .dv-item-name {
-                font-size: 15px;
-            }
-            
-            .dv-size-qty-cell {
-                font-size: 16px;
-                min-width: 70px;
-            }
-            
-            .dv-srq-group {
-                max-width: 130px;
-            }
-            
-            .dv-srq-btn {
-                width: 35px;
-                height: 35px;
-                font-size: 16px;
-            }
-            
-            .dv-srq-input {
-                width: 50px;
-                height: 35px;
-                font-size: 15px;
-            }
-            
-            .dv-stock-cell {
-                min-width: 90px;
-            }
-            
-            .dv-stock-status {
-                font-size: 12px;
-                padding: 6px 8px;
-                min-width: 75px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .dv-order-table th, 
-            .dv-order-table td {
-                padding: 10px 4px;
-                font-size: 13px;
-            }
-            
-            .dv-item-name {
-                font-size: 14px;
-            }
-            
-            .dv-size-qty-cell {
-                font-size: 15px;
-                min-width: 60px;
-            }
-            
-            .dv-srq-group {
-                max-width: 110px;
-            }
-            
-            .dv-srq-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
-            
-            .dv-srq-input {
-                width: 40px;
-                height: 30px;
-                font-size: 13px;
-            }
-            
-            .dv-stock-cell {
-                min-width: 75px;
-            }
-            
-            .dv-stock-status {
-                font-size: 11px;
-                padding: 4px 6px;
-                min-width: 65px;
-            }
-        }
-        /* New styles for order notes */
-        .dv-order-notes {
-            padding: 12px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .dv-notes-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .dv-notes-content {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            word-break: break-word;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-        
-        .dv-edit-notes-btn {
-            align-self: flex-end;
-            background: none;
-            border: none;
-            color: #007bff;
-            font-size: 13px;
-            cursor: pointer;
             padding: 4px 8px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
         
-        .dv-edit-notes-btn:hover {
-            background: rgba(0, 123, 255, 0.1);
-        }
-        
-        .dv-notes-textarea {
+        .expiry-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            min-height: 80px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: inherit;
+            height: 100%;
+            opacity: 0.1;
+            background: currentColor;
+        }
+        
+        .expiry-indicator .icon {
+            margin-right: 4px;
             font-size: 14px;
-            resize: vertical;
         }
         
-        .dv-notes-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 8px;
+        .expiry-normal {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 3px solid #2e7d32;
         }
         
-        .dv-notes-save-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
+        .expiry-warning {
+            background-color: #fff8e1;
+            color: #ff8f00;
+            border-left: 3px solid #ff8f00;
         }
         
-        .dv-notes-cancel-btn {
-            background: #f8f9fa;
-            color: #333;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
+        .expiry-critical {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 3px solid #c62828;
+            animation: pulse 2s infinite;
+        }
+        
+        .expiry-expired {
+            background-color: #f5f5f5;
+            color: #616161;
+            border-left: 3px solid #616161;
+        }
+        
+        .expiry-progress {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            background: #f5f5f5;
+            margin-top: 4px;
+        }
+        
+        .expiry-progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     `;
     document.head.appendChild(styleElement);
-
-    
+  
+    // Get stock data from IndexedDB
     getStockData().then(stockData => {
+        // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
-            // Changed from Orders.forEach to orders.forEach
-            orders.forEach(order => {
-                const orderDate = new Date(order.dateTime);
-                const formattedDate = orderDate.toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+            // Sort orders by expiry status (critical first)
+            orders.sort((a, b) => {
+                const statusA = a.expiryDate ? getExpiryStatus(a.expiryDate).status : 'normal';
+                const statusB = b.expiryDate ? getExpiryStatus(b.expiryDate).status : 'normal';
                 
-                const isExported = exportStatus[order.id] || false;
-                const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
+                const priority = { 'expired': 0, 'critical': 1, 'warning': 2, 'normal': 3 };
+                return priority[statusA] - priority[statusB];
+            });
 
+            orders.forEach(order => {
+                const orderDate = new Date(order.dateTime).toLocaleDateString();
                 const orderDiv = document.createElement('div');
-                orderDiv.className = 'dv-order-container';
+                orderDiv.className = 'order-container mb-4';
                 orderDiv.dataset.orderId = order.id;
                 
+                const isExported = exportStatus[order.id] || false;
+                const statusIcon = isExported ? '✓' : '✕';
+                const statusClass = isExported ? 'status-tick' : 'status-cross';
+                
+                // Calculate expiry status
+                const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
+  
                 orderDiv.innerHTML = `
-                    <div class="dv-order-header">
-                        <div class="dv-order-meta">
-                            <div class="dv-order-number">#${order.orderNumber || 'N/A'}</div>
-                            <div class="dv-order-party">${order.partyName || 'N/A'}</div>
-                        </div>
-                        <div class="dv-order-date">${formattedDate}</div>
-                        <div class="dv-order-created">
-                            <span>👤</span>
-                            <span>${order.createdBy || 'Unknown'}</span>
-                        </div>
-                        
-                        <div class="dv-order-actions">
-                            <button class="dv-order-menu-btn">⋮</button>
-                            <div class="dv-order-menu">
-                                <div class="dv-order-menu-item export-order" data-order-id="${order.id}">
-                                    <span class="icon">📤</span> Export
-                                </div>
-                                <div class="dv-order-menu-item delete-order delete" data-order-id="${order.id}">
-                                    <span class="icon">🗑️</span> Delete
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dv-order-status">
-                            ${isExported ? '✓ Exported' : 'Pending'}
-                        </div>
-                    </div>
-                    
-                    <div class="dv-order-content">
-                        <table class="dv-order-table">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Size/Qty</th>
-                                    <th>Stock</th>
-                                    <th>SRQ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${generateFinalOrderRows(order.items, order.id, stockData)}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="dv-order-notes">
-                        <div class="dv-notes-label">Order Notes:</div>
-                        <div class="dv-notes-content">${order.orderNote || 'No notes available'}</div>
-                        <button class="dv-edit-notes-btn" data-order-id="${order.id}">
-                            <span class="icon">✏️</span> Edit Notes
-                        </button>
-                    </div>
-                    
-                    <div class="dv-order-footer">
-                        <div class="dv-expiry-status">
+                    <div class="order-header mb-2">
+                        <div class="order-number-line">
+                            <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
+                            <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
                             ${expiryStatus ? `
-                            <span class="dv-expiry-indicator ${expiryStatus.class}">
-                                <span>${expiryStatus.icon} ${expiryStatus.label}</span>
+                            <span class="expiry-indicator ${expiryStatus.class}" 
+                                  data-bs-toggle="tooltip" 
+                                  title="Expiry: ${new Date(order.expiryDate).toLocaleDateString()} (${expiryStatus.days} days remaining)">
+                                <span class="icon">${expiryStatus.icon}</span>
+                                ${expiryStatus.label}
                             </span>
                             ` : ''}
                         </div>
-                        <button class="dv-complete-btn" data-order-id="${order.id}">
-                            Complete
-                        </button>
+                        ${expiryStatus ? `
+                        <div class="order-expiry-header">
+                            <div class="expiry-progress">
+                                <div class="expiry-progress-bar ${expiryStatus.class}" 
+                                     style="width: ${expiryStatus.percentage}%"></div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        <div class="order-details">
+                            Party Name: ${order.partyName || 'N/A'}<br>
+                            Date: ${orderDate}
+                        </div>
+                        <div class="three-dot-menu">
+                            <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-${order.id}">
+                                <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
+                                <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+                            </div>
+                        </div>
                     </div>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Order</th>
+                                <th>SRQ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
+                        </tbody>
+                    </table>
+                    <div class="order-actions mt-2 text-right">
+                        <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
+                    </div>
+                    <hr>
                 `;
-
+  
                 container.appendChild(orderDiv);
-
-                // Initialize three-dot menu
-                const menuBtn = orderDiv.querySelector('.dv-order-menu-btn');
-                const menu = orderDiv.querySelector('.dv-order-menu');
-                
-                menuBtn.addEventListener('click', (e) => {
+  
+                // Add existing event listeners
+                const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
+                const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
+  
+                dropdownToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    menu.classList.toggle('show');
+                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
                 });
-
-                // Close menu when clicking outside
-                document.addEventListener('click', () => {
-                    menu.classList.remove('show');
-                });
-
-                // Initialize menu items
-                const exportBtn = orderDiv.querySelector('.export-order');
-                exportBtn.addEventListener('click', (e) => {
+  
+                const deleteButton = orderDiv.querySelector('.delete-order');
+                deleteButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log('Delete button clicked for order:', order.id);
+                    openDeleteModal1(order.id);
+                    dropdownMenu.style.display = 'none';
+                });
+  
+                const exportButton = orderDiv.querySelector('.export-order');
+                exportButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Export button clicked for order:', order.id);
                     exportOrderToExcel(order);
                     updateExportStatus(order.id, true);
-                    const statusElement = orderDiv.querySelector('.dv-order-status');
-                    statusElement.textContent = '✓ Exported';
-                    menu.classList.remove('show');
+                    const statusIcon = orderDiv.querySelector(`#status-${order.id}`);
+                    statusIcon.textContent = '✓';
+                    statusIcon.classList.remove('status-cross');
+                    statusIcon.classList.add('status-tick');
+                    dropdownMenu.style.display = 'none';
                 });
-
-                const deleteBtn = orderDiv.querySelector('.delete-order');
-                deleteBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openDeleteModal1(order.id);
-                    menu.classList.remove('show');
+  
+                document.addEventListener('click', () => {
+                    dropdownMenu.style.display = 'none';
                 });
-
-                // Initialize complete button
-                const completeBtn = orderDiv.querySelector('.dv-complete-btn');
-                completeBtn.addEventListener('click', () => {
-                    openStockRemovalDetailedModal(order.id);
-                });
-
-                // Initialize notes functionality
-                const editNotesBtn = orderDiv.querySelector('.dv-edit-notes-btn');
-                const notesContent = orderDiv.querySelector('.dv-notes-content');
-                
-                editNotesBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    const currentNotes = notesContent.textContent === 'No notes available' ? '' : notesContent.textContent;
-                    const notesEditor = document.createElement('div');
-                    notesEditor.innerHTML = `
-                        <textarea class="dv-notes-textarea">${currentNotes}</textarea>
-                        <div class="dv-notes-actions">
-                            <button class="dv-notes-cancel-btn">Cancel</button>
-                            <button class="dv-notes-save-btn">Save</button>
-                        </div>
-                    `;
-                    
-                    notesContent.replaceWith(notesEditor);
-                    editNotesBtn.style.display = 'none';
-                    
-                    const cancelBtn = notesEditor.querySelector('.dv-notes-cancel-btn');
-                    const saveBtn = notesEditor.querySelector('.dv-notes-save-btn');
-                    const textarea = notesEditor.querySelector('.dv-notes-textarea');
-                    
-                    cancelBtn.addEventListener('click', () => {
-                        notesEditor.replaceWith(notesContent);
-                        editNotesBtn.style.display = 'flex';
-                    });
-                    
-                    saveBtn.addEventListener('click', () => {
-                        const newNotes = textarea.value.trim();
-                        const orderId = editNotesBtn.dataset.orderId;
-                        
-                        // Update notes in Firebase
-                        updateOrderNotes(orderId, newNotes).then(() => {
-                            notesContent.textContent = newNotes || 'No notes available';
-                            notesEditor.replaceWith(notesContent);
-                            editNotesBtn.style.display = 'flex';
-                            
-                            // Show success message
-                            showMessage('Notes updated successfully');
-                        }).catch(error => {
-                            console.error('Error updating notes:', error);
-                            showMessage('Failed to update notes', 'error');
-                        });
-                    });
-                });
-
-                initializePremiumSRQInputs(orderDiv);
-                updateCompleteButtonVisibility(orderDiv);
+  
+                if (currentOrders[order.id]) {
+                    updateDetailedView(order.id);
+                }
+            });
+  
+            // Initialize SRQ inputs after adding content to the DOM
+            initializeSRQInputs(container);
+            
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                boundary: 'window',
+                trigger: 'hover focus'
             });
         });
     });
-}
-// Helper function to update order notes in Firebase
-function updateOrderNotes(orderId, orderNotes) {
-    return firebase.database().ref(`orders/${orderId}/orderNote`).set(orderNotes);
-}
-
-// Helper function to show messages
-function showMessage(message, type = 'success') {
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${type}`;
-    messageElement.textContent = message;
-    document.body.appendChild(messageElement);
-    
-    setTimeout(() => {
-        messageElement.remove();
-    }, 3000);
-}
-
-
-
-function generateFinalOrderRows(items, orderId, stockData) {
-    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items</td></tr>';
-    
-    return items.flatMap(item => {
-        if (!item || !item.quantities) return '';
-        
-        return Object.entries(item.quantities).map(([size, qty]) => {
-            if (qty <= 0) return '';
-            
-            const srqValue = item.srq?.[size] || 0;
-            const stockItem = stockData.find(s => 
-                s['item name'] === item.name && 
-                s.color === item.color && 
-                s.size === size
-            );
-            
-            let stockStatus = 'none';
-            let stockText = 'No Stock';
-            if (stockItem) {
-                const stockQty = parseFloat(stockItem.quantity) || 0;
-                if (stockQty >= qty) {
-                    stockStatus = 'full';
-                    stockText = 'Available';
-                } else if (stockQty > 0) {
-                    stockStatus = 'partial';
-                    stockText = `${stockQty} only`;
-                }
-            }
-
-            return `
-                <tr>
-                    <td>
-                        <span class="dv-item-name">${item.name || 'N/A'}</span>
-                        <span class="dv-item-color">${item.color || 'N/A'}</span>
-                    </td>
-                    <td class="dv-size-qty-cell">${size}/${qty}</td>
-                    <td class="dv-stock-cell">
-                        <span class="dv-stock-status dv-stock-${stockStatus}">${stockText}</span>
-                    </td>
-                    <td>
-                        <div class="dv-srq-group" data-max="${qty}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
-                            <button class="dv-srq-btn dv-srq-decrease">-</button>
-                            <input type="number" class="dv-srq-input" value="${srqValue}" min="0" max="${qty}">
-                            <button class="dv-srq-btn dv-srq-increase">+</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-    }).join('');
-}
-function generatePremiumOrderItemRows(items, orderId, stockData) {
-    if (!items || !Array.isArray(items) || items.length === 0) {
-        return '<tr><td colspan="4">No items found for this order</td></tr>';
-    }
-
-    return items.flatMap(item => {
-        if (!item || !item.quantities || typeof item.quantities !== 'object') {
-            console.warn(`Invalid item structure for order ${orderId}:`, item);
-            return '';
-        }
-
-        return Object.entries(item.quantities).map(([size, quantity]) => {
-            const srqValue = item.srq && item.srq[size] ? item.srq[size] : 0;
-            
-            // Check stock availability
-            const stockItem = stockData.find(stock => 
-                stock['item name'] === item.name && 
-                stock.color === item.color && 
-                stock.size === size
-            );
-            
-            const stockQuantity = stockItem ? parseFloat(stockItem.quantity) : 0;
-            let stockClass = '';
-            let stockText = '';
-            
-            // Determine row color based on stock availability
-            if (stockQuantity >= quantity) {
-                stockClass = 'dv-stock-full';
-                stockText = 'In Stock';
-            } else if (stockQuantity > 0) {
-                stockClass = 'dv-stock-partial';
-                stockText = `Partial (${stockQuantity})`;
-            } else {
-                stockClass = 'dv-stock-none';
-                stockText = 'Out of Stock';
-            }
-
-            return `
-                <tr>
-                    <td>
-                        <div class="dv-item-name">${item.name || 'Unknown'}</div>
-                        <div class="dv-item-color">${item.color || 'N/A'}</div>
-                    </td>
-                    <td>${size}/${quantity}</td>
-                    <td>
-                        <span class="dv-stock-status ${stockClass}">${stockText}</span>
-                    </td>
-                    <td>
-                        <div class="dv-srq-group" data-max="${quantity}" data-item="${item.name || 'Unknown'}" data-color="${item.color || 'N/A'}" data-size="${size}">
-                            <div class="dv-srq-btn dv-srq-decrease">-</div>
-                            <input type="number" class="dv-srq-input" value="${srqValue}" min="0" max="${quantity}">
-                            <div class="dv-srq-btn dv-srq-increase">+</div>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-    }).join('');
-}
-
-function initializePremiumSRQInputs(container) {
-    container.querySelectorAll('.dv-srq-group').forEach(group => {
-        const input = group.querySelector('.dv-srq-input');
-        const decreaseBtn = group.querySelector('.dv-srq-decrease');
-        const increaseBtn = group.querySelector('.dv-srq-increase');
-        const max = parseInt(group.dataset.max);
-        const itemName = group.dataset.item;
-        const color = group.dataset.color;
-        const size = group.dataset.size;
-        const orderId = group.closest('.dv-order-container').dataset.orderId;
-
-        // Initialize currentOrders structure if not exists
-        if (!currentOrders[orderId]) currentOrders[orderId] = {};
-        if (!currentOrders[orderId][itemName]) currentOrders[orderId][itemName] = {};
-        if (!currentOrders[orderId][itemName][color]) currentOrders[orderId][itemName][color] = {};
-
-        // Set initial value
-        const initialValue = parseInt(input.value) || 0;
-        currentOrders[orderId][itemName][color][size] = initialValue;
-
-        function updateSRQValue() {
-            const value = parseInt(input.value) || 0;
-            currentOrders[orderId][itemName][color][size] = value;
-            updateOrderState(orderId, itemName, color, size, value);
-            updateCompleteButtonVisibility(group.closest('.dv-order-container'));
-        }
-
-        decreaseBtn.addEventListener('click', () => {
-            let value = parseInt(input.value) || 0;
-            if (value > 0) {
-                value--;
-                input.value = value;
-                updateSRQValue();
-            }
-        });
-
-        increaseBtn.addEventListener('click', () => {
-            let value = parseInt(input.value) || 0;
-            if (value < max) {
-                value++;
-                input.value = value;
-                updateSRQValue();
-            }
-        });
-
-        input.addEventListener('input', () => {
-            let value = parseInt(input.value) || 0;
-            if (isNaN(value)) value = 0;
-            value = Math.max(0, Math.min(max, value));
-            input.value = value;
-            updateSRQValue();
-        });
-
-        input.addEventListener('change', updateSRQValue);
-    });
-}
-function updateCompleteButtonVisibility(orderContainer) {
-    const completeBtn = orderContainer.querySelector('.dv-complete-btn');
-    if (!completeBtn) return;
-
-    // Check all SRQ inputs in this order
-    const hasNonZeroInput = Array.from(orderContainer.querySelectorAll('.dv-srq-input'))
-        .some(input => {
-            const value = parseInt(input.value) || 0;
-            return value > 0;
-        });
-
-    // Toggle visibility
-    if (hasNonZeroInput) {
-        completeBtn.style.display = 'block';
-    } else {
-        completeBtn.style.display = 'none';
-    }
 }
 
   
@@ -1793,92 +1087,47 @@ function initializeSRQInputs(modal) {
     });
 }
 // Modified initializeSRQInputs function
-function initializeSRQInputs(container) {
-    container.querySelectorAll('.sr-srq-group').forEach(group => {
-        const input = group.querySelector('.sr-srq-input');
-        const decreaseBtn = group.querySelector('.sr-srq-decrease');
-        const increaseBtn = group.querySelector('.sr-srq-increase');
+function initializeSRQInputs(container = document) {
+    container.querySelectorAll('.srq-input-group').forEach(group => {
+        const input = group.querySelector('.srq-input');
+        const decreaseBtn = group.querySelector('.srq-decrease');
+        const increaseBtn = group.querySelector('.srq-increase');
         const max = parseInt(group.dataset.max);
         const itemName = group.dataset.item;
         const color = group.dataset.color;
         const size = group.dataset.size;
-        const orderId = container.closest('.sr-modal-container').dataset.orderId;
-        
-        // Initialize currentOrders structure if not exists
-        if (!currentOrders[orderId]) currentOrders[orderId] = {};
-        if (!currentOrders[orderId][itemName]) currentOrders[orderId][itemName] = {};
-        if (!currentOrders[orderId][itemName][color]) currentOrders[orderId][itemName][color] = {};
-        
-        // Set initial value
-        const initialValue = parseInt(input.value) || 0;
-        currentOrders[orderId][itemName][color][size] = initialValue;
+        const orderId = group.closest('[data-order-id]').dataset.orderId;
 
         function updateSRQValue() {
-            const value = parseInt(input.value) || 0;
-            currentOrders[orderId][itemName][color][size] = value;
-            
-            // Update pending value
-            const row = group.closest('tr');
-            const pendingCell = row.querySelector('.sr-pending-value');
-            const originalQty = parseInt(row.querySelector('td:nth-child(2)').textContent.split('/')[1]);
-            pendingCell.textContent = originalQty - value;
-            
-            // Update totals
-            updateStockRemovalTotals(container);
-            
-            // Update order state
+            const value = parseInt(input.value);
             updateOrderState(orderId, itemName, color, size, value);
+            updateAllViews(orderId);
         }
 
         decreaseBtn.addEventListener('click', () => {
-            let value = parseInt(input.value) || 0;
-            if (value > 0) {
-                value--;
-                input.value = value;
+            if (parseInt(input.value) > 0) {
+                input.value = parseInt(input.value) - 1;
                 updateSRQValue();
             }
         });
 
         increaseBtn.addEventListener('click', () => {
-            let value = parseInt(input.value) || 0;
-            if (value < max) {
-                value++;
-                input.value = value;
+            if (parseInt(input.value) < max) {
+                input.value = parseInt(input.value) + 1;
                 updateSRQValue();
             }
         });
 
         input.addEventListener('input', () => {
-            let value = parseInt(input.value) || 0;
+            let value = parseInt(input.value);
             if (isNaN(value)) value = 0;
-            value = Math.max(0, Math.min(max, value));
+            if (value < 0) value = 0;
+            if (value > max) value = max;
             input.value = value;
             updateSRQValue();
         });
-
-        input.addEventListener('change', updateSRQValue);
     });
 }
-
-function updateStockRemovalTotals(modal) {
-    let totalOrder = 0;
-    let totalRemoved = 0;
-    let totalPending = 0;
-    
-    modal.querySelectorAll('tbody tr').forEach(row => {
-        const [size, quantity] = row.querySelector('td:nth-child(2)').textContent.split('/');
-        const srqValue = parseInt(row.querySelector('.sr-srq-input').value) || 0;
-        
-        totalOrder += parseInt(quantity);
-        totalRemoved += srqValue;
-        totalPending += (parseInt(quantity) - srqValue);
-    });
-    
-    modal.querySelector('#sr-total-order').textContent = totalOrder;
-    modal.querySelector('#sr-total-removed').textContent = totalRemoved;
-    modal.querySelector('#sr-total-pending').textContent = totalPending;
-}
-
 // Function to update all views
 function updateAllViews(orderId) {
     updateDetailedView(orderId);
@@ -1972,371 +1221,85 @@ function getOrderById(orderId) {
 function openStockRemovalDetailedModal(orderId) {
     getOrderById(orderId)
         .then(order => {
-            // Create modal container
             const modal = document.createElement('div');
-            modal.className = 'sr-modal-container';
+            modal.className = 'stock-removal-detailed-modal';
             modal.dataset.orderId = orderId;
-            
-            // Modal CSS (scoped to this modal only)
-            const modalCSS = `
-                .sr-modal-container {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0,0,0,0.7);
-                    backdrop-filter: blur(5px);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
-                    opacity: 0;
-                    transition: opacity 0.3s ease;
-                }
-                
-                .sr-modal-container.show {
-                    opacity: 1;
-                }
-                
-                .sr-modal-content {
-                    background: white;
-                    border-radius: 12px;
-                    width: 90%;
-                    max-width: 800px;
-                    max-height: 90vh;
-                    overflow: hidden;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                    transform: translateY(20px);
-                    transition: transform 0.3s ease;
-                }
-                
-                .sr-modal-container.show .sr-modal-content {
-                    transform: translateY(0);
-                }
-                
-                .sr-modal-header {
-                    padding: 20px;
-                    background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
-                    color: white;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                
-                .sr-modal-title {
-                    margin: 0;
-                    font-size: 20px;
-                    font-weight: 600;
-                }
-                
-                .sr-modal-close {
-                    background: none;
-                    border: none;
-                    color: white;
-                    font-size: 24px;
-                    cursor: pointer;
-                    padding: 5px;
-                }
-                
-                .sr-modal-body {
-                    padding: 0;
-                    max-height: 60vh;
-                    overflow-y: auto;
-                }
-                
-                .sr-items-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                
-                .sr-items-table th {
-                    background: #f8f9fa;
-                    padding: 12px 15px;
-                    text-align: left;
-                    font-weight: 600;
-                    position: sticky;
-                    top: 0;
-                }
-                
-                .sr-items-table td {
-                    padding: 12px 15px;
-                    border-bottom: 1px solid #eee;
-                    vertical-align: middle;
-                }
-                
-                .sr-item-name {
-                    font-weight: 500;
-                    display: block;
-                }
-                
-                .sr-item-color {
-                    display: inline-block;
-                    padding: 2px 8px;
-                    border-radius: 12px;
-                    background: #f1f1f1;
-                    font-size: 12px;
-                    margin-top: 4px;
-                }
-                
-                .sr-srq-group {
-                    display: flex;
-                    align-items: center;
-                    max-width: 120px;
-                }
-                
-                .sr-srq-btn {
-                    width: 30px;
-                    height: 30px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: #f8f9fa;
-                    border: 1px solid #ddd;
-                    cursor: pointer;
-                    font-size: 14px;
-                }
-                
-                .sr-srq-input {
-                    width: 40px;
-                    height: 30px;
-                    text-align: center;
-                    border: 1px solid #ddd;
-                    border-left: none;
-                    border-right: none;
-                    font-size: 14px;
-                    padding: 0;
-                    -moz-appearance: textfield;
-                }
-                
-                .sr-srq-input::-webkit-outer-spin-button,
-                .sr-srq-input::-webkit-inner-spin-button {
-                    -webkit-appearance: none;
-                    margin: 0;
-                }
-                
-                .sr-pending-value {
-                    font-weight: 500;
-                    color: #666;
-                }
-                
-                .sr-totals-section {
-                    padding: 15px;
-                    background: #f8f9fa;
-                    border-top: 1px solid #eee;
-                }
-                
-                .sr-totals-header {
-                    font-weight: 600;
-                    margin-bottom: 10px;
-                    color: #333;
-                }
-                
-                .sr-totals-row {
-                    display: flex;
-                    justify-content: space-between;
-                }
-                
-                .sr-total-item {
-                    text-align: center;
-                    flex: 1;
-                }
-                
-                .sr-total-label {
-                    font-size: 12px;
-                    color: #666;
-                }
-                
-                .sr-total-value {
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: #2c3e50;
-                }
-                
-                .sr-modal-footer {
-                    padding: 15px;
-                    display: flex;
-                    justify-content: flex-end;
-                    background: #f8f9fa;
-                    border-top: 1px solid #eee;
-                }
-                
-                .sr-send-btn {
-                    padding: 10px 20px;
-                    background: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    font-size: 14px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                }
-                
-                .sr-send-btn:hover {
-                    background: #3e8e41;
-                    transform: translateY(-1px);
-                }
-                
-                @media (max-width: 600px) {
-                    .sr-modal-content {
-                        width: 95%;
-                    }
-                    
-                    .sr-items-table th,
-                    .sr-items-table td {
-                        padding: 8px 10px;
-                        font-size: 13px;
-                    }
-                    
-                    .sr-srq-group {
-                        max-width: 100px;
-                    }
-                    
-                    .sr-srq-btn {
-                        width: 26px;
-                        height: 26px;
-                    }
-                    
-                    .sr-srq-input {
-                        width: 30px;
-                        height: 26px;
-                    }
-                }
-            `;
-            
-            // Add CSS to the modal
-            const style = document.createElement('style');
-            style.textContent = modalCSS;
-            modal.appendChild(style);
-            
-            // Modal content
-            modal.innerHTML += `
-                <div class="sr-modal-content">
-                    <div class="sr-modal-header">
-                        <h2 class="sr-modal-title">${order.partyName || 'Order Details'}</h2>
-                        <button class="sr-modal-close">&times;</button>
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">${order.partyName}</h2>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
-                    
-                    <div class="sr-modal-body">
-                        <table class="sr-items-table">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Size/Qty</th>
-                                    <th>SRQ</th>
-                                    <th>Pending</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${generateStockRemovalItems(order.items, orderId)}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="sr-totals-section">
-                        <div class="sr-totals-header">TOTALS</div>
-                        <div class="sr-totals-row">
-                            <div class="sr-total-item">
-                                <div class="sr-total-label">Total Order</div>
-                                <div class="sr-total-value" id="sr-total-order">0</div>
-                            </div>
-                            <div class="sr-total-item">
-                                <div class="sr-total-label">Removed</div>
-                                <div class="sr-total-value" id="sr-total-removed">0</div>
-                            </div>
-                            <div class="sr-total-item">
-                                <div class="sr-total-label">Pending</div>
-                                <div class="sr-total-value" id="sr-total-pending">0</div>
+                    <div class="modal-body">
+                        <div class="table-container" style="max-height: 60vh; overflow-y: auto;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Sizes</th>
+                                        <th>SRQ</th>
+                                        <th>P</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${generateOrderItemRowsWithPending(order.items, orderId)}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="total-section">
+                            <div class="total-header">T O T A L</div>
+                            <div class="total-row">
+                                <div class="total-item">
+                                    <span>Total Order</span>
+                                    <span id="totalOrder">0pc</span>
+                                </div>
+                                <div class="total-item">
+                                    <span>Total Removed</span>
+                                    <span id="totalRemoved">0pc</span>
+                                </div>
+                                <div class="total-item">
+                                    <span>Total Pending</span>
+                                    <span id="totalPending">0pc</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="sr-modal-footer">
-                        <button class="sr-send-btn">Send to Billing</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary send-to-billing-btn">Send to Billing</button>
                     </div>
                 </div>
             `;
-            
-            // Add modal to document
+
             document.body.appendChild(modal);
-            
-            // Initialize SRQ inputs
-            initializeSRQInputs(modal);
-            
-            // Update totals initially
-            updateStockRemovalTotals(modal);
-            
-            // Show modal with animation
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
-            
-            // Close button handler
-            modal.querySelector('.sr-modal-close').addEventListener('click', () => {
-                modal.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(modal);
-                }, 300);
+
+            const closeBtn = modal.querySelector('.close');
+            closeBtn.addEventListener('click', () => {
+                document.body.removeChild(modal);
             });
-            
-            // Close when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(modal);
-                    }, 300);
+
+            modal.querySelector('.send-to-billing-btn').addEventListener('click', () => {
+                sendToBilling(orderId);
+                document.body.removeChild(modal);
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    document.body.removeChild(modal);
                 }
             });
-            
-            // Send to billing handler
-            modal.querySelector('.sr-send-btn').addEventListener('click', () => {
-                sendToBilling(orderId);
-                modal.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(modal);
-                }, 300);
-            });
+
+            // Calculate and update totals
+            updateTotals(modal);
+
+            // Initialize SRQ inputs
+            initializeSRQInputs(modal);
         })
         .catch(error => {
             console.error("Error opening stock removal modal:", error);
             alert("Error opening stock removal modal. Please try again.");
         });
 }
-
-function generateStockRemovalItems(items, orderId) {
-    if (!items || !Array.isArray(items)) return '<tr><td colspan="4">No items found</td></tr>';
-    
-    return items.flatMap(item => {
-        if (!item.quantities) return '';
-        
-        return Object.entries(item.quantities).map(([size, quantity]) => {
-            const srqValue = item.srq?.[size] || 0;
-            const pendingValue = quantity - srqValue;
-            
-            return `
-                <tr>
-                    <td>
-                        <span class="sr-item-name">${item.name || 'N/A'}</span>
-                        <span class="sr-item-color">${item.color || 'N/A'}</span>
-                    </td>
-                    <td>${size}/${quantity}</td>
-                    <td>
-                        <div class="sr-srq-group" data-max="${quantity}" data-item="${item.name}" data-color="${item.color}" data-size="${size}">
-                            <button class="sr-srq-btn sr-srq-decrease">-</button>
-                            <input type="number" class="sr-srq-input" value="${srqValue}" min="0" max="${quantity}">
-                            <button class="sr-srq-btn sr-srq-increase">+</button>
-                        </div>
-                    </td>
-                    <td class="sr-pending-value">${pendingValue}</td>
-                </tr>
-            `;
-        });
-    }).join('');
-}
-
-
 
 
 // Global variable to store the current state of orders
@@ -2613,14 +1576,13 @@ function displaySummarizedOrders(orders, container) {
     const groupedOrders = groupOrdersByParty(orders);
     
     for (const [partyName, group] of Object.entries(groupedOrders)) {
-        // Sort group by current preference
-         // Sort group by date (newest first)Add commentMore actions
+        // Sort group by date (newest first)
         group.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
         
-       const newestOrder = group[0];
+        const newestOrder = group[0];
         const oldestOrder = group[group.length - 1];
         
-       const nonZeroItems = group.flatMap(order => 
+        const nonZeroItems = group.flatMap(order => 
             (order.items || []).filter(item => {
                 const totalQuantity = Object.values(item.quantities || {})
                     .reduce((sum, qty) => sum + parseInt(qty) || 0, 0);
@@ -2654,7 +1616,8 @@ function displaySummarizedOrders(orders, container) {
             `${oldestOrderDate.toLocaleDateString()} - ${newestOrderDate.toLocaleDateString()}`;
 
         const row = document.createElement('tr');
-       row.classList.toggle('sent-to-billing', group.some(o => o.status === 'Sent to Billing'));
+        row.classList.toggle('sent-to-billing', group.some(o => o.status === 'Sent to Billing'));
+        
         row.innerHTML = `
             <td>
                 <div class="party-name">${partyName}</div>
@@ -2662,6 +1625,7 @@ function displaySummarizedOrders(orders, container) {
             </td>
             <td>
                 <div class="order-details">
+                   
                     <div class="item-names">${itemListHTML}</div>
                 </div>
             </td>
@@ -2676,7 +1640,7 @@ function displaySummarizedOrders(orders, container) {
             row.style.transform = 'scale(0.99)';
             setTimeout(() => {
                 row.style.transform = '';
-                 openPremiumStockRemovalModal(partyName, group);
+                openPremiumStockRemovalModal(partyName, group);
             }, 150);
         });
         
