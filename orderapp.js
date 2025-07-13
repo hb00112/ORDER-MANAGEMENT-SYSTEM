@@ -108,13 +108,12 @@ function approveOrder(orderId) {
             if (!orderData) return;
 
             // Update status, date, and approver in unapprovedorders
-            return unapprovedOrdersRef.child(orderId).update({
+            unapprovedOrdersRef.child(orderId).update({
                 status: 'Approved',
                 ardate: currentDateTime,
                 approvedby: currentUser
             });
-        })
-        .then(() => {
+
             // Format order data to match the structure in handlePlaceOrder
             const formattedOrder = {
                 orderNumber: orderData.orderNumber || orderData.referenceNumber,
@@ -130,21 +129,64 @@ function approveOrder(orderId) {
             };
 
             // Save to orders collection
-            return saveOrderToFirebase(formattedOrder);
-        })
-        .then(() => {
-            console.log('Order approved and moved to orders successfully:', orderId);
-            // Update indicators after approval
-            updateUnapprovedOrderIndicators();
-            
-            if (typeof loadPendingOrders === 'function') {
-                loadPendingOrders();
-            }
+            return saveOrderToFirebase(formattedOrder)
+                .then(() => {
+                    console.log('Order approved and moved to orders successfully:', orderId);
+                    
+                    // Send approval notification
+                    sendApprovalNotification(orderData, currentUser);
+                    
+                    if (typeof loadPendingOrders === 'function') {
+                        loadPendingOrders();
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error saving approved order:', error);
+                    throw error;
+                });
         })
         .catch((error) => {
-            console.error('Error approving order:', error);
+            console.error("Error approving order:", error);
         });
 }
+
+// Function to send approval notification
+function sendApprovalNotification(orderData, approvedBy) {
+    const message = `Order ${orderData.referenceNumber} from ${orderData.partyName} has been approved by ${approvedBy}`;
+    
+    // Telegram notification
+    const telegramToken = "7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs";
+    const chatId = "-4527298165";
+    const url = `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => console.log("Telegram approval notification sent:", data))
+        .catch(error => console.error("Error sending Telegram approval notification:", error));
+}
+
+// Function to monitor new unapproved orders and send notifications
+function monitorUnapprovedOrders() {
+    unapprovedOrdersRef.orderByChild('status').equalTo('Approval Pending').on('child_added', (snapshot) => {
+        const orderData = snapshot.val();
+        if (orderData) {
+            // Send WebPushr notification
+            sendNewOrderNotification(orderData);
+            
+            // Send Telegram notification
+            const telegramToken = "7401966895:AAFu7gNrOPhMXJQNJTRk4CkK4TjRr09pxUs";
+            const chatId = "-4527298165";
+            const message = `New order requires approval:\nParty: ${orderData.partyName}\nItems: ${orderData.totalQuantity}\nRef: ${orderData.referenceNumber}`;
+            const url = `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => console.log("Telegram new order notification sent:", data))
+                .catch(error => console.error("Error sending Telegram new order notification:", error));
+        }
+    });
+}
+
 
 /**
  * Rejects an order and updates indicators
@@ -166,6 +208,22 @@ function rejectOrder(orderId) {
         console.error("Error rejecting order:", error);
     });
 }
+
+function initWebPushr() {
+  (function(w,d, s, id) {
+    if(typeof(w.webpushr)!=='undefined') return;
+    w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
+    var js, fjs = d.getElementsByTagName(s)[0];
+    js = d.createElement(s); js.id = id;
+    js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);
+  })(window,document, 'script', 'webpushr-jssdk');
+  
+  webpushr('setup',{
+    'key':'BJgL8_NTH55P5mh-yTMhQCDBYDOzxLKRmkIbbk-e8myTHe_Ldm0R1Ch3q7XVAxfq3wckcYszT9BSRT6liGt0Cug'
+  });
+}
+
 /**
  * Initializes the order approval system
  */
@@ -174,7 +232,9 @@ function initOrderApprovalSystem() {
     document.addEventListener('DOMContentLoaded', function() {
         // Initial check for pending orders
         updateUnapprovedOrderIndicators();
-        
+          monitorUnapprovedOrders();
+              initWebPushr();
+
         // Set up periodic checks (every 5 minutes)
         setInterval(updateUnapprovedOrderIndicators, 300000);
         
