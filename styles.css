@@ -31,6 +31,35 @@ body {
     padding-top: env(safe-area-inset-top);
 }
 
+
+/* Pending Order Indicators */
+.slide-menu a .pending-order-indicator {
+    color: red;
+    font-weight: bold;
+    margin-left: 5px;
+    animation: pulse 1.5s infinite;
+}
+
+#menuToggle {
+    position: relative;
+}
+
+#menuToggle .pending-order-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
 /* Animated Background Elements */
 .bg-shapes {
     position: absolute;
