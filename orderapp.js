@@ -93,6 +93,10 @@ function getCurrentUsername() {
     return localStorage.getItem('hcUsername') || 'Unknown User';
 }
 
+/**
+ * Approves an order and updates indicators
+ * @param {string} orderId - ID of the order to approve
+ */
 function approveOrder(orderId) {
     const currentUser = getCurrentUsername();
     const currentDateTime = getCurrentDateTime();
@@ -104,12 +108,13 @@ function approveOrder(orderId) {
             if (!orderData) return;
 
             // Update status, date, and approver in unapprovedorders
-            unapprovedOrdersRef.child(orderId).update({
+            return unapprovedOrdersRef.child(orderId).update({
                 status: 'Approved',
                 ardate: currentDateTime,
                 approvedby: currentUser
             });
-
+        })
+        .then(() => {
             // Format order data to match the structure in handlePlaceOrder
             const formattedOrder = {
                 orderNumber: orderData.orderNumber || orderData.referenceNumber,
@@ -125,23 +130,26 @@ function approveOrder(orderId) {
             };
 
             // Save to orders collection
-            return saveOrderToFirebase(formattedOrder)
-                .then(() => {
-                    console.log('Order approved and moved to orders successfully:', orderId);
-                    if (typeof loadPendingOrders === 'function') {
-                        loadPendingOrders();
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error saving approved order:', error);
-                    throw error;
-                });
+            return saveOrderToFirebase(formattedOrder);
+        })
+        .then(() => {
+            console.log('Order approved and moved to orders successfully:', orderId);
+            // Update indicators after approval
+            updateUnapprovedOrderIndicators();
+            
+            if (typeof loadPendingOrders === 'function') {
+                loadPendingOrders();
+            }
         })
         .catch((error) => {
-            console.error("Error approving order:", error);
+            console.error('Error approving order:', error);
         });
 }
 
+/**
+ * Rejects an order and updates indicators
+ * @param {string} orderId - ID of the order to reject
+ */
 function rejectOrder(orderId) {
     const currentUser = getCurrentUsername();
     const currentDateTime = getCurrentDateTime();
@@ -152,11 +160,122 @@ function rejectOrder(orderId) {
         approvedby: currentUser
     }).then(() => {
         console.log('Order rejected successfully:', orderId);
+        // Update indicators after rejection
+        updateUnapprovedOrderIndicators();
     }).catch((error) => {
         console.error("Error rejecting order:", error);
     });
 }
+/**
+ * Initializes the order approval system
+ */
+function initOrderApprovalSystem() {
+    // Set up event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial check for pending orders
+        updateUnapprovedOrderIndicators();
+        
+        // Set up periodic checks (every 5 minutes)
+        setInterval(updateUnapprovedOrderIndicators, 300000);
+        
+        // Also check when the menu is opened
+        document.getElementById('menuToggle')?.addEventListener('click', function() {
+            setTimeout(updateUnapprovedOrderIndicators, 500);
+        });
+    });
+    
+    // Make functions available globally
+    window.approveOrder = approveOrder;
+    window.rejectOrder = rejectOrder;
+}
 
+// Start the system
+initOrderApprovalSystem();
+
+/**
+ * Checks for pending orders and updates UI indicators
+ */
+function updateUnapprovedOrderIndicators() {
+    const unapprovedOrdersRef = firebase.database().ref('unapprovedorders');
+    
+    unapprovedOrdersRef.once('value').then((snapshot) => {
+        let hasPendingOrders = false;
+        
+        // Check all orders for pending status
+        snapshot.forEach((childSnapshot) => {
+            const orderData = childSnapshot.val();
+            if (orderData.status === 'Approval Pending') {
+                hasPendingOrders = true;
+                // Exit loop early if we find a pending order
+                return true;
+            }
+        });
+        
+        updateSidebarIndicator(hasPendingOrders);
+        updateMenuToggleIndicator(hasPendingOrders);
+    }).catch((error) => {
+        console.error("Error checking for pending orders:", error);
+    });
+}
+
+/**
+ * Updates the sidebar menu indicator
+ * @param {boolean} showIndicator - Whether to show the indicator
+ */
+function updateSidebarIndicator(showIndicator) {
+    const orderApproveLink = document.querySelector('.slide-menu a[data-section="orderapprove"]');
+    
+    if (!orderApproveLink) return;
+    
+    const existingIndicator = orderApproveLink.querySelector('.pending-order-indicator');
+    
+    if (showIndicator) {
+        if (!existingIndicator) {
+            const indicator = document.createElement('span');
+            indicator.className = 'pending-order-indicator';
+            indicator.innerHTML = '&nbsp;•';
+            indicator.style.color = 'red';
+            indicator.style.fontWeight = 'bold';
+            orderApproveLink.appendChild(indicator);
+        }
+    } else {
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+    }
+}
+
+/**
+ * Updates the menu toggle button indicator
+ * @param {boolean} showIndicator - Whether to show the indicator
+ */
+function updateMenuToggleIndicator(showIndicator) {
+    const menuToggleBtn = document.getElementById('menuToggle');
+    
+    if (!menuToggleBtn) return;
+    
+    const existingIndicator = menuToggleBtn.querySelector('.pending-order-indicator');
+    
+    if (showIndicator) {
+        if (!existingIndicator) {
+            const indicator = document.createElement('span');
+            indicator.className = 'pending-order-indicator';
+            indicator.style.position = 'absolute';
+            indicator.style.top = '5px';
+            indicator.style.right = '5px';
+            indicator.style.width = '8px';
+            indicator.style.height = '8px';
+            indicator.style.backgroundColor = 'red';
+            indicator.style.borderRadius = '50%';
+            menuToggleBtn.style.position = 'relative';
+            menuToggleBtn.appendChild(indicator);
+        }
+    } else {
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+    }
+}
 // Load and display unapproved orders
 function loadUnapprovedOrders() {
     const ordersList = document.getElementById('unapprovedOrdersList');
