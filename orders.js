@@ -3051,3 +3051,43 @@ colorDetailsObserver.observe(document.body, {
 // Initial check for icon visibility
 updateColorPaletteIcon();
 
+
+
+function showItems(filter = '') {
+    const itemList = document.getElementById('itemList');
+    itemList.innerHTML = '';
+    const filteredItems = items.filter(item =>
+        item && item.name && item.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    filteredItems.forEach(item => {
+        const element = document.createElement('a');
+        element.classList.add('list-group-item', 'list-group-item-action');
+        element.textContent = item.name;
+        element.href = '#';
+        element.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('itemSearch').value = item.name;
+            showItemDetails(item);
+            itemList.style.display = 'none';
+        });
+        itemList.appendChild(element);
+    });
+
+    if (filteredItems.length === 0 && filter !== '') {
+        const addNewItemElement = document.createElement('a');
+        addNewItemElement.classList.add('list-group-item', 'list-group-item-action');
+        addNewItemElement.textContent = `Add "${filter}" as a new item`;
+        addNewItemElement.href = '#';
+        addNewItemElement.addEventListener('click', function (e) {
+            e.preventDefault();
+            addNewItem(filter);
+            itemList.style.display = 'none';
+        });
+        itemList.appendChild(addNewItemElement);
+    }
+
+    itemList.style.display = 'block';
+}
+
+     
