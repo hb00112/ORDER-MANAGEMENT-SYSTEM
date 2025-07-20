@@ -811,70 +811,78 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function renderColorPrefChart() {
-        if (chartInstances.colorPrefChart) {
-            chartInstances.colorPrefChart.destroy();
-        }
-        
-        const colorStats = {};
-        
-        [...allOrders, ...allBillingOrders, ...allSentOrders].forEach(order => {
-            order.items?.forEach(item => {
-                if (item.colors) {
-                    Object.keys(item.colors).forEach(color => {
-                        if (!colorStats[color]) {
-                            colorStats[color] = 0;
-                        }
-                        // Sum all sizes for this color
-                        colorStats[color] += Object.values(item.colors[color]).reduce((sum, qty) => sum + qty, 0);
-                    });
-                }
-            });
+     function renderColorPrefChart() {
+    if (chartInstances.colorPrefChart) {
+        chartInstances.colorPrefChart.destroy();
+    }
+
+    const colorStats = {};
+    
+    // Aggregate color quantities
+    [...allOrders, ...allBillingOrders, ...allSentOrders].forEach(order => {
+        order.items?.forEach(item => {
+            if (item.colors) {
+                Object.keys(item.colors).forEach(color => {
+                    const colorKey = color.toUpperCase();
+                    colorStats[colorKey] = (colorStats[colorKey] || 0) + 
+                        Object.values(item.colors[color]).reduce((sum, qty) => sum + qty, 0);
+                });
+            }
         });
-        
-        const sortedColors = Object.entries(colorStats)
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, 15);
-        
-        const ctx = document.getElementById('colorPrefChart').getContext('2d');
-        chartInstances.colorPrefChart = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: sortedColors.map(([color]) => color),
-                datasets: [{
-                    data: sortedColors.map(([,qty]) => qty),
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(153, 102, 255, 0.6)',
-                        'rgba(255, 159, 64, 0.6)',
-                        'rgba(199, 199, 199, 0.6)',
-                        'rgba(83, 102, 255, 0.6)',
-                        'rgba(40, 159, 64, 0.6)',
-                        'rgba(210, 99, 132, 0.6)',
-                        'rgba(33, 150, 243, 0.6)',
-                        'rgba(244, 67, 54, 0.6)',
-                        'rgba(139, 195, 74, 0.6)',
-                        'rgba(63, 81, 181, 0.6)',
-                        'rgba(233, 30, 99, 0.6)'
-                    ],
-                    borderWidth: 1
-                }]
+    });
+
+    // Sort colors by quantity (descending) and take top 15
+    const sortedColors = Object.entries(colorStats)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 15);
+
+    const ctx = document.getElementById('colorPrefChart').getContext('2d');
+    chartInstances.colorPrefChart = new Chart(ctx, {
+        type: 'bar', // Standard bar chart
+        data: {
+            labels: sortedColors.map(([color]) => color),
+            datasets: [{
+                label: 'Quantity Ordered',
+                data: sortedColors.map(([,qty]) => qty),
+                backgroundColor: sortedColors.map(([color]) => getBackgroundColor(color)),
+                borderColor: '#000000',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Top 15 Color Preferences',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: { display: false }, // No legend needed
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.parsed.y} units ordered`
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Top 15 Color Preferences'
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { 
+                        display: true, 
+                        text: 'Quantity Ordered',
+                        font: { size: 12 }
+                    }
+                },
+                x: {
+                    ticks: { 
+                        font: { size: 12 } 
                     }
                 }
             }
-        });
-    }
+        }
+    });
+}
     
     function renderStockDemandChart() {
         if (chartInstances.stockDemandChart) {
