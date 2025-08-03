@@ -294,7 +294,7 @@ let items=
   {
     "name": "CR17",
     "sizes": ["S","M","L","XL","2XL"," 2XL"," L"," M"," S"," XL"],
-    "colors": ["MCD(3P/6P)","MCM","MCP","MCR(6P)"],
+    "colors": ["MCD(3P or 6P)","MCM","MCP","MCR(6P)"],
     "colorname": ["MCM : MULTICOLORMEDIUM, 629,599","MCP : MULTICOLORPRINT, 679,649","MCD : MULTICOLORDARK, 629,599,1048,998","MCR : MULTICOLORS, 1108,1048"]
   },
   {
@@ -3091,4 +3091,5 @@ function showItems(filter = '') {
 }
 
      
+
 
