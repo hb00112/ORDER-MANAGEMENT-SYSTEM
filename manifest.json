@@ -6,8 +6,8 @@
     "description": "A OMS FOR KAMBESHWAR AGENCIES",
     "start_url": "/index.html",
     "display": "standalone",
-    "background_color": "#FAF9F5",
-    "theme_color": "#faf9f5",
+    "background_color": "#FAFAFA",
+    "theme_color": "#faFAFA",
     "icons": [
         {
             "src": "https://i.postimg.cc/rm9pHg2y/BO-LD.png",
@@ -21,4 +21,5 @@
         }
     ]
 }
+
 
