@@ -616,7 +616,7 @@ div.button-actions .btn {
 .table th,
 .table td {
     padding: 10px;
-    border: 1px solid #ffffff;
+   
     
 
     
@@ -626,6 +626,11 @@ div.button-actions .btn {
     background-color: #b60667;
     color: white;
     align-content: center;
+}
+
+.table td{
+    background: white !important;
+    border: 1px solid #dbd2d2;
 }
 
 .table tbody tr:hover {
@@ -734,15 +739,23 @@ div.button-actions .btn {
     width: 100%;
     padding: 10px;
     font-size: 15px;
-    border: 1px solid #ddd;
-    border-radius: 24px;
+    background: white;
+    border-radius: 15px;
+    border: 1px solid #f1f1f1;
+    padding-left: 17px;
 }
 #itemSearch {
     width: 100%;
     padding: 10px;
     font-size: 15px;
-    border: 1px solid #ddd;
-    border-radius: 24px;
+    background: white;
+    border-radius: 15px;
+    border: 1px solid #f1f1f1;
+    padding-left: 17px;
+}
+
+div#itemDetailsContainer {
+    margin-top: 30px;
 }
 /*#partyList {
     position: absolute;
@@ -858,7 +871,7 @@ div.button-actions .btn {
 #backup-details-table td {
     padding: 8px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    
 }
 
 #backup-details-table th {
@@ -1053,12 +1066,12 @@ MARGIN-BOTTOM: 30PX; /*CHANGED ON 18-01*/
 }
 
 .order-footer button {
-    width: 46%;
+    width: 48%;
     /* Adjust as needed */
     border-radius: 15px;
 }
 #addToCartBtn {
-    background-color: #072dd6; /* Change the background color to your desired color */
+    background-color: #0761d6; /* Change the background color to your desired color */
     border-color: #FFD700;
   }
 /*toggle switch*/
@@ -1352,15 +1365,16 @@ display: none;
     min-width: 120px;
     text-align: right;
     padding-left: 20px;
-    letter-spacing: 3px;
-    font-size: 18px;
+    letter-spacing: 1.5px;
+    font-size: 15px;
     font-weight: 700;
     border-color: #212529;
-    
+    margin-bottom: 10px;
     display: flex; /* Use flexbox for centering */
     justify-content: center; /* Center the text horizontally */
     align-items: center;
     transition: 2s;
+    border-radius: 15px;
 
 }   
 #filterButton {
@@ -3471,7 +3485,7 @@ body.modal-open {
 
 
 th:first-of-type {
-    BORDER-TOP-LEFT-RADIUS: 12PX;
+    BORDER-TOP-LEFT-RADIUS: 17PX;
    
 }
 
@@ -3540,11 +3554,9 @@ th:first-of-type {
     margin: 0;
     color: #333;
 }
-.table td {
-    border: 1px solid #dbd2d2;
-}
+
 th:last-of-type {
-    BORDER-TOP-right-RADIUS: 12PX;
+    BORDER-TOP-right-RADIUS: 17PX;
     
 }
 
