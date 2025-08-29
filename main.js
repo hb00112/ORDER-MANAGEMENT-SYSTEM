@@ -12,13 +12,31 @@ document.addEventListener('DOMContentLoaded', function () {
     function ensureSectionInMenu(sectionId) {
         const slideMenu = document.getElementById('slideMenu');
         const existingLink = slideMenu.querySelector(`a[data-section="${sectionId}"]`);
-        
         if (!existingLink) {
             const newLink = document.createElement('a');
             newLink.href = '#';
             newLink.setAttribute('data-section', sectionId);
-            newLink.textContent = sectionId === 'bso' ? 'Base Stock Order' : 'Order Approval';
-            
+        
+            // Choose icon + text together
+            if (sectionId === 'bso') {
+                newLink.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 16V8a2 2 0 0 0-2-2h-4V4h-6v2H5a2 2 
+                                 0 0 0-2 2v8a2 2 0 0 0 2 
+                                 2h14a2 2 0 0 0 2-2z"/>
+                    </svg>
+                    <span style="margin-left:8px;">Base Stock Order</span>
+                `;
+            } else if (sectionId === 'orderapprove') {
+                newLink.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.285 6.709l-11.66 11.66-5.916-5.916 
+                                 1.414-1.414 4.502 4.502 10.246-10.246z"/>
+                    </svg>
+                    <span style="margin-left:8px;">Order Approval</span>
+                `;
+            }
+        
             // Insert before PDF Editor (last item)
             const pdfLink = slideMenu.querySelector('a[data-section="pdf"]');
             if (pdfLink) {
@@ -27,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 slideMenu.appendChild(newLink);
             }
         }
+        
     }
 
     loadNewItemsFromFirebase().then(() => {
