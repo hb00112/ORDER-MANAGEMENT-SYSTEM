@@ -201,7 +201,7 @@ function createSentOrderElement(order, index) {
             </h5>
             <p>Order Date: ${formatDate(order.date)}</p>
             <p>Bill Date: ${formatDate(order.billingDate)}</p>
-            <p>Party Name(s): ${order.partyName}</p>
+            <p>Party Name(s): <strong>${order.partyName}</strong></p>
         </div>
 
         <div class="table-responsive mt-3">
@@ -220,7 +220,7 @@ function createSentOrderElement(order, index) {
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-right font-bold">Total Quantity:</td>
-                        <td class="font-bold">${totalQuantity}</td>
+                        <td class="font-bold"><strong>${totalQuantity}</strong></td>
                     </tr>
                 </tfoot>
             </table>
