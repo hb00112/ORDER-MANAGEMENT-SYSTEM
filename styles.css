@@ -1,12 +1,20 @@
+@font-face {
+    font-family: 'FKGroteskNeue';
+    src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2')
+      format('woff2');
+  }
+
 body {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: "FKGroteskNeue", "Geist", "Inter", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: #FAF9F5 !important;
+    zoom: 95%;
 }
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --primary-gradient: #FAF9F5;
+    --secondary-gradient: #faf9f5;
     --glass-effect: rgba(255, 255, 255, 0.15);
     --glass-border: 1px solid rgba(255, 255, 255, 0.18);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -25,7 +33,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    
 }
 .welcome-header {
     padding-top: env(safe-area-inset-top);
@@ -186,6 +194,11 @@ body {
     font-weight: 500;
 }
 
+.container mt-2{
+    background: transparent !important;
+    padding: none;
+}
+
 .welcome-title {
     font-size: 32px;
     font-weight: 700;
@@ -213,7 +226,7 @@ body {
 }
 
 .action-card {
-    background: var(--glass-effect);
+    background: #ebececc0;
     backdrop-filter: blur(10px);
     border: var(--glass-border);
     border-radius: 16px;
@@ -239,7 +252,7 @@ body {
     justify-content: center;
     font-size: 24px;
     color: white;
-    background: var(--primary-gradient);
+    background: white;
 }
 
 .action-title {
@@ -263,6 +276,15 @@ body {
     padding: 24px 20px;
     box-shadow: var(--shadow);
     z-index: 10;
+}
+
+.btn-outline-secondary {
+    border-color: #d7d8da !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #d7d8da !important;
+    color: white !important;
 }
 
 .section-header {
@@ -312,6 +334,29 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.barcode-scan-btn{
+   padding: 8px !important
+}
+
+.add-remark-btn {
+    padding: 8px !important
+}
+
+.delete-order-btn{
+    padding: 8px !important
+}
+
+div.button-actions {
+  display: flex;
+  flex-wrap: nowrap;        /* prevent wrapping */
+  justify-content: flex-start; /* keep them aligned left (or use space-between/center if needed) */
+  gap: 6px;                 /* spacing between buttons */
+}
+
+div.button-actions .btn {
+  flex: 0 0 auto;           /* prevent shrinking */
 }
 
 .activity-meta {
@@ -484,8 +529,8 @@ body {
     margin-top: -20px;
     padding: 20px;
     border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: transparent;
+    
 }
 
 .active {
@@ -523,7 +568,7 @@ body {
 
 .navbar {
     padding: 10px;
-    background-color: #007bff;
+    background-color: #FAF9F5 !important;
     color: rgb(0, 0, 0);
 }
 
@@ -533,7 +578,7 @@ body {
 }
 
 .nav-link {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: rgb(0, 0, 0);
 }
 
@@ -578,7 +623,7 @@ body {
 }
 
 .table th {
-    background-color: #cc0464;
+    background-color: #b60667;
     color: white;
     align-content: center;
 }
@@ -607,6 +652,8 @@ body {
     overflow: hidden;
 }
 
+
+
 .slide-menu {
     height: 100%;
     width: 0;
@@ -614,17 +661,17 @@ body {
     z-index: 1000;
     top: 0;
     left: 0;
-    background-color: #000;
+    background-color: #212327;
     overflow-x: hidden;
-    transition: 0.5s;
+    transition: 0.3s;
     padding-top: 60px;
 }
 
 .slide-menu a {
-    padding: 8px 8px 8px 32px;
+    padding: 8px 15px 15px 20px;
     text-decoration: none;
     font-size: 18px;
-    color: #818181;
+    color: #b3b1b1;
     display: block;
     transition: 0.3s;
 }
@@ -632,6 +679,8 @@ body {
 .slide-menu a:hover {
     color: #f1f1f1;
 }
+
+
 
 .slide-menu .close-btn {
     position: absolute;
@@ -673,8 +722,8 @@ body {
     display: none;
     padding: 20px;
     border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: transparent;
+ 
 }
 
 .section.active {
@@ -721,7 +770,7 @@ body {
 
 .section h4 {
     text-align: center;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 #homeScreen {
@@ -996,11 +1045,11 @@ MARGIN-BOTTOM: 30PX; /*CHANGED ON 18-01*/
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: #f8f9fa;
+    background-color: transparent;
     padding: 10px;
     display: flex;
     justify-content: space-between;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    
 }
 
 .order-footer button {
@@ -1021,8 +1070,8 @@ align-items: center;
 .switch {
 position: relative;
 display: inline-block;
-width: 60px;
-height: 34px;
+width: 55px;
+height: 29px;
 }
 
 .switch input {
@@ -1046,8 +1095,8 @@ border-radius: 34px;
 .slider:before {
 position: absolute;
 content: "";
-height: 26px;
-width: 26px;
+height: 21px;
+width: 21px;
 left: 4px;
 bottom: 4px;
 background-color: white;
@@ -1440,7 +1489,7 @@ display: none;
 }
 
 .order-actions {
-    margin-top: 10px;
+    margin-top: 0px !important;
     width: auto;
     gap: 5px;
 }
@@ -1461,6 +1510,7 @@ display: none;
     color: rgb(0, 0, 0); /* Set button text color to black */
     padding: 0; /* Remove default padding */
     border: none; /* Remove default border */
+    
     background-color: transparent; /* Make background transparent */
     position: relative;
     
@@ -1502,8 +1552,8 @@ display: none;
 }
 .order-actions button.bill-btn {
     /* Set a desired width for the button: */
-    width: 100%; /* Adjust as needed */
-  
+    width: 30%; /* Adjust as needed */
+    border-radius: 17px; /* Rounded edges */
     /* Ensure text doesn't wrap unnecessarily: */
     white-space: nowrap;
   
@@ -1604,8 +1654,8 @@ project/
 .section {
     display: none;
     padding: 20px;
-    border: 1px solid #ddd;
-    margin-top: 20px;
+   
+    margin-top: 10px;
 }
 
 #stockUpdation {
@@ -1706,12 +1756,12 @@ project/
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
-    background-color: #cc0464;
+    background-color: #b60667;
 }
 
 #modalStockTable th {
     background-color: #f2f2f2;
-    background-color: #cc0464;
+    background-color: #b60667;
 }
 .stock-grid {
     display: grid;
@@ -1879,7 +1929,7 @@ project/
     border: 1px solid #e0e0e0;
     padding: 0.5rem;
     text-align: left;
-    background-color: #cc0464;
+    background-color: #b60667;
   }
   
   .stock-removal-detailed-modal .table th {
@@ -1932,7 +1982,7 @@ project/
     margin-top: 0;
 }
 .table.table-striped th {
-    background-color: #cc0464; /* Change the background color as desired */
+    background-color: #b60667; /* Change the background color as desired */
   }
 
 .sent-order table {
@@ -2415,13 +2465,12 @@ project/
     display: none;
     min-width: 120px;
     padding: 5px 0;
-    margin: 2px 0 0;
+    
     font-size: 14px;
     text-align: left;
     background-color: #fff;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: 4px;
-    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    border-radius: 7px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.11);
 }
 
 .three-dot-menu .dropdown-menu a {
@@ -2429,6 +2478,7 @@ project/
     padding: 3px 20px;
     clear: both;
     font-weight: 400;
+    
     line-height: 1.42857143;
     color: #333;
     white-space: nowrap;
@@ -3048,7 +3098,7 @@ body.modal-open {
     padding: 20px;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    
 }
 
 .pdf-editor-header {
@@ -3422,7 +3472,7 @@ body.modal-open {
 
 th:first-of-type {
     BORDER-TOP-LEFT-RADIUS: 12PX;
-    BORDER-BOTTOM-LEFT-RADIUS: 12PX;
+   
 }
 
 .enamor-color-palette-icon {
@@ -3495,7 +3545,7 @@ th:first-of-type {
 }
 th:last-of-type {
     BORDER-TOP-right-RADIUS: 12PX;
-    BORDER-BOTTOM-right-RADIUS: 12PX;
+    
 }
 
 #camera-container {
