@@ -1409,7 +1409,8 @@ function displaySummarizedOrders(orders, container) {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+            font-family: "FKGroteskNeue", "Geist", "Inter", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 14px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             border-radius: 12px;
@@ -1418,7 +1419,7 @@ function displaySummarizedOrders(orders, container) {
         }
         
         .luxury-header {
-            background: linear-gradient(135deg, #3a4a6b 0%, #2c3e50 100%);
+            background: #b60667;
             color: white;
             padding: 18px 20px;
             text-align: left;
@@ -1659,8 +1660,8 @@ function openPremiumStockRemovalModal(partyName, orders) {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(10px);
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(10px);
         z-index: 1000;
         display: flex;
@@ -1683,7 +1684,7 @@ function openPremiumStockRemovalModal(partyName, orders) {
         max-height: 90vh;
         overflow: hidden;
         box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-        border: 1px solid rgba(255,255,255,0.3);
+       zoom: 90%;
         transform: translateY(20px);
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     `;
@@ -1693,7 +1694,7 @@ function openPremiumStockRemovalModal(partyName, orders) {
     modalHeader.className = 'premium-modal-header';
     modalHeader.style.cssText = `
         padding: 20px 30px;
-        background: linear-gradient(135deg, rgba(58, 74, 107, 0.9) 0%, rgba(44, 62, 80, 0.95) 100%);
+        background: #b60667;
         color: white;
         display: flex;
         justify-content: space-between;
@@ -1835,21 +1836,27 @@ function openPremiumStockRemovalModal(partyName, orders) {
         const orderDateElement = document.createElement('div');
         orderDateElement.style.cssText = `
             font-size: 14px;
-            color: #7f8c8d;
+            color:rgb(118, 127, 128);
             display: flex;
             align-items: center;
         `;
         orderDateElement.innerHTML = `
-            <span style="margin-right: 10px; font-size: 18px;">📅</span>
-            ${orderDate.toLocaleDateString()} (${daysSinceOrder} days ago)
-            ${expiryStatus ? `
-            <span class="expiry-indicator ${expiryStatus.class}" 
-                  style="margin-left: 15px; padding: 4px 10px; font-size: 12px;">
-                <span class="icon">${expiryStatus.icon}</span>
-                ${expiryStatus.label} - Expires: ${new Date(order.expiryDate).toLocaleDateString()}
-            </span>
-            ` : ''}
-        `;
+        <span style="margin-right: 10px; font-size: 18px; display:inline-flex; vertical-align:middle;">
+            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M5 5a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1 2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2ZM3 19v-7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6.01-6a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-10 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z" clip-rule="evenodd"/>
+</svg>
+
+        </span>
+        ${orderDate.toLocaleDateString()} (${daysSinceOrder} days ago)
+        ${expiryStatus ? `
+        <span class="expiry-indicator ${expiryStatus.class}" 
+              style="margin-left: 15px; padding: 4px 10px; font-size: 12px;">
+            <span class="icon">${expiryStatus.icon}</span>
+            ${expiryStatus.label} - Expires: ${new Date(order.expiryDate).toLocaleDateString()}
+        </span>
+        ` : ''}
+    `;
+    
         
         const orderActions = document.createElement('div');
         orderActions.style.cssText = `
@@ -1858,54 +1865,60 @@ function openPremiumStockRemovalModal(partyName, orders) {
         `;
         
         const downloadImgBtn = document.createElement('button');
-        downloadImgBtn.textContent = 'Download IMG';
+        downloadImgBtn.innerHTML = `
+            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Zm.394 9.553a1 1 0 0 0-1.817.062l-2.5 6A1 1 0 0 0 8 19h8a1 1 0 0 0 .894-1.447l-2-4A1 1 0 0 0 13.2 13.4l-.53.706-1.276-2.553ZM13 9.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" clip-rule="evenodd"/>
+</svg>
+
+        `;
         downloadImgBtn.style.cssText = `
-            padding: 8px 15px;
-            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            padding: 8px;
+            background:#3498db;
             color: white;
             border: none;
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            transition: background 0.2s ease;
         `;
         downloadImgBtn.addEventListener('mouseover', () => {
-            downloadImgBtn.style.transform = 'translateY(-2px)';
-            downloadImgBtn.style.boxShadow = '0 6px 15px rgba(52, 152, 219, 0.4)';
+            downloadImgBtn.style.background = '#2c80b4';
         });
         downloadImgBtn.addEventListener('mouseout', () => {
-            downloadImgBtn.style.transform = 'translateY(0)';
-            downloadImgBtn.style.boxShadow = '0 4px 10px rgba(52, 152, 219, 0.3)';
+            downloadImgBtn.style.background = '#3498db';
         });
         downloadImgBtn.addEventListener('click', () => {
             pendingOrderImg(order.orderNumber, index);
         });
         
         const downloadPdfBtn = document.createElement('button');
-        downloadPdfBtn.textContent = 'Download PDF';
+        downloadPdfBtn.innerHTML = `
+           <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2 2 2 0 0 0 2 2h12a2 2 0 0 0 2-2 2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2V4a2 2 0 0 0-2-2h-7Zm-6 9a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-1h.5a2.5 2.5 0 0 0 0-5H5Zm1.5 3H6v-1h.5a.5.5 0 0 1 0 1Zm4.5-3a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.376A2.626 2.626 0 0 0 15 15.375v-1.75A2.626 2.626 0 0 0 12.375 11H11Zm1 5v-3h.375a.626.626 0 0 1 .625.626v1.748a.625.625 0 0 1-.626.626H12Zm5-5a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-1h1a1 1 0 1 0 0-2h-1v-1h1a1 1 0 1 0 0-2h-2Z" clip-rule="evenodd"/>
+</svg>
+
+        `;
         downloadPdfBtn.style.cssText = `
-            padding: 8px 15px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            padding: 8px;
+            background:#c0392b;
             color: white;
             border: none;
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+            transition: background 0.2s ease;
         `;
         downloadPdfBtn.addEventListener('mouseover', () => {
-            downloadPdfBtn.style.transform = 'translateY(-2px)';
-            downloadPdfBtn.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+            downloadPdfBtn.style.background = '#992d22';
         });
         downloadPdfBtn.addEventListener('mouseout', () => {
-            downloadPdfBtn.style.transform = 'translateY(0)';
-            downloadPdfBtn.style.boxShadow = '0 4px 10px rgba(231, 76, 60, 0.3)';
+            downloadPdfBtn.style.background = '#c0392b';
         });
         downloadPdfBtn.addEventListener('click', () => {
             pendingOrderPdf(order.orderNumber, index);
         });
+        
+       
         
         orderActions.appendChild(downloadImgBtn);
         orderActions.appendChild(downloadPdfBtn);
