@@ -9,12 +9,12 @@ body {
     BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     margin: 0;
     padding: 0;
-    background-color: #FAF9F5 !important;
+    background-color: #FAFAFA !important;
     zoom: 95%;
 }
 :root {
-    --primary-gradient: #FAF9F5;
-    --secondary-gradient: #faf9f5;
+    --primary-gradient: #FAFAFA;
+    --secondary-gradient: #fAFAFA;
     --glass-effect: rgba(255, 255, 255, 0.15);
     --glass-border: 1px solid rgba(255, 255, 255, 0.18);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -568,7 +568,7 @@ div.button-actions .btn {
 
 .navbar {
     padding: 10px;
-    background-color: #FAF9F5 !important;
+    background-color: #FAFAFA !important;
     color: rgb(0, 0, 0);
 }
 
@@ -3983,3 +3983,4 @@ th:last-of-type {
         height: 200px;
     }
 }
+
