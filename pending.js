@@ -377,6 +377,13 @@ function displayDetailedOrders(orders, container) {
     console.log('Displaying detailed orders. Total orders:', orders.length);
     container.innerHTML = '';
   
+    // Sort orders by date (newest first)
+    orders.sort((a, b) => {
+        const dateA = new Date(a.dateTime || 0);
+        const dateB = new Date(b.dateTime || 0);
+        return dateB - dateA; // Newest first
+    });
+
     // Add CSS styles for stock availability and status icon
     const styleElement = document.createElement('style');
     styleElement.textContent = `
@@ -498,7 +505,7 @@ function displayDetailedOrders(orders, container) {
     getStockData().then(stockData => {
         // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
-            // Sort orders by expiry status (critical first)
+            // Sort orders by expiry status (critical first) - this is secondary to date sorting
             orders.sort((a, b) => {
                 const statusA = a.expiryDate ? getExpiryStatus(a.expiryDate).status : 'normal';
                 const statusB = b.expiryDate ? getExpiryStatus(b.expiryDate).status : 'normal';
