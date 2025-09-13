@@ -1789,13 +1789,7 @@ function openPremiumStockRemovalModal(partyName, orders) {
 
         </span>
         ${orderDate.toLocaleDateString()} (${daysSinceOrder} days ago)
-        ${expiryStatus ? `
-        <span class="expiry-indicator ${expiryStatus.class}" 
-              style="margin-left: 15px; padding: 4px 10px; font-size: 12px;">
-            <span class="icon">${expiryStatus.icon}</span>
-            ${expiryStatus.label} - Expires: ${new Date(order.expiryDate).toLocaleDateString()}
-        </span>
-        ` : ''}
+        
     `;
     
         
