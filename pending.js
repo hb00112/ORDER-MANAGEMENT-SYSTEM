@@ -1,6 +1,6 @@
 // Ensure the DOM is fully loaded before initializing
 document.addEventListener('DOMContentLoaded', function() {
-
+    
     checkAndDeleteExpiredOrders();
     initializeDB()
         .then(() => {  
@@ -8,9 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeUI();
             loadPendingOrders(); // This will now also load archived orders
             startSyncCycle();
-            
-// Call this after loading orders
-checkPendingOrdersForExpiry();
+        checkAndMoveExpiredOrders(); // Add this line
         })
         .catch(error => console.error("Error initializing IndexedDB:", error));
 });
@@ -69,47 +67,7 @@ function initializeUI() {
     setupRealtimeListener();
 }
 
-function checkPendingOrdersForExpiry() {
-    const now = new Date();
-    const warningThreshold = new Date(now.getTime() + (10 * 24 * 60 * 60 * 1000)); // 10 days before expiry
-    const criticalThreshold = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000)); // 5 days before expiry
-    
-    getOrdersFromIndexedDB()
-        .then(orders => {
-            orders.forEach(order => {
-                if (order.expiryDate) {
-                    const expiryDate = new Date(order.expiryDate);
-                    const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-                    
-                    const orderElement = document.querySelector(`[data-order-id="${order.id}"]`);
-                    if (orderElement) {
-                        // Remove existing classes
-                        orderElement.classList.remove(
-                            'expiry-normal', 'expiry-warning', 'expiry-critical', 'expiry-expired'
-                        );
-                        
-                        // Add appropriate class
-                        if (expiryDate <= now) {
-                            orderElement.classList.add('expiry-expired');
-                        } else if (expiryDate <= criticalThreshold) {
-                            orderElement.classList.add('expiry-critical');
-                        } else if (expiryDate <= warningThreshold) {
-                            orderElement.classList.add('expiry-warning');
-                        } else {
-                            orderElement.classList.add('expiry-normal');
-                        }
-                        
-                        // Add tooltip
-                        orderElement.setAttribute('data-bs-toggle', 'tooltip');
-                        orderElement.setAttribute('title', 
-                            `Expires in ${daysRemaining} days (${expiryDate.toLocaleDateString()})`);
-                    }
-                }
-            });
-            // Initialize tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
-        });
-}
+
 
 function syncWithFirebase() {
     const now = Date.now();
@@ -506,13 +464,7 @@ function displayDetailedOrders(orders, container) {
         // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
             // Sort orders by expiry status (critical first) - this is secondary to date sorting
-            orders.sort((a, b) => {
-                const statusA = a.expiryDate ? getExpiryStatus(a.expiryDate).status : 'normal';
-                const statusB = b.expiryDate ? getExpiryStatus(b.expiryDate).status : 'normal';
-                
-                const priority = { 'expired': 0, 'critical': 1, 'warning': 2, 'normal': 3 };
-                return priority[statusA] - priority[statusB];
-            });
+           
 
             orders.forEach(order => {
                 const orderDate = new Date(order.dateTime).toLocaleDateString();
@@ -524,31 +476,15 @@ function displayDetailedOrders(orders, container) {
                 const statusIcon = isExported ? '✓' : '✕';
                 const statusClass = isExported ? 'status-tick' : 'status-cross';
                 
-                // Calculate expiry status
-                const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
-  
+             
                 orderDiv.innerHTML = `
                     <div class="order-header mb-2">
                         <div class="order-number-line">
                             <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
                             <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
-                            ${expiryStatus ? `
-                            <span class="expiry-indicator ${expiryStatus.class}" 
-                                  data-bs-toggle="tooltip" 
-                                  title="Expiry: ${new Date(order.expiryDate).toLocaleDateString()} (${expiryStatus.days} days remaining)">
-                                <span class="icon">${expiryStatus.icon}</span>
-                                ${expiryStatus.label}
-                            </span>
-                            ` : ''}
+                           
                         </div>
-                        ${expiryStatus ? `
-                        <div class="order-expiry-header">
-                            <div class="expiry-progress">
-                                <div class="expiry-progress-bar ${expiryStatus.class}" 
-                                     style="width: ${expiryStatus.percentage}%"></div>
-                            </div>
-                        </div>
-                        ` : ''}
+                       
                         <div class="order-details">
                             Party Name: ${order.partyName || 'N/A'}<br>
                             Date: ${orderDate}
@@ -1776,9 +1712,7 @@ function openPremiumStockRemovalModal(partyName, orders) {
         const today = new Date();
         const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
         
-        // Calculate expiry status
-        const expiryStatus = order.expiryDate ? getExpiryStatus(order.expiryDate) : null;
-        
+     
         // Create tab
         const tab = document.createElement('button');
         tab.className = 'premium-modal-tab';
@@ -2036,49 +1970,38 @@ function openPremiumStockRemovalModal(partyName, orders) {
 }
 
 // Helper function to determine expiry status (should be defined elsewhere in your code)
-function getExpiryStatus(expiryDate) {
-    const now = new Date();
-    const expiry = new Date(expiryDate);
-    const daysRemaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
-    
-    if (daysRemaining <= 0) {
-        return {
-            status: 'expired',
-            class: 'expiry-expired',
-            label: 'Expired',
-            icon: '⏱️',
-            days: 0,
-            percentage: 0
-        };
-    } else if (daysRemaining <= 5) {
-        return {
-            status: 'critical',
-            class: 'expiry-critical',
-            label: `Critical (${daysRemaining}d)`,
-            icon: '⚠️',
-            days: daysRemaining,
-            percentage: Math.min(100, Math.max(0, (daysRemaining / 5) * 100))
-        };
-    } else if (daysRemaining <= 10) {
-        return {
-            status: 'warning',
-            class: 'expiry-warning',
-            label: `Warning (${daysRemaining}d)`,
-            icon: '🔔',
-            days: daysRemaining,
-            percentage: Math.min(100, Math.max(0, (daysRemaining / 10) * 100))
-        };
-    } else {
-        return {
-            status: 'normal',
-            class: 'expiry-normal',
-            label: `Normal (${daysRemaining}d)`,
-            icon: '✅',
-            days: daysRemaining,
-            percentage: Math.min(100, Math.max(0, (daysRemaining / 30) * 100))
-        };
-    }
+
+
+function checkAndMoveExpiredOrders() {
+    const ordersRef = firebase.database().ref('orders');
+    const expiryRef = firebase.database().ref('expiryOrders');
+    const now = Date.now();
+    const twentyFiveDays = 25 * 24 * 60 * 60 * 1000; // 25 days in milliseconds
+
+    ordersRef.once('value').then(snapshot => {
+        const updates = {};
+        
+        snapshot.forEach(childSnapshot => {
+            const order = childSnapshot.val();
+            const orderDate = new Date(order.dateTime).getTime();
+            
+            if (now - orderDate > twentyFiveDays) {
+                // Move to expiryOrders
+                updates[`expiryOrders/${childSnapshot.key}`] = order;
+                // Remove from orders
+                updates[`orders/${childSnapshot.key}`] = null;
+            }
+        });
+        
+        // Execute all updates at once
+        if (Object.keys(updates).length > 0) {
+            return firebase.database().ref().update(updates);
+        }
+    }).catch(error => {
+        console.error("Error moving expired orders: ", error);
+    });
 }
+
 
 function setupOrderNumberInteractions() {
     const orderNumbers = document.querySelectorAll('.order-number');
