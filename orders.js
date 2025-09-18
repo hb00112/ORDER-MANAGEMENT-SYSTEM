@@ -2807,8 +2807,7 @@ function handlePlaceOrder() {
           showOrderConfirmationModal(order);
         } catch (error) {
           console.error("Error showing confirmation modal:", error);
-          alert("Your order has been placed successfully, but there was an error showing the confirmation. Order number: " + order.orderNumber);
-        }
+          }
 
         // Reset the cart and update UI
         try {
@@ -3091,5 +3090,459 @@ function showItems(filter = '') {
 }
 
      
+//salesman pdf upload
+// Updated PDF Upload Modal Creation
+function createPdfUploadModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'pdfUploadModal';
+    modal.setAttribute('tabindex', '-1');
+    modal.setAttribute('aria-labelledby', 'pdfUploadModalLabel');
+    modal.setAttribute('aria-hidden', 'true');
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdfUploadModalLabel">Upload PDF Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="pdfFile" class="form-label">Select PDF file</label>
+                        <input class="form-control" type="file" id="pdfFile" accept=".pdf">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pdfDescription" class="form-label">Description (optional)</label>
+                        <textarea class="form-control" id="pdfDescription" rows="2"></textarea>
+                    </div>
+                    
+                    <!-- PDF Content Preview -->
+                    <div id="pdfPreviewContainer" style="display: none;">
+                        <hr>
+                        <h6>Extracted Order Details:</h6>
+                        <div id="extractedContent"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="uploadPdfBtn">Parse PDF</button>
+                    <button type="button" class="btn btn-warning" id="reParsePdfBtn" style="display: none;">Re-parse PDF</button>
+                    <button type="button" class="btn btn-success" id="uploadOrderBtn" style="display: none;">Upload Order</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    document.getElementById('uploadPdfBtn').addEventListener('click', handlePdfUpload);
+    document.getElementById('reParsePdfBtn').addEventListener('click', handleReParsePdf);
+    document.getElementById('uploadOrderBtn').addEventListener('click', uploadParsedOrder);
+}
 
+// Global variable to store parsed order data
+let parsedOrderData = null;
 
+// Updated PDF Upload Handler
+function handlePdfUpload() {
+    const fileInput = document.getElementById('pdfFile');
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a PDF file to upload.');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const uploadBtn = document.getElementById('uploadPdfBtn');
+    
+    // Disable button and show loading
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Parsing...';
+    
+    // Use PDF.js to extract text
+    const fileReader = new FileReader();
+    fileReader.onload = function() {
+        const typedarray = new Uint8Array(this.result);
+        
+        pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+            let fullTextContent = '';
+            const numPages = pdf.numPages;
+            let pagesProcessed = 0;
+            const pageTexts = [];
+            
+            console.log(`PDF has ${numPages} pages`);
+            
+            // Extract text from all pages sequentially
+            const extractPage = (pageNum) => {
+                return pdf.getPage(pageNum).then(function(page) {
+                    return page.getTextContent().then(function(content) {
+                        // Extract text items with positions for better parsing
+                        const textItems = content.items.map(item => ({
+                            text: item.str,
+                            x: item.transform[4],
+                            y: item.transform[5],
+                            height: item.height
+                        }));
+                        
+                        // Sort items by y position (top to bottom) then x position (left to right)
+                        textItems.sort((a, b) => {
+                            const yDiff = b.y - a.y; // Reverse because PDF y increases upward
+                            if (Math.abs(yDiff) < 5) { // Same line
+                                return a.x - b.x; // Left to right
+                            }
+                            return yDiff;
+                        });
+                        
+                        // Group items by rows
+                        const rows = [];
+                        let currentRow = [];
+                        let lastY = null;
+                        
+                        textItems.forEach(item => {
+                            if (lastY === null || Math.abs(item.y - lastY) > 5) {
+                                if (currentRow.length > 0) {
+                                    rows.push(currentRow.map(r => r.text).join(' '));
+                                    currentRow = [];
+                                }
+                            }
+                            currentRow.push(item);
+                            lastY = item.y;
+                        });
+                        
+                        if (currentRow.length > 0) {
+                            rows.push(currentRow.map(r => r.text).join(' '));
+                        }
+                        
+                        const pageText = rows.join('\n');
+                        console.log(`Page ${pageNum} text:`, pageText.substring(0, 200) + '...');
+                        return pageText;
+                    });
+                });
+            };
+            
+            // Process pages sequentially
+            let promise = Promise.resolve();
+            for (let i = 1; i <= numPages; i++) {
+                promise = promise.then(() => {
+                    return extractPage(i).then(pageText => {
+                        pageTexts.push(pageText);
+                        fullTextContent += pageText + '\n';
+                        pagesProcessed++;
+                        
+                        console.log(`Processed page ${pagesProcessed}/${numPages}`);
+                        
+                        // Update progress
+                        uploadBtn.textContent = `Parsing... ${pagesProcessed}/${numPages}`;
+                        
+                        if (pagesProcessed === numPages) {
+                            console.log('All pages processed, starting content parsing...');
+                            parsePdfContent(fullTextContent);
+                        }
+                    });
+                });
+            }
+            
+        }).catch(function(error) {
+            console.error('Error parsing PDF:', error);
+            alert('Error parsing PDF. Please make sure it\'s a valid PDF file.');
+            resetUploadButtons();
+        });
+    };
+    
+    fileReader.readAsArrayBuffer(file);
+}
+
+// Function to handle re-parsing PDF
+function handleReParsePdf() {
+    // Reset the preview and buttons
+    document.getElementById('pdfPreviewContainer').style.display = 'none';
+    document.getElementById('reParsePdfBtn').style.display = 'none';
+    document.getElementById('uploadOrderBtn').style.display = 'none';
+    document.getElementById('uploadPdfBtn').style.display = 'inline-block';
+    
+    // Clear parsed data
+    parsedOrderData = null;
+    
+    // Re-trigger the parsing
+    handlePdfUpload();
+}
+
+// Function to parse extracted PDF content
+function parsePdfContent(textContent) {
+    try {
+        console.log('Extracted text:', textContent);
+        
+        // Extract outlet name (party name)
+        const outletMatch = textContent.match(/Outlet Name\s*:\s*([^[\]]+)(?:\s*\[[^\]]+\])?/i);
+        let partyName = '';
+        
+        if (outletMatch) {
+            partyName = outletMatch[1].trim();
+        } else {
+            // Fallback: look for patterns like "PUJA S [144253]"
+            const fallbackMatch = textContent.match(/([A-Z\s]+)\s*\[\d+\]/);
+            if (fallbackMatch) {
+                partyName = fallbackMatch[1].trim();
+            }
+        }
+        
+        if (!partyName) {
+            throw new Error('Could not extract party name from PDF');
+        }
+        
+        // Extract items - look for SKU patterns
+        const items = [];
+        const lines = textContent.split(/\n|\r\n|\r/).filter(line => line.trim());
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Look for item pattern: number followed by SKU (contains hyphens and commas)
+            const itemMatch = line.match(/^\d+\s+([A-Z0-9\-]+)[,\s]+([A-Z]+)[,\s]+([A-Z0-9]+)\s+(\d+)\s+([A-Z0-9]+)\s+([\d.]+)$/);
+            
+            if (itemMatch) {
+                const [, skuBase, color, size, qty, sizeConfirm, value] = itemMatch;
+                
+                // Extract item name (everything before first hyphen)
+                const itemName = skuBase.split('-')[0];
+                
+                items.push({
+                    itemName: itemName,
+                    color: color,
+                    size: size,
+                    quantity: parseInt(qty),
+                    value: parseFloat(value)
+                });
+            } else {
+                // Alternative pattern matching for different formats
+                const altMatch = line.match(/(\w+(?:-\w+)*)[,\s]+([A-Z]+)[,\s]+([A-Z0-9]+)\s+(\d+)\s+([A-Z0-9]+)\s+([\d.]+)/);
+                if (altMatch) {
+                    const [, fullSku, color, size, qty, sizeConfirm, value] = altMatch;
+                    const itemName = fullSku.split('-')[0];
+                    
+                    items.push({
+                        itemName: itemName,
+                        color: color,
+                        size: size,
+                        quantity: parseInt(qty),
+                        value: parseFloat(value)
+                    });
+                }
+            }
+        }
+        
+        if (items.length === 0) {
+            throw new Error('No items found in PDF. Please check the format.');
+        }
+        
+        // Process items into cart format
+        const cartItems = processItemsToCartFormat(items);
+        
+        // Calculate total quantity
+        const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+        
+        // Store parsed data
+        parsedOrderData = {
+            partyName: partyName,
+            items: cartItems,
+            totalQuantity: totalQuantity,
+            originalItems: items
+        };
+        
+        // Display extracted content
+        displayExtractedContent(parsedOrderData);
+        
+        // Update button visibility - show both Re-parse and Upload buttons
+        document.getElementById('uploadPdfBtn').style.display = 'none';
+        document.getElementById('reParsePdfBtn').style.display = 'inline-block';
+        document.getElementById('uploadOrderBtn').style.display = 'inline-block';
+        
+    } catch (error) {
+        console.error('Error parsing PDF content:', error);
+        alert('Error parsing PDF content: ' + error.message);
+        resetUploadButtons();
+    }
+}
+
+// Function to convert items to cart format
+function processItemsToCartFormat(items) {
+    const cartItems = {};
+    
+    items.forEach(item => {
+        const itemName = item.itemName;
+        
+        if (!cartItems[itemName]) {
+            cartItems[itemName] = {
+                name: itemName,
+                colors: {}
+            };
+        }
+        
+        if (!cartItems[itemName].colors[item.color]) {
+            cartItems[itemName].colors[item.color] = {};
+        }
+        
+        if (!cartItems[itemName].colors[item.color][item.size]) {
+            cartItems[itemName].colors[item.color][item.size] = 0;
+        }
+        
+        cartItems[itemName].colors[item.color][item.size] += item.quantity;
+    });
+    
+    return Object.values(cartItems);
+}
+
+// Function to display extracted content
+function displayExtractedContent(data) {
+    const container = document.getElementById('extractedContent');
+    const previewContainer = document.getElementById('pdfPreviewContainer');
+    
+    let html = `
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Party Name: ${data.partyName}</h6>
+                <p class="card-text"><strong>Total Quantity: ${data.totalQuantity}</strong></p>
+                
+                <h6>Items:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Color</th>
+                                <th>Size</th>
+                                <th>Quantity</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    data.originalItems.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.itemName}</td>
+                <td>${item.color}</td>
+                <td>${item.size}</td>
+                <td>${item.quantity}</td>
+                <td>${item.value.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    previewContainer.style.display = 'block';
+}
+
+// Updated function to upload parsed order (renamed from saveParsedOrder)
+function uploadParsedOrder() {
+    if (!parsedOrderData) {
+        alert('No order data to upload.');
+        return;
+    }
+    
+    const uploadBtn = document.getElementById('uploadOrderBtn');
+    const originalText = uploadBtn.textContent;
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
+    
+    const description = document.getElementById('pdfDescription').value.trim();
+    const dateTime = new Date();
+    
+    // Get next order number and save
+    getNextOrderNumber()
+        .then((orderNumber) => {
+            const newOrder = {
+                orderNumber: orderNumber,
+                partyName: parsedOrderData.partyName,
+                dateTime: dateTime.toISOString(),
+                items: parsedOrderData.items,
+                status: "Pending",
+                totalQuantity: parsedOrderData.totalQuantity,
+                orderNote: description || 'Order created from PDF upload',
+                createdBy: username || 'PDF Import',
+                source: 'PDF Import'
+            };
+            
+            return saveOrderToFirebase(newOrder).then(() => newOrder);
+        })
+        .then((order) => {
+            console.log("PDF Order uploaded successfully:", order);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('pdfUploadModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Show success message
+            alert(`Order ${order.orderNumber} created successfully from PDF for ${order.partyName}!`);
+            
+            // Reset form
+            resetPdfUploadForm();
+            
+            // Refresh pending orders
+            if (typeof loadPendingOrders === 'function') {
+                loadPendingOrders();
+            }
+        })
+        .catch((error) => {
+            console.error("Error uploading PDF order:", error);
+            alert("Error uploading order. Please try again.");
+        })
+        .finally(() => {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = originalText;
+        });
+}
+
+// Helper function to reset upload buttons
+function resetUploadButtons() {
+    document.getElementById('uploadPdfBtn').disabled = false;
+    document.getElementById('uploadPdfBtn').textContent = 'Parse PDF';
+    document.getElementById('uploadPdfBtn').style.display = 'inline-block';
+    
+    document.getElementById('reParsePdfBtn').style.display = 'none';
+    document.getElementById('uploadOrderBtn').style.display = 'none';
+}
+
+// Helper function to reset form
+function resetPdfUploadForm() {
+    document.getElementById('pdfFile').value = '';
+    document.getElementById('pdfDescription').value = '';
+    document.getElementById('pdfPreviewContainer').style.display = 'none';
+    resetUploadButtons();
+    parsedOrderData = null;
+}
+
+// Updated function to show PDF upload button
+function showPdfUploadButton() {
+    const ordersHeader = document.querySelector('.enamor-orders-header');
+    
+    // Check if the button already exists
+    if (!document.getElementById('pdfUploadBtn')) {
+        const pdfUploadBtn = document.createElement('button');
+        pdfUploadBtn.id = 'pdfUploadBtn';
+        pdfUploadBtn.className = 'btn btn-outline-primary btn-sm ms-2';
+        pdfUploadBtn.innerHTML = '<i class="bi bi-upload"></i> Upload PDF Order';
+        pdfUploadBtn.setAttribute('data-bs-toggle', 'modal');
+        pdfUploadBtn.setAttribute('data-bs-target', '#pdfUploadModal');
+        
+        ordersHeader.appendChild(pdfUploadBtn);
+        
+        // Create the modal if it doesn't exist
+        if (!document.getElementById('pdfUploadModal')) {
+            createPdfUploadModal();
+        }
+    }
+}
