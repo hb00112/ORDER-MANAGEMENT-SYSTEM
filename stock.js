@@ -107,43 +107,169 @@ function handleFileUpload() {
     const fileInput = document.getElementById('xlsFile');
     const file = fileInput.files[0];
 
+    console.log('=== FILE UPLOAD STARTED ===');
+    console.log('File selected:', file ? file.name : 'No file');
+
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // Convert to JSON starting from row 8 (assuming row 7 has headers)
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {range: 7});
-            
-            if (validateFileFormat(jsonData)) {
-                const processedData = processRawStockData(jsonData);
-                if (processedData.length > 0) {
-                    uploadStockData(processedData);
-                } else {
-                    alert('No valid stock items found in the file. Please check if CLS values are valid (not blank and < 100).');
+            try {
+                console.log('File read successfully, size:', e.target.result.byteLength);
+                
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                console.log('Workbook loaded successfully');
+                console.log('Sheet names available:', workbook.SheetNames);
+                
+                const firstSheetName = workbook.SheetNames[0];
+                console.log('Using sheet:', firstSheetName);
+                
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Read all rows to find where the actual headers are
+                const allRowsRaw = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                console.log('Total rows in sheet:', allRowsRaw.length);
+                console.log('First 10 rows:', JSON.stringify(allRowsRaw.slice(0, 10), null, 2));
+                
+                // Find the row with "Product Name" header - search by cell values directly
+                let headerRowIndex = -1;
+                for (let i = 0; i < allRowsRaw.length; i++) {
+                    const row = allRowsRaw[i];
+                    if (row && row.length > 0) {
+                        // Check if row contains "Product Name" and "CLS" (or just "L")
+                        const rowStr = row.join('|').toUpperCase();
+                        if (rowStr.includes('PRODUCT NAME') && (rowStr.includes('CLS') || rowStr.includes('|L|') || rowStr.includes('|L '))) {
+                            headerRowIndex = i;
+                            console.log(`✓ Found header row at index ${i} (row ${i + 1} in Excel)`);
+                            console.log('Header row:', row);
+                            break;
+                        }
+                    }
                 }
-            } else {
-                alert('Invalid file format. Please ensure the XLS file has the correct column headers: "Product Name" and "CLS".');
+                
+                if (headerRowIndex === -1) {
+                    console.error('Could not find "Product Name" and "CLS"/"L" headers in the sheet');
+                    alert('Error: Could not find headers in Sheet. Please check your file format.');
+                    return;
+                }
+                
+                // Extract data directly from cells using column references
+                const processedData = extractDataDirectFromCells(worksheet, headerRowIndex);
+                
+                if (validateFileFormat(processedData)) {
+                    console.log('✓ File format validation passed');
+                    console.log('Processed data count:', processedData.length);
+                    console.log('Processed data sample:', JSON.stringify(processedData.slice(0, 2), null, 2));
+                    
+                    if (processedData.length > 0) {
+                        console.log('✓ Valid stock items found, uploading...');
+                        uploadStockData(processedData);
+                    } else {
+                        console.warn('✗ No valid stock items found');
+                        alert('No valid stock items found in the file. Please check if CLS values are valid (not blank and > 0).');
+                    }
+                } else {
+                    console.error('✗ File format validation failed');
+                    alert('Invalid file format. Please ensure the XLS file has the correct columns.');
+                }
+            } catch (error) {
+                console.error('Error in file processing:', error);
+                console.error('Error stack:', error.stack);
+                alert('Error processing file: ' + error.message);
             }
         };
+        
+        reader.onerror = function(error) {
+            console.error('FileReader error:', error);
+            alert('Error reading file: ' + error);
+        };
+        
         reader.readAsArrayBuffer(file);
     } else {
+        console.warn('No file selected');
         alert('Please select a file to upload.');
     }
 }
 
-function processRawStockData(rawData) {
-    const processedData = [];
+function extractDataDirectFromCells(worksheet, headerRowIndex) {
+    console.log('=== EXTRACTING DATA DIRECTLY FROM CELLS ===');
     
-    for (const row of rawData) {
-        const productName = row['Product Name'];
-        const clsValue = row['CLS'];
+    const processedData = [];
+    let skippedCount = 0;
+    let successCount = 0;
+    
+    // Find column indices for Product Name and CLS/L
+    let productNameColIndex = -1;
+    let clsColIndex = -1;
+    
+    // Check header row cells directly
+    for (let col = 0; col < 26; col++) {
+        const cellRef = XLSX.utils.encode_cell({r: headerRowIndex, c: col});
+        const cellValue = worksheet[cellRef]?.v || '';
+        const cellStr = cellValue.toString().toUpperCase().trim();
         
-        // Skip if either field is blank or CLS is >= 100
-        if (!productName || !clsValue || clsValue >= 100) {
+        console.log(`Header cell ${cellRef}: "${cellValue}"`);
+        
+        if (cellStr.includes('PRODUCT') && cellStr.includes('NAME')) {
+            productNameColIndex = col;
+            console.log(`✓ Found Product Name column at index ${col} (${cellRef})`);
+        }
+        
+        if (cellStr === 'CLS' || cellStr === 'L') {
+            clsColIndex = col;
+            console.log(`✓ Found CLS/L column at index ${col} (${cellRef})`);
+        }
+    }
+    
+    if (productNameColIndex === -1 || clsColIndex === -1) {
+        console.error('Could not find required columns');
+        return [];
+    }
+    
+    // Read data rows starting from headerRowIndex + 1
+    const dataStartRow = headerRowIndex + 1;
+    const range = worksheet['!ref'];
+    const parsedRange = XLSX.utils.decode_range(range);
+    
+    console.log(`Reading data from row ${dataStartRow} to row ${parsedRange.e.r}`);
+    
+    for (let row = dataStartRow; row <= parsedRange.e.r; row++) {
+        // Get Product Name
+        const productCellRef = XLSX.utils.encode_cell({r: row, c: productNameColIndex});
+        const productName = (worksheet[productCellRef]?.v || '').toString().trim();
+        
+        // Get CLS value directly
+        const clsCellRef = XLSX.utils.encode_cell({r: row, c: clsColIndex});
+        const clsValue = worksheet[clsCellRef]?.v;
+        
+        console.log(`Row ${row}: Product="${productName}", CLS=${clsValue}`);
+        
+        // Skip if product name is blank
+        if (!productName || productName === '') {
+            console.log(`  ✗ Skipped - empty product name`);
+            skippedCount++;
+            continue;
+        }
+        
+        // Skip if quantity is blank or undefined
+        if (clsValue === undefined || clsValue === null || clsValue === '') {
+            console.log(`  ✗ Skipped - empty CLS value`);
+            skippedCount++;
+            continue;
+        }
+        
+        const quantityNum = parseInt(clsValue);
+        if (isNaN(quantityNum)) {
+            console.log(`  ✗ Skipped - CLS is not a number (${clsValue})`);
+            skippedCount++;
+            continue;
+        }
+        
+        // ONLY skip if quantity is 0 or negative
+        if (quantityNum <= 0) {
+            console.log(`  ✗ Skipped - CLS value is <= 0 (${quantityNum})`);
+            skippedCount++;
             continue;
         }
         
@@ -152,23 +278,47 @@ function processRawStockData(rawData) {
         const color = extractColor(productName);
         const size = extractSize(productName);
         
-        if (itemName && color && size) {
-            processedData.push({
-                'item name': itemName,
-                'color': color,
-                'size': size,
-                'quantity': clsValue
-            });
+        console.log(`  Extracted - Item: "${itemName}", Color: "${color}", Size: "${size}"`);
+        
+        // RELAXED VALIDATION: Allow entries even if extraction partially fails
+        if (!itemName && !color && !size) {
+            console.log(`  ✗ Complete extraction failed - all components empty`);
+            skippedCount++;
+            continue;
         }
+        
+        processedData.push({
+            'item name': itemName || 'Unknown',
+            'color': color || 'Unknown',
+            'size': size || 'Unknown',
+            'quantity': quantityNum
+        });
+        console.log(`  ✓ Added to processed data`);
+        successCount++;
     }
     
+    console.log(`Processing complete: ${successCount} added, ${skippedCount} skipped`);
     return processedData;
+}
+
+function validateFileFormat(data) {
+    console.log('=== VALIDATION CHECK ===');
+    
+    if (!data || data.length === 0) {
+        console.error('Data is empty or null');
+        return false;
+    }
+    
+    console.log('Data validated, count:', data.length);
+    return true;
 }
 
 function extractItemName(rawData) {
     try {
         const dashIndex = rawData.indexOf('-');
-        return dashIndex > 0 ? rawData.substring(0, dashIndex) : '';
+        const result = dashIndex > 0 ? rawData.substring(0, dashIndex).trim() : '';
+        console.log(`    extractItemName("${rawData}") => "${result}"`);
+        return result;
     } catch (e) {
         console.error('Error extracting item name:', e);
         return '';
@@ -177,9 +327,10 @@ function extractItemName(rawData) {
 
 function extractColor(rawData) {
     try {
-        // Split by commas and get the second last element
         const parts = rawData.split(',');
-        return parts.length >= 2 ? parts[parts.length - 2].trim() : '';
+        const result = parts.length >= 2 ? parts[parts.length - 2].trim() : '';
+        console.log(`    extractColor("${rawData}") => "${result}"`);
+        return result;
     } catch (e) {
         console.error('Error extracting color:', e);
         return '';
@@ -188,51 +339,49 @@ function extractColor(rawData) {
 
 function extractSize(rawData) {
     try {
-        // Get everything after the last comma
         const lastComma = rawData.lastIndexOf(',');
-        return lastComma > 0 ? rawData.substring(lastComma + 1).trim() : '';
+        const result = lastComma > 0 ? rawData.substring(lastComma + 1).trim() : '';
+        console.log(`    extractSize("${rawData}") => "${result}"`);
+        return result;
     } catch (e) {
         console.error('Error extracting size:', e);
         return '';
     }
 }
 
-function validateFileFormat(data) {
-    if (data.length === 0) return false;
-    const requiredHeaders = ['Product Name', 'CLS'];
-    const fileHeaders = Object.keys(data[0]);
-    return requiredHeaders.every(header => fileHeaders.includes(header));
-}
-
 function uploadStockData(stockData) {
+    console.log('=== UPLOADING STOCK DATA ===');
+    console.log('Data to upload:', JSON.stringify(stockData, null, 2));
+    
     const db = firebase.database();
     const stockRef = db.ref('stock');
     const lastUpdateRef = db.ref('lastUpdate');
 
-    // Remove existing stock data
-    stockRef.remove().then(() => {
-        // Upload new stock data
-        stockRef.set(stockData).then(() => {
+    stockRef.remove()
+        .then(() => {
+            console.log('✓ Existing stock data removed');
+            return stockRef.set(stockData);
+        })
+        .then(() => {
+            console.log('✓ New stock data uploaded');
             const now = new Date().toISOString();
-            lastUpdateRef.set(now).then(() => {
-                alert('Stock update successful!');
-                updateStockIndexedDB(stockData);
-                // No need to call saveLastUpdateTime here as it will be handled by the Firebase listener
-            }).catch((error) => {
-                console.error('Error saving last update time:', error);
-            });
-        }).catch((error) => {
-            console.error('Error uploading stock data:', error);
+            return lastUpdateRef.set(now);
+        })
+        .then(() => {
+            console.log('✓ Last update timestamp saved');
+            alert('Stock update successful!');
+            updateStockIndexedDB(stockData);
+        })
+        .catch((error) => {
+            console.error('✗ Upload error:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
             alert('An error occurred while updating stock data. Please try again.');
         });
-    }).catch((error) => {
-        console.error('Error removing existing stock data:', error);
-        alert('An error occurred while preparing for stock update. Please try again.');
-    });
 }
 
-
 function saveLastUpdateTime(lastUpdate) {
+    console.log('Saving last update time:', lastUpdate);
     const transaction = stockIndexedDB.transaction(['metadata'], "readwrite");
     const store = transaction.objectStore('metadata');
     store.put({ key: LAST_UPDATE_KEY, value: lastUpdate });
@@ -246,10 +395,12 @@ function getLastUpdateTime() {
         const request = store.get(LAST_UPDATE_KEY);
         
         request.onsuccess = (event) => {
+            console.log('Last update time retrieved:', event.target.result?.value);
             resolve(event.target.result ? event.target.result.value : null);
         };
         
         request.onerror = (event) => {
+            console.error("Error fetching last update time:", event.target.error);
             reject("Error fetching last update time: " + event.target.error);
         };
     });
