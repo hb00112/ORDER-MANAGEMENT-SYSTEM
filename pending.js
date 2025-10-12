@@ -345,10 +345,10 @@ function displayDetailedOrders(orders, container) {
     orders.sort((a, b) => {
         const dateA = new Date(a.dateTime || 0);
         const dateB = new Date(b.dateTime || 0);
-        return dateB - dateA; // Newest first
+        return dateB - dateA;
     });
 
-    // Add CSS styles for stock availability and status icon
+    // Add CSS styles
     const styleElement = document.createElement('style');
     styleElement.textContent = `
         .stock-full {
@@ -387,8 +387,6 @@ function displayDetailedOrders(orders, container) {
             position: relative;
             padding-right: 40px;
         }
-        
-        /* Expiry Indicator Styles */
         .expiry-indicator {
             display: inline-flex;
             align-items: center;
@@ -401,7 +399,6 @@ function displayDetailedOrders(orders, container) {
             position: relative;
             overflow: hidden;
         }
-        
         .expiry-indicator::after {
             content: '';
             position: absolute;
@@ -412,37 +409,31 @@ function displayDetailedOrders(orders, container) {
             opacity: 0.1;
             background: currentColor;
         }
-        
         .expiry-indicator .icon {
             margin-right: 4px;
             font-size: 14px;
         }
-        
         .expiry-normal {
             background-color: #e8f5e9;
             color: #2e7d32;
             border-left: 3px solid #2e7d32;
         }
-        
         .expiry-warning {
             background-color: #fff8e1;
             color: #ff8f00;
             border-left: 3px solid #ff8f00;
         }
-        
         .expiry-critical {
             background-color: #ffebee;
             color: #c62828;
             border-left: 3px solid #c62828;
             animation: pulse 2s infinite;
         }
-        
         .expiry-expired {
             background-color: #f5f5f5;
             color: #616161;
             border-left: 3px solid #616161;
         }
-        
         .expiry-progress {
             width: 100%;
             height: 6px;
@@ -451,27 +442,62 @@ function displayDetailedOrders(orders, container) {
             background: #f5f5f5;
             margin-top: 4px;
         }
-        
         .expiry-progress-bar {
             height: 100%;
             transition: width 0.3s ease;
         }
-        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
+        }
+        .multi-export-checkbox {
+            margin-right: 8px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+        }
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+        #multiExportBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
     `;
     document.head.appendChild(styleElement);
   
     // Get stock data from IndexedDB
     getStockData().then(stockData => {
-        // Get export status data from Firebase
         getExportStatusFromFirebase((exportStatus) => {
-            // Sort orders by expiry status (critical first) - this is secondary to date sorting
-           
-
             orders.forEach(order => {
                 const orderDate = new Date(order.dateTime).toLocaleDateString();
                 const orderDiv = document.createElement('div');
@@ -482,15 +508,12 @@ function displayDetailedOrders(orders, container) {
                 const statusIcon = isExported ? '✓' : '✕';
                 const statusClass = isExported ? 'status-tick' : 'status-cross';
                 
-             
                 orderDiv.innerHTML = `
                     <div class="order-header mb-2">
                         <div class="order-number-line">
                             <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
                             <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
-                           
                         </div>
-                       
                         <div class="order-details">
                             Party Name: ${order.partyName || 'N/A'}<br>
                             Date: ${orderDate}
@@ -502,6 +525,10 @@ function displayDetailedOrders(orders, container) {
                             <div class="dropdown-menu" id="dropdown-${order.id}">
                                 <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
                                 <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+                                <a class="dropdown-item" href="#" onclick="return false;">
+                                    <input type="checkbox" class="multi-export-checkbox" data-order-id="${order.id}">
+                                    <span>Multiple Export</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -525,40 +552,42 @@ function displayDetailedOrders(orders, container) {
   
                 container.appendChild(orderDiv);
   
-                // Add existing event listeners
+                // Event listeners
                 const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
                 const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
   
                 dropdownToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+                    dropdownMenu.classList.toggle('show');
                 });
   
                 const deleteButton = orderDiv.querySelector('.delete-order');
                 deleteButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Delete button clicked for order:', order.id);
                     openDeleteModal1(order.id);
-                    dropdownMenu.style.display = 'none';
+                    dropdownMenu.classList.remove('show');
                 });
   
                 const exportButton = orderDiv.querySelector('.export-order');
                 exportButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Export button clicked for order:', order.id);
                     exportOrderToExcel(order);
-                    updateExportStatus(order.id, true);
-                    const statusIcon = orderDiv.querySelector(`#status-${order.id}`);
-                    statusIcon.textContent = '✓';
-                    statusIcon.classList.remove('status-cross');
-                    statusIcon.classList.add('status-tick');
-                    dropdownMenu.style.display = 'none';
+                    dropdownMenu.classList.remove('show');
+                });
+
+                // Multi-export checkbox handler
+                const checkbox = orderDiv.querySelector('.multi-export-checkbox');
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+                checkbox.addEventListener('change', (e) => {
+                    handleMultiExportCheckbox(order.id, e.target.checked);
                 });
   
                 document.addEventListener('click', () => {
-                    dropdownMenu.style.display = 'none';
+                    dropdownMenu.classList.remove('show');
                 });
   
                 if (currentOrders[order.id]) {
@@ -566,16 +595,47 @@ function displayDetailedOrders(orders, container) {
                 }
             });
   
-            // Initialize SRQ inputs after adding content to the DOM
             initializeSRQInputs(container);
-            
-            // Initialize tooltips
             $('[data-bs-toggle="tooltip"]').tooltip({
                 boundary: 'window',
                 trigger: 'hover focus'
             });
         });
     });
+}
+
+// Global variable to track selected orders
+window.selectedOrdersForExport = window.selectedOrdersForExport || new Set();
+
+function handleMultiExportCheckbox(orderId, isChecked) {
+    if (isChecked) {
+        window.selectedOrdersForExport.add(orderId);
+    } else {
+        window.selectedOrdersForExport.delete(orderId);
+    }
+    updateMultiExportButton();
+}
+
+function updateMultiExportButton() {
+    const count = window.selectedOrdersForExport.size;
+    let btn = document.getElementById('multiExportBtn');
+    
+    if (count > 0) {
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'multiExportBtn';
+            btn.className = 'btn btn-primary';
+            document.body.appendChild(btn);
+            
+            btn.addEventListener('click', openMultiExportModal);
+        }
+        btn.textContent = `Export (${count}) Orders`;
+        btn.style.display = 'block';
+    } else {
+        if (btn) {
+            btn.style.display = 'none';
+        }
+    }
 }
 
   
@@ -676,7 +736,6 @@ function generateOrderItemRowsWithStock(items, orderId, stockData) {
 function exportOrderToExcel(order) {
     console.log('Exporting order:', order);
     
-    // Prepare order items in flat structure
     const orderItems = [];
 
     order.items.forEach((item) => {
@@ -699,7 +758,6 @@ function exportOrderToExcel(order) {
         return;
     }
 
-    // Prepare order data object
     const orderData = {
         orderNumber: order.orderNumber || 'N/A',
         partyName: order.partyName || 'N/A',
@@ -707,90 +765,74 @@ function exportOrderToExcel(order) {
         items: orderItems
     };
 
-    // Upload to Google Drive
-    uploadOrderToGoogleDrive(orderData, order);
+    uploadOrderToGoogleDrive(orderData, [order.id]);
 }
 
-/**
- * Upload order data to Google Drive via Apps Script
- * @param {Object} orderData - The formatted order data
- * @param {Object} order - The original order object
- */
-function uploadOrderToGoogleDrive(orderData, order) {
+function uploadOrderToGoogleDrive(orderData, orderIds) {
     console.log('Uploading order to Google Drive');
     
-    showUploadStatus('📤 Uploading order to Google Drive...', 'info');
+    showUploadStatus('📤 Uploading order to Google Drive...', 'info', true);
 
     try {
-        // Convert order data to JSON string
         const jsonString = JSON.stringify(orderData);
-        
-        // Encode to base64
         const base64Json = btoa(unescape(encodeURIComponent(jsonString)));
         
-        // Prepare form data
         const formData = new URLSearchParams();
         formData.append("jsonData", base64Json);
         
-        // Send to Google Apps Script with proper error handling
         fetch(GAS_WEBAPP_URL, {
             method: "POST",
-            mode: "no-cors", // Important for Google Apps Script
+            mode: "no-cors",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             body: formData.toString()
         })
         .then(() => {
-            // With no-cors, we can't read the response, so assume success
             console.log('Upload request sent successfully');
             
             showUploadStatus(
                 `✅ Order uploaded successfully!\n📧 Processing ${orderData.items.length} items...\nCheck your email for completion notification`,
-                'success'
+                'success',
+                false
             );
             
-            // Update UI
-            updateExportStatus(order.id, true);
-            const statusIcon = document.querySelector(`#status-${order.id}`);
-            if (statusIcon) {
-                statusIcon.textContent = '✓';
-                statusIcon.classList.remove('status-cross');
-                statusIcon.classList.add('status-tick');
-            }
+            // Update UI for all orders
+            orderIds.forEach(orderId => {
+                updateExportStatus(orderId, true);
+                const statusIcon = document.querySelector(`#status-${orderId}`);
+                if (statusIcon) {
+                    statusIcon.textContent = '✓';
+                    statusIcon.classList.remove('status-cross');
+                    statusIcon.classList.add('status-tick');
+                }
+            });
             
             console.log('✅ Order uploaded and processing started');
         })
         .catch(err => {
             console.error('Upload failed:', err);
-            showUploadStatus('❌ Upload failed: ' + err.message + '\nRetrying...', 'error');
+            showUploadStatus('❌ Upload failed: ' + err.message + '\nRetrying...', 'error', true);
             
-            // Retry once after 2 seconds
             setTimeout(() => {
-                retryUpload(orderData, order);
+                retryUpload(orderData, orderIds);
             }, 2000);
         });
         
     } catch (err) {
         console.error('Upload setup failed:', err);
-        showUploadStatus('❌ Upload failed: ' + err.message, 'error');
+        showUploadStatus('❌ Upload failed: ' + err.message, 'error', false);
     }
 }
 
-/**
- * Retry upload with alternative method
- * @param {Object} orderData - The formatted order data
- * @param {Object} order - The original order object
- */
-function retryUpload(orderData, order) {
+function retryUpload(orderData, orderIds) {
     console.log('Retrying upload...');
-    showUploadStatus('🔄 Retrying upload...', 'info');
+    showUploadStatus('🔄 Retrying upload...', 'info', true);
     
     try {
         const jsonString = JSON.stringify(orderData);
         const base64Json = btoa(unescape(encodeURIComponent(jsonString)));
         
-        // Create a form and submit it (fallback method)
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = GAS_WEBAPP_URL;
@@ -809,30 +851,28 @@ function retryUpload(orderData, order) {
         
         showUploadStatus(
             '✅ Order submitted!\n📧 Check your email for confirmation',
-            'success'
+            'success',
+            false
         );
         
-        // Update UI
-        updateExportStatus(order.id, true);
-        const statusIcon = document.querySelector(`#status-${order.id}`);
-        if (statusIcon) {
-            statusIcon.textContent = '✓';
-            statusIcon.classList.remove('status-cross');
-            statusIcon.classList.add('status-tick');
-        }
+        // Update UI for all orders
+        orderIds.forEach(orderId => {
+            updateExportStatus(orderId, true);
+            const statusIcon = document.querySelector(`#status-${orderId}`);
+            if (statusIcon) {
+                statusIcon.textContent = '✓';
+                statusIcon.classList.remove('status-cross');
+                statusIcon.classList.add('status-tick');
+            }
+        });
         
     } catch (err) {
         console.error('Retry failed:', err);
-        showUploadStatus('❌ Upload failed after retry. Please try again.', 'error');
+        showUploadStatus('❌ Upload failed after retry. Please try again.', 'error', false);
     }
 }
 
-/**
- * Display upload status message to user
- * @param {string} message - Status message to display
- * @param {string} type - Message type: 'info', 'success', 'warning', 'error'
- */
-function showUploadStatus(message, type = 'info') {
+function showUploadStatus(message, type = 'info', persistent = false) {
     let statusElement = document.getElementById('uploadStatus');
     if (!statusElement) {
         statusElement = document.createElement('div');
@@ -868,19 +908,290 @@ function showUploadStatus(message, type = 'info') {
     statusElement.style.color = c.color;
     statusElement.style.backgroundColor = c.bg;
     statusElement.style.borderLeft = `4px solid ${c.color}`;
+    statusElement.style.opacity = '1';
+    statusElement.style.transition = 'none';
 
-    // Auto hide after 6 seconds
-    setTimeout(() => {
-        statusElement.style.opacity = '0';
-        statusElement.style.transition = 'opacity 0.3s ease-out';
-        setTimeout(() => {
-            statusElement.style.display = 'none';
-            statusElement.style.opacity = '1';
-            statusElement.style.transition = 'none';
-        }, 300);
-    }, 6000);
+    // Clear any existing timeout
+    if (statusElement.hideTimeout) {
+        clearTimeout(statusElement.hideTimeout);
+    }
+
+    // Only auto-hide if not persistent and type is success
+    if (!persistent && type === 'success') {
+        statusElement.hideTimeout = setTimeout(() => {
+            statusElement.style.opacity = '0';
+            statusElement.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+                statusElement.style.opacity = '1';
+                statusElement.style.transition = 'none';
+            }, 300);
+        }, 6000);
+    }
 }
 
+// Multi-export modal and functions
+function openMultiExportModal() {
+    const selectedIds = Array.from(window.selectedOrdersForExport);
+    if (selectedIds.length === 0) return;
+    
+    // Get all orders data from IndexedDB - using PendingOrdersDB
+    const dbRequest = indexedDB.open('PendingOrdersDB');
+    
+    dbRequest.onsuccess = function(event) {
+        const db = event.target.result;
+        
+        // Check if the database has the correct object store
+        if (!db.objectStoreNames.contains('orders')) {
+            console.error('Object store "orders" not found');
+            alert('Database error. Please refresh the page.');
+            return;
+        }
+        
+        const transaction = db.transaction(['orders'], 'readonly');
+        const objectStore = transaction.objectStore('orders');
+        const getAllRequest = objectStore.getAll();
+        
+        getAllRequest.onsuccess = function() {
+            const allOrders = getAllRequest.result;
+            const selectedOrders = allOrders.filter(order => selectedIds.includes(order.id));
+            
+            if (selectedOrders.length === 0) {
+                alert('Selected orders not found in database.');
+                return;
+            }
+            
+            displayMultiExportModal(selectedOrders);
+        };
+        
+        getAllRequest.onerror = function() {
+            console.error('Error fetching orders from IndexedDB');
+            alert('Error loading orders. Please try again.');
+        };
+    };
+    
+    dbRequest.onerror = function() {
+        console.error('Error opening IndexedDB');
+        alert('Error accessing database. Please try again.');
+    };
+}
+
+
+function displayMultiExportModal(orders) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('multiExportModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Calculate total quantities
+    let totalQty = 0;
+    const orderDetails = orders.map(order => {
+        let orderQty = 0;
+        order.items.forEach(item => {
+            if (item.quantities && typeof item.quantities === 'object') {
+                Object.values(item.quantities).forEach(qty => {
+                    orderQty += parseInt(qty) || 0;
+                });
+            }
+        });
+        totalQty += orderQty;
+        
+        return {
+            id: order.id,
+            orderNumber: order.orderNumber || 'N/A',
+            partyName: order.partyName || 'N/A',
+            orderDate: new Date(order.dateTime).toLocaleDateString(),
+            totalQty: orderQty,
+            exportStatus: '✓' // You can check actual status from Firebase
+        };
+    });
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'multiExportModal';
+    modal.className = 'modal';
+    modal.style.cssText = `
+        display: block;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 900px;
+        border-radius: 8px;
+        max-height: 80vh;
+        overflow-y: auto;
+    `;
+    
+    modalContent.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Multiple Order Export</h3>
+            <button id="closeMultiExportModal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <strong>Total Orders:</strong> ${orders.length}
+                </div>
+                <div>
+                    <strong>Total Quantity:</strong> ${totalQty} pcs
+                </div>
+            </div>
+        </div>
+        
+        <table class="table table-bordered" style="width: 100%; margin-bottom: 20px;">
+            <thead style="background-color: #e9ecef;">
+                <tr>
+                    <th style="padding: 10px;">Select</th>
+                    <th style="padding: 10px;">Order No.</th>
+                    <th style="padding: 10px;">Party Name</th>
+                    <th style="padding: 10px;">Order Date</th>
+                    <th style="padding: 10px;">Export Status</th>
+                    <th style="padding: 10px;">Total Qty</th>
+                </tr>
+            </thead>
+            <tbody id="multiExportTableBody">
+                ${orderDetails.map(order => `
+                    <tr data-order-id="${order.id}">
+                        <td style="padding: 10px; text-align: center;">
+                            <input type="checkbox" class="order-select-checkbox" data-order-id="${order.id}" checked>
+                        </td>
+                        <td style="padding: 10px;">${order.orderNumber}</td>
+                        <td style="padding: 10px;">${order.partyName}</td>
+                        <td style="padding: 10px;">${order.orderDate}</td>
+                        <td style="padding: 10px; text-align: center;">${order.exportStatus}</td>
+                        <td style="padding: 10px; text-align: right;">${order.totalQty}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div id="selectedCountDisplay">
+                <strong>${orders.length} orders selected</strong>
+            </div>
+            <button id="sendForPunchingBtn" class="btn btn-primary" style="padding: 10px 30px; font-size: 16px;">
+                Send Order for Punching
+            </button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Event listeners
+    document.getElementById('closeMultiExportModal').addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Checkbox change handlers
+    const checkboxes = modalContent.querySelectorAll('.order-select-checkbox');
+    let selectedModalOrders = new Set(orders.map(o => o.id));
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const orderId = e.target.dataset.orderId;
+            if (e.target.checked) {
+                selectedModalOrders.add(orderId);
+            } else {
+                selectedModalOrders.delete(orderId);
+            }
+            
+            // Update display
+            document.getElementById('selectedCountDisplay').innerHTML = 
+                `<strong>${selectedModalOrders.size} orders selected</strong>`;
+        });
+    });
+    
+    // Send for punching button
+    document.getElementById('sendForPunchingBtn').addEventListener('click', () => {
+        if (selectedModalOrders.size === 0) {
+            alert('Please select at least one order');
+            return;
+        }
+        
+        const selectedOrdersData = orders.filter(o => selectedModalOrders.has(o.id));
+        exportMultipleOrders(selectedOrdersData);
+        modal.remove();
+        
+        // Clear selections
+        window.selectedOrdersForExport.clear();
+        updateMultiExportButton();
+        
+        // Uncheck all checkboxes in main view
+        document.querySelectorAll('.multi-export-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+    });
+}
+
+function exportMultipleOrders(orders) {
+    console.log('Exporting multiple orders:', orders);
+    
+    // Combine all order data
+    const orderNumbers = [];
+    const partyNames = [];
+    const orderDates = [];
+    const allItems = [];
+    
+    orders.forEach(order => {
+        orderNumbers.push(order.orderNumber || 'N/A');
+        partyNames.push(order.partyName || 'N/A');
+        orderDates.push(order.dateTime ? new Date(order.dateTime).toLocaleDateString() : 'N/A');
+        
+        // Extract items
+        order.items.forEach((item) => {
+            if (item.quantities && typeof item.quantities === 'object') {
+                Object.entries(item.quantities).forEach(([size, qty]) => {
+                    if (qty > 0) {
+                        allItems.push({
+                            itemName: item.name,
+                            color: item.color,
+                            size: size,
+                            quantity: qty
+                        });
+                    }
+                });
+            }
+        });
+    });
+    
+    if (allItems.length === 0) {
+        alert('No data to export. Please check the order details.');
+        return;
+    }
+    
+    // Create combined order data
+    const combinedOrderData = {
+        orderNumber: orderNumbers.join(','),
+        partyName: partyNames.join(','),
+        orderDate: [...new Set(orderDates)].join(','), // Unique dates only
+        items: allItems
+    };
+    
+    // Upload to Google Drive
+    uploadOrderToGoogleDrive(combinedOrderData, orders.map(o => o.id));
+}
 function addExportDataRow(exportData, itemName, color, size, qty) {
     console.log(`Attempting to match: Style=${itemName}, Color=${color}, Size=${size}`);
     const matchingEntry = purchaseOrderData.find(entry => 
