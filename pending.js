@@ -1,4 +1,10 @@
 // Ensure the DOM is fully loaded before initializing
+
+
+// Google Apps Script Web App URL
+const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzUbeIwfJedhnNCFZBQpKcOXu-Ga8uo1HlbmLcljOWrico8_GFg-WSItCyawVM2uLxY/exec';
+
+
 document.addEventListener('DOMContentLoaded', function() {
     
     checkAndDeleteExpiredOrders();
@@ -663,10 +669,15 @@ function generateOrderItemRowsWithStock(items, orderId, stockData) {
         });
     }).join('');
 }
+/**
+ * Export order to Excel and upload to Google Drive
+ * @param {Object} order - The order object containing items and details
+ */
 function exportOrderToExcel(order) {
     console.log('Exporting order:', order);
     const exportData = [];
 
+    // Extract order items with quantities
     order.items.forEach((item) => {
         if (item.quantities && typeof item.quantities === 'object') {
             Object.entries(item.quantities).forEach(([size, qty]) => {
@@ -679,144 +690,36 @@ function exportOrderToExcel(order) {
                     });
                 }
             });
-        } else {
-            console.warn(`No quantities found for item: ${item.name}, color: ${item.color}`);
         }
     });
 
     if (exportData.length === 0) {
-        console.error('No data to export');
         alert('No data to export. Please check the order details.');
         return;
     }
 
-    // Create and download Excel file
+    // Create Excel workbook
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(exportData);
     
-    // Set column widths
     const colWidths = [
-        { wch: 30 }, // Item Name
-        { wch: 15 }, // Color
-        { wch: 10 }, // Size
-        { wch: 10 }  // Quantity
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 10 }
     ];
     ws['!cols'] = colWidths;
-
-    // Calculate the last row of data
-    const lastRow = exportData.length + 1; // +1 for header row
-
-    // Add empty row for spacing
-    XLSX.utils.sheet_add_json(ws, [{}], { origin: lastRow + 1 });
-
-    // Add instructions
+    
+    const lastRow = exportData.length + 1;
     const instructions = [
-        ["COPY THE ABOVE DATA (DONT COPY HEADER) AND PASTE IT IN THE MAIN ORDER FORMAT OF COMPANY FROM A5838"],
-        ["THEN PRESS (Alt + F11) AND CREATE NEW MODULE AND PASTE THE BELOW CODE THERE AND RUN IT"],
-        ["CODE:"],
-        [`Sub UpdateQuantities()
-    Dim lastRow As Long
-    Dim formLastRow As Long
-    Dim inputRow As Long
-    Dim formRow As Long
-    Dim ws As Worksheet
-    Dim found As Boolean
-    Dim unmatchedCount As Long
-    
-    Set ws = ActiveSheet
-    
-    ' Form data starts at row 3, header is on row 2, ends at row 4351
-    formLastRow = 4351
-    
-    ' Find last row of input data
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    ' Debug message to confirm data range
-    MsgBox "Starting process. Input data from row 4352 to " & lastRow, vbInformation
-    
-    ' Clear any previous highlighting in the input area
-    ws.Range("A4352:D" & lastRow).Interior.ColorIndex = xlNone
-    
-    unmatchedCount = 0
-    
-    ' Loop through each input row starting from 4352
-    For inputRow = 4352 To lastRow
-        found = False
-        
-        ' Get input values
-        Dim inputStyle As String
-        Dim inputColor As String
-        Dim inputSize As String
-        Dim inputQty As Variant
-        
-        inputStyle = ws.Cells(inputRow, 1).Value ' Column A
-        inputColor = ws.Cells(inputRow, 2).Value ' Column B
-        inputSize = ws.Cells(inputRow, 3).Value  ' Column C
-        inputQty = ws.Cells(inputRow, 4).Value   ' Column D
-        
-        ' Skip empty rows
-        If Trim(inputStyle) <> "" Then
-            ' Loop through form rows to find matching entry
-            For formRow = 3 To formLastRow  ' Start from row 3 (after header row 2)
-                ' Get form values
-                Dim formStyle As String
-                Dim formColor As String
-                Dim formSize As String
-                
-                formStyle = ws.Cells(formRow, "D").Value ' Style column D
-                formColor = ws.Cells(formRow, "F").Value ' Color column F
-                formSize = ws.Cells(formRow, "K").Value  ' Size column K
-                
-                ' Check if all criteria match
-                If formStyle = inputStyle And _
-                   formColor = inputColor And _
-                   formSize = inputSize Then
-                   
-                    ' Update quantity in column O
-                    ws.Cells(formRow, "O").Value = inputQty
-                    found = True
-                    Debug.Print "Match found for Style=" & inputStyle & _
-                            ", Color=" & inputColor & _
-                            ", Size=" & inputSize & _
-                            " at row " & formRow
-                    Exit For
-                End If
-            Next formRow
-            
-            ' Highlight unmatched entries in red
-            If Not found Then
-                ' Highlight entire row in light red
-                With ws.Range("A" & inputRow & ":D" & inputRow).Interior
-                    .Color = RGB(255, 200, 200) ' Light red color
-                End With
-                
-                unmatchedCount = unmatchedCount + 1
-                
-                ' Log unmatched entry details
-                Debug.Print "No match found for: Style=" & inputStyle & _
-                            ", Color=" & inputColor & _
-                            ", Size=" & inputSize
-            End If
-        End If
-    Next inputRow
-    
-    ' Show completion message with count of unmatched entries
-    If unmatchedCount > 0 Then
-        MsgBox "Update complete!" & vbNewLine & _
-               unmatchedCount & " unmatched entries were found and highlighted in red." & vbNewLine & _
-               "(Check Immediate Window for details - Press Ctrl+G in VBA Editor)", _
-               vbInformation
-    Else
-        MsgBox "Update complete! All entries were successfully matched." & vbNewLine & _
-               "(Check Immediate Window for match details - Press Ctrl+G in VBA Editor)", _
-               vbInformation
-    End If
-End Sub
-
-`]
+        ['--- END OF ORDER ---'],
+        [''],
+        ['Instructions:'],
+        ['1. File uploaded automatically'],
+        ['2. System processes and creates new file'],
+        ['3. Check Drive folder for processed order']
     ];
 
-    // Add instructions to worksheet starting from the row after the data plus spacing
     instructions.forEach((row, index) => {
         XLSX.utils.sheet_add_json(ws, [{ 'Item Name': row[0] }], {
             origin: lastRow + 2 + index,
@@ -825,26 +728,292 @@ End Sub
     });
     
     XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
-    XLSX.writeFile(wb, `purchase_order_${order.orderNumber || 'export'}.xlsx`);
+    
+    const fileName = `order_${order.orderNumber || 'export'}_${new Date().getTime()}.xlsx`;
+    
+    // Write Excel file locally
+    XLSX.writeFile(wb, fileName);
 
-    // Email functionality remains the same
+    // Upload to Google Drive
+    uploadOrderForProcessing(fileName, exportData, order);
+
+    // Open Gmail
     setTimeout(() => {
-        const to = 'vishalkulkarni@modenik.in';
-        const cc = 'chandra.niwas@modenik.in,MANJUNATH.AVAROLKAR@modenik.in';
-        const subject = 'ENAMOR ORDER - KAMBESHWAR AGENCIES';
-        const body = `Dear Modenik Lifestyle Pvt Ltd (Enamor Division),
+        openGmailCompose(order);
+    }, 1000);
+}
 
-I hope this email finds you well. Please find the attached Enamor order to this email.
+/**
+ * Upload order file for automatic processing
+ */
+function uploadOrderForProcessing(fileName, exportData, order) {
+    console.log('Uploading order for processing:', fileName);
+    showUploadStatus('⏳ Uploading order...', 'info');
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 10 }];
+    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
+
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    
+    const reader = new FileReader();
+    reader.onload = async () => {
+        try {
+            const base64 = reader.result.split(',')[1];
+            const formData = new URLSearchParams();
+            formData.append("file", base64);
+            formData.append("filename", fileName);
+
+            // Step 1: Upload file
+            const uploadResponse = await fetch(GAS_WEBAPP_URL, {
+                method: "POST",
+                body: formData
+            });
+
+            const uploadResult = await uploadResponse.json();
+            console.log('Upload response:', uploadResult);
+
+            if (uploadResult.status === 'success') {
+                showUploadStatus('✅ File uploaded! Processing...', 'info');
+                
+                // Step 2: Trigger processing (small delay to ensure file is written)
+                setTimeout(async () => {
+                    try {
+                        const processingForm = new URLSearchParams();
+                        processingForm.append("action", "processLatest");
+
+                        const processingResponse = await fetch(GAS_WEBAPP_URL, {
+                            method: "POST",
+                            body: processingForm
+                        });
+
+                        const processingResult = await processingResponse.json();
+                        console.log('Processing response:', processingResult);
+
+                        if (processingResult.status === 'success') {
+                            showUploadStatus(
+                                `✅ Order processed! Matched: ${processingResult.matched}, Unmatched: ${processingResult.unmatched}`,
+                                'success'
+                            );
+                            
+                            updateExportStatus(order.id, true);
+                            const statusIcon = document.querySelector(`#status-${order.id}`);
+                            if (statusIcon) {
+                                statusIcon.textContent = '✓';
+                                statusIcon.classList.remove('status-cross');
+                                statusIcon.classList.add('status-tick');
+                            }
+                        } else {
+                            showUploadStatus('⚠️ ' + processingResult.message, 'warning');
+                        }
+                    } catch (procErr) {
+                        console.error('Processing error:', procErr);
+                        showUploadStatus('⚠️ Processing error: ' + procErr.message, 'warning');
+                    }
+                }, 2000); // 2 second delay
+                
+            } else {
+                showUploadStatus('❌ ' + uploadResult.message, 'error');
+            }
+        } catch (err) {
+            console.error('Upload failed:', err);
+            showUploadStatus('❌ Upload failed: ' + err.message, 'error');
+        }
+    };
+    
+    reader.readAsDataURL(blob);
+}
+
+
+/**
+ * Upload the generated order file to Google Drive via Apps Script
+ * @param {string} fileName - Name of the file being uploaded
+ * @param {Array} exportData - The export data array
+ * @param {Object} order - The order object
+ */
+function uploadOrderToGoogleDrive(fileName, exportData, order) {
+    console.log('Uploading order to Google Drive:', fileName);
+    
+    // Show upload status indicator
+    showUploadStatus('⏳ Uploading order to Google Drive...', 'info');
+
+    // Create a temporary workbook for upload
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    const colWidths = [
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 10 }
+    ];
+    ws['!cols'] = colWidths;
+    
+    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
+
+    // Convert workbook to binary array and then to base64
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    
+    const reader = new FileReader();
+    reader.onload = async () => {
+        try {
+            const base64 = reader.result.split(',')[1];
+            const formData = new URLSearchParams();
+            formData.append("file", base64);
+            formData.append("filename", fileName);
+            formData.append("orderNumber", order.orderNumber || 'N/A');
+            formData.append("partyName", order.partyName || 'N/A');
+            formData.append("orderDate", new Date(order.dateTime).toLocaleDateString());
+
+            const response = await fetch(GAS_WEBAPP_URL, {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.text();
+            console.log('Upload response:', result);
+
+            if (result.includes('successfully')) {
+                showUploadStatus('✅ Order uploaded successfully to Google Drive!', 'success');
+                console.log('Order file uploaded successfully:', fileName);
+                
+                // Trigger GAS to process the uploaded file
+                triggerOrderProcessing(order);
+            } else {
+                showUploadStatus('⚠️ Upload completed with message: ' + result, 'warning');
+            }
+        } catch (err) {
+            console.error('Upload failed:', err);
+            showUploadStatus('❌ Upload failed: ' + err.message, 'error');
+        }
+    };
+    
+    reader.readAsDataURL(blob);
+}
+
+/**
+ * Trigger Google Apps Script to process the uploaded order
+ * @param {Object} order - The order object
+ */
+function triggerOrderProcessing(order) {
+    console.log('Triggering order processing in Google Apps Script');
+    
+    try {
+        // Send processing trigger to Apps Script
+        const processingData = new URLSearchParams();
+        processingData.append("action", "processOrder");
+        processingData.append("orderNumber", order.orderNumber || 'N/A');
+        processingData.append("partyName", order.partyName || 'N/A');
+
+        fetch(GAS_WEBAPP_URL, {
+            method: "POST",
+            body: processingData
+        }).then(response => response.text())
+          .then(result => {
+              console.log('Processing trigger response:', result);
+          })
+          .catch(err => console.error('Processing trigger error:', err));
+    } catch (err) {
+        console.error('Error triggering processing:', err);
+    }
+}
+
+/**
+ * Display upload status message to user
+ * @param {string} message - Status message to display
+ * @param {string} type - Message type: 'info', 'success', 'warning', 'error'
+ */
+function showUploadStatus(message, type = 'info') {
+    let statusElement = document.getElementById('uploadStatus');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'uploadStatus';
+        statusElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            z-index: 9999;
+            max-width: 400px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+            word-wrap: break-word;
+        `;
+        document.body.appendChild(statusElement);
+    }
+
+    statusElement.textContent = message;
+    statusElement.style.display = 'block';
+    
+    const colors = {
+        'info': { color: '#0c5460', bg: '#d1ecf1' },
+        'success': { color: '#155724', bg: '#d4edda' },
+        'warning': { color: '#856404', bg: '#fff3cd' },
+        'error': { color: '#721c24', bg: '#f8d7da' }
+    };
+    
+    const c = colors[type] || colors['info'];
+    statusElement.style.color = c.color;
+    statusElement.style.backgroundColor = c.bg;
+    statusElement.style.borderLeft = `4px solid ${c.color}`;
+
+    setTimeout(() => {
+        statusElement.style.opacity = '0';
+        statusElement.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => {
+            statusElement.style.display = 'none';
+            statusElement.style.opacity = '1';
+            statusElement.style.transition = 'none';
+        }, 300);
+    }, 5000);
+}
+
+
+
+
+
+/**
+ * Open Gmail compose window with pre-filled order email
+ * @param {Object} order - The order object
+ */
+function openGmailCompose(order) {
+    const to = 'vishalkulkarni@modenik.in';
+    const cc = 'chandra.niwas@modenik.in,MANJUNATH.AVAROLKAR@modenik.in';
+    const subject = 'ENAMOR ORDER - KAMBESHWAR AGENCIES - Order #' + (order.orderNumber || 'N/A');
+    
+    const orderDate = order.dateTime ? new Date(order.dateTime).toLocaleDateString() : new Date().toLocaleDateString();
+    
+    const body = `Dear Modenik Lifestyle Pvt Ltd (Enamor Division),
+
+I hope this email finds you well.
+
+Please find the attached Enamor order for processing.
+
+Order Details:
+- Order Number: ${order.orderNumber || 'N/A'}
+- Party Name: ${order.partyName || 'N/A'}
+- Date: ${orderDate}
+- Total Items: ${order.items ? order.items.length : 0}
+
+The order file has been automatically uploaded to your Google Drive and will be processed shortly.
 
 Thank you for your attention to this matter.
 
 Best regards,
 Kambeshwar Agencies`;
 
-        const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        
-        window.open(gmailComposeUrl, '_blank');
-    }, 1000);
+    const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    window.open(gmailComposeUrl, '_blank');
 }
 
 function addExportDataRow(exportData, itemName, color, size, qty) {
@@ -987,6 +1156,40 @@ function saveSRQValue(orderId, itemName, color, size, value) {
                 });
         })
         .catch(error => console.error("Error saving SRQ value:", error));
+}
+
+
+/**
+ * Initialize export button event listeners
+ * Call this in your app initialization
+ */
+function initializeExportButton() {
+    const exportButtons = document.querySelectorAll('.export-order');
+    
+    exportButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const orderId = button.dataset.orderId;
+            const order = currentOrders[orderId];
+            
+            if (order) {
+                console.log('Export button clicked for order:', orderId);
+                exportOrderToExcel(order);
+                updateExportStatus(orderId, true);
+                
+                // Update status icon
+                const statusIcon = document.querySelector(`#status-${orderId}`);
+                if (statusIcon) {
+                    statusIcon.textContent = '✓';
+                    statusIcon.classList.remove('status-cross');
+                    statusIcon.classList.add('status-tick');
+                }
+            } else {
+                alert('Order not found. Please refresh and try again.');
+            }
+        });
+    });
 }
 function initializeSRQInputs(modal) {
     modal.querySelectorAll('.srq-input-group').forEach(group => {
