@@ -525,6 +525,7 @@ function displayDetailedOrders(orders, container) {
                             <div class="dropdown-menu" id="dropdown-${order.id}">
                                 <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
                                 <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+                                <a class="dropdown-item download-xlsx" href="#" data-order-id="${order.id}">Download XLSX</a>
                                 <a class="dropdown-item" href="#" onclick="return false;">
                                     <input type="checkbox" class="multi-export-checkbox" data-order-id="${order.id}">
                                     <span>Multiple Export</span>
@@ -577,6 +578,15 @@ function displayDetailedOrders(orders, container) {
                     dropdownMenu.classList.remove('show');
                 });
 
+                // Download XLSX button handler
+                const downloadXlsxButton = orderDiv.querySelector('.download-xlsx');
+                downloadXlsxButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    downloadOrderAsXlsx(order);
+                    dropdownMenu.classList.remove('show');
+                });
+
                 // Multi-export checkbox handler
                 const checkbox = orderDiv.querySelector('.multi-export-checkbox');
                 checkbox.addEventListener('click', (e) => {
@@ -602,6 +612,333 @@ function displayDetailedOrders(orders, container) {
             });
         });
     });
+}
+
+// Function to download order as XLSX
+function displayDetailedOrders(orders, container) {
+    console.log('Displaying detailed orders. Total orders:', orders.length);
+    container.innerHTML = '';
+  
+    // Sort orders by date (newest first)
+    orders.sort((a, b) => {
+        const dateA = new Date(a.dateTime || 0);
+        const dateB = new Date(b.dateTime || 0);
+        return dateB - dateA;
+    });
+
+    // Add CSS styles
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        .stock-full {
+            background-color: #FFFACD !important;
+        }
+        .stock-partial {
+            background-color: #E3F2FD !important;
+        }
+        .status-icon {
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .status-cross {
+            color: #dc3545;
+        }
+        .status-tick {
+            color: #28a745;
+        }
+        .order-number-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .order-details {
+            margin-top: 4px;
+        }
+        .three-dot-menu {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+        .order-header {
+            position: relative;
+            padding-right: 40px;
+        }
+        .expiry-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .expiry-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background: currentColor;
+        }
+        .expiry-indicator .icon {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+        .expiry-normal {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 3px solid #2e7d32;
+        }
+        .expiry-warning {
+            background-color: #fff8e1;
+            color: #ff8f00;
+            border-left: 3px solid #ff8f00;
+        }
+        .expiry-critical {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 3px solid #c62828;
+            animation: pulse 2s infinite;
+        }
+        .expiry-expired {
+            background-color: #f5f5f5;
+            color: #616161;
+            border-left: 3px solid #616161;
+        }
+        .expiry-progress {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            background: #f5f5f5;
+            margin-top: 4px;
+        }
+        .expiry-progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .multi-export-checkbox {
+            margin-right: 8px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+        }
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+        #multiExportBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    `;
+    document.head.appendChild(styleElement);
+  
+    // Get stock data from IndexedDB
+    getStockData().then(stockData => {
+        getExportStatusFromFirebase((exportStatus) => {
+            orders.forEach(order => {
+                const orderDate = new Date(order.dateTime).toLocaleDateString();
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order-container mb-4';
+                orderDiv.dataset.orderId = order.id;
+                
+                const isExported = exportStatus[order.id] || false;
+                const statusIcon = isExported ? '✓' : '✕';
+                const statusClass = isExported ? 'status-tick' : 'status-cross';
+                
+                orderDiv.innerHTML = `
+                    <div class="order-header mb-2">
+                        <div class="order-number-line">
+                            <strong>Order No. ${order.orderNumber || 'N/A'}</strong>
+                            <span class="status-icon ${statusClass}" id="status-${order.id}">${statusIcon}</span>
+                        </div>
+                        <div class="order-details">
+                            Party Name: ${order.partyName || 'N/A'}<br>
+                            Date: ${orderDate}
+                        </div>
+                        <div class="three-dot-menu">
+                            <button class="btn btn-sm btn-link dropdown-toggle" type="button" id="dropdownMenuButton-${order.id}">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-${order.id}">
+                                <a class="dropdown-item delete-order" href="#" data-order-id="${order.id}">Delete</a>
+                                <a class="dropdown-item export-order" href="#" data-order-id="${order.id}">Export</a>
+                                <a class="dropdown-item download-xlsx" href="#" data-order-id="${order.id}">Download XLSX</a>
+                                <a class="dropdown-item" href="#" onclick="return false;">
+                                    <input type="checkbox" class="multi-export-checkbox" data-order-id="${order.id}">
+                                    <span>Multiple Export</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Order</th>
+                                <th>SRQ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${generateOrderItemRowsWithStock(order.items, order.id, stockData)}
+                        </tbody>
+                    </table>
+                    <div class="order-actions mt-2 text-right">
+                        <button class="btn btn-sm btn-primary done-order" data-order-id="${order.id}" style="display: none;">Done</button>
+                    </div>
+                    <hr>
+                `;
+  
+                container.appendChild(orderDiv);
+  
+                // Event listeners
+                const dropdownToggle = orderDiv.querySelector(`#dropdownMenuButton-${order.id}`);
+                const dropdownMenu = orderDiv.querySelector(`#dropdown-${order.id}`);
+  
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+  
+                const deleteButton = orderDiv.querySelector('.delete-order');
+                deleteButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openDeleteModal1(order.id);
+                    dropdownMenu.classList.remove('show');
+                });
+  
+                const exportButton = orderDiv.querySelector('.export-order');
+                exportButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    exportOrderToExcel(order);
+                    dropdownMenu.classList.remove('show');
+                });
+
+                // Download XLSX button handler
+                const downloadXlsxButton = orderDiv.querySelector('.download-xlsx');
+                downloadXlsxButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    downloadOrderAsXlsx(order);
+                    dropdownMenu.classList.remove('show');
+                });
+
+                // Multi-export checkbox handler
+                const checkbox = orderDiv.querySelector('.multi-export-checkbox');
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+                checkbox.addEventListener('change', (e) => {
+                    handleMultiExportCheckbox(order.id, e.target.checked);
+                });
+  
+                document.addEventListener('click', () => {
+                    dropdownMenu.classList.remove('show');
+                });
+  
+                if (currentOrders[order.id]) {
+                    updateDetailedView(order.id);
+                }
+            });
+  
+            initializeSRQInputs(container);
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                boundary: 'window',
+                trigger: 'hover focus'
+            });
+        });
+    });
+}
+
+// Function to download order as XLSX
+function downloadOrderAsXlsx(order) {
+    console.log('Downloading order as XLSX:', order);
+    
+    const orderItems = [];
+
+    // Process items same way as exportOrderToExcel
+    order.items.forEach((item) => {
+        if (item.quantities && typeof item.quantities === 'object') {
+            Object.entries(item.quantities).forEach(([size, qty]) => {
+                if (qty > 0) {
+                    orderItems.push({
+                        itemName: item.name || '',
+                        color: item.color || '',
+                        size: size || '',
+                        quantity: qty
+                    });
+                }
+            });
+        }
+    });
+
+    if (orderItems.length === 0) {
+        alert('No data to download. Please check the order details.');
+        return;
+    }
+
+    // Create data array starting from A1
+    const data = orderItems.map(item => [
+        item.itemName,
+        item.color,
+        item.size,
+        item.quantity
+    ]);
+
+    // Create workbook and worksheet with data
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Order");
+
+    // Generate filename with order number
+    const fileName = `Order_${order.orderNumber || order.id}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(wb, fileName);
+    
+    console.log('Download initiated for:', fileName);
 }
 
 // Global variable to track selected orders
