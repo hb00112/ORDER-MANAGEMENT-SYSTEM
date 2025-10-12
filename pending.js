@@ -976,7 +976,6 @@ function openMultiExportModal() {
     };
 }
 
-
 function displayMultiExportModal(orders) {
     // Remove existing modal if any
     const existingModal = document.getElementById('multiExportModal');
@@ -984,18 +983,41 @@ function displayMultiExportModal(orders) {
         existingModal.remove();
     }
     
-    // Calculate total quantities
+    // Create export data object to track modified quantities
+    const exportData = {};
+    
+    // Calculate total quantities and initialize export data
     let totalQty = 0;
     const orderDetails = orders.map(order => {
         let orderQty = 0;
+        const orderItemsData = [];
+        
         order.items.forEach(item => {
             if (item.quantities && typeof item.quantities === 'object') {
-                Object.values(item.quantities).forEach(qty => {
-                    orderQty += parseInt(qty) || 0;
+                Object.entries(item.quantities).forEach(([size, qty]) => {
+                    const itemQty = parseInt(qty) || 0;
+                    if (itemQty > 0) {
+                        orderQty += itemQty;
+                        orderItemsData.push({
+                            itemName: item.name,
+                            color: item.color,
+                            size: size,
+                            quantity: itemQty,
+                            originalQty: itemQty,
+                            isSelected: true
+                        });
+                    }
                 });
             }
         });
+        
         totalQty += orderQty;
+        
+        // Initialize export data for this order
+        exportData[order.id] = {
+            items: orderItemsData,
+            totalQty: orderQty
+        };
         
         return {
             id: order.id,
@@ -1003,7 +1025,8 @@ function displayMultiExportModal(orders) {
             partyName: order.partyName || 'N/A',
             orderDate: new Date(order.dateTime).toLocaleDateString(),
             totalQty: orderQty,
-            exportStatus: '✓' // You can check actual status from Firebase
+            exportStatus: '✓',
+            isExpanded: false
         };
     });
     
@@ -1036,6 +1059,153 @@ function displayMultiExportModal(orders) {
         overflow-y: auto;
     `;
     
+    // Add styles for expandable rows
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+        .order-row-main {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .order-row-main:hover {
+            background-color: #f0f0f0;
+        }
+        .order-row-main td {
+            padding: 10px;
+        }
+        .expand-icon {
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+        .items-detail-row {
+            display: none;
+        }
+        .items-detail-row.expanded {
+            display: table-row;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .items-detail-container {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .item-row:last-child {
+            margin-bottom: 0;
+        }
+        .item-checkbox {
+            margin: 0 10px 0 0;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .item-info {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+        }
+        .item-info strong {
+            font-weight: 600;
+        }
+        .item-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .item-qty-display {
+            flex: 0 0 100px;
+            text-align: center;
+            padding: 0 10px;
+        }
+        .item-qty-input {
+            flex: 0 0 100px;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .item-qty-input:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            color: #999;
+        }
+        .item-qty-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .save-items-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .save-items-btn:hover {
+            background-color: #218838;
+        }
+        .items-header {
+            display: flex;
+            font-weight: 600;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .items-header > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .items-header-checkbox {
+            flex: 0 0 30px;
+        }
+        .items-header-name {
+            flex: 1.5;
+            justify-content: flex-start;
+        }
+        .items-header-color {
+            flex: 0 0 100px;
+        }
+        .items-header-size {
+            flex: 0 0 80px;
+        }
+        .items-header-orig {
+            flex: 0 0 100px;
+        }
+        .items-header-export {
+            flex: 0 0 100px;
+        }
+    `;
+    document.head.appendChild(styleSheet);
+    
     modalContent.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="margin: 0;">Multiple Order Export</h3>
@@ -1048,25 +1218,29 @@ function displayMultiExportModal(orders) {
                     <strong>Total Orders:</strong> ${orders.length}
                 </div>
                 <div>
-                    <strong>Total Quantity:</strong> ${totalQty} pcs
+                    <strong>Total Quantity:</strong> <span id="totalQtyDisplay">${totalQty}</span> pcs
                 </div>
             </div>
         </div>
         
-        <table class="table table-bordered" style="width: 100%; margin-bottom: 20px;">
+        <table class="table table-bordered" style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
             <thead style="background-color: #e9ecef;">
                 <tr>
+                    <th style="padding: 10px; text-align: center; width: 30px;"></th>
                     <th style="padding: 10px;">Select</th>
                     <th style="padding: 10px;">Order No.</th>
                     <th style="padding: 10px;">Party Name</th>
                     <th style="padding: 10px;">Order Date</th>
                     <th style="padding: 10px;">Export Status</th>
-                    <th style="padding: 10px;">Total Qty</th>
+                    <th style="padding: 10px; text-align: right;">Total Qty</th>
                 </tr>
             </thead>
             <tbody id="multiExportTableBody">
                 ${orderDetails.map(order => `
-                    <tr data-order-id="${order.id}">
+                    <tr class="order-row-main" data-order-id="${order.id}">
+                        <td style="padding: 10px; text-align: center;">
+                            <span class="expand-icon" data-order-id="${order.id}">▶</span>
+                        </td>
                         <td style="padding: 10px; text-align: center;">
                             <input type="checkbox" class="order-select-checkbox" data-order-id="${order.id}" checked>
                         </td>
@@ -1074,7 +1248,16 @@ function displayMultiExportModal(orders) {
                         <td style="padding: 10px;">${order.partyName}</td>
                         <td style="padding: 10px;">${order.orderDate}</td>
                         <td style="padding: 10px; text-align: center;">${order.exportStatus}</td>
-                        <td style="padding: 10px; text-align: right;">${order.totalQty}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold;" class="order-qty-display" data-order-id="${order.id}">${order.totalQty}</td>
+                    </tr>
+                    <tr class="items-detail-row" data-order-id="${order.id}">
+                        <td colspan="7">
+                            <div class="items-detail-container">
+                                <h5 style="margin-top: 0; margin-bottom: 15px;">Item Details for Order ${order.orderNumber}</h5>
+                                <div id="items-container-${order.id}"></div>
+                                <button class="save-items-btn" type="button" data-order-id="${order.id}">Save Changes</button>
+                            </div>
+                        </td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -1084,7 +1267,7 @@ function displayMultiExportModal(orders) {
             <div id="selectedCountDisplay">
                 <strong>${orders.length} orders selected</strong>
             </div>
-            <button id="sendForPunchingBtn" class="btn btn-primary" style="padding: 10px 30px; font-size: 16px;">
+            <button id="sendForPunchingBtn" class="btn btn-primary" style="padding: 10px 30px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 Send Order for Punching
             </button>
         </div>
@@ -1093,7 +1276,7 @@ function displayMultiExportModal(orders) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
     
-    // Event listeners
+    // Event listeners - Close modal
     document.getElementById('closeMultiExportModal').addEventListener('click', () => {
         modal.remove();
     });
@@ -1104,7 +1287,27 @@ function displayMultiExportModal(orders) {
         }
     });
     
-    // Checkbox change handlers
+    // Expand/Collapse functionality
+    const expandIcons = modalContent.querySelectorAll('.expand-icon');
+    expandIcons.forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const orderId = icon.dataset.orderId;
+            const detailRow = modalContent.querySelector(`.items-detail-row[data-order-id="${orderId}"]`);
+            const itemsContainer = document.getElementById(`items-container-${orderId}`);
+            
+            if (detailRow.classList.contains('expanded')) {
+                detailRow.classList.remove('expanded');
+                icon.textContent = '▶';
+            } else {
+                detailRow.classList.add('expanded');
+                icon.textContent = '▼';
+                renderItemsDetail(orderId, itemsContainer, exportData[orderId].items);
+            }
+        });
+    });
+    
+    // Checkbox change handlers for orders
     const checkboxes = modalContent.querySelectorAll('.order-select-checkbox');
     let selectedModalOrders = new Set(orders.map(o => o.id));
     
@@ -1120,6 +1323,24 @@ function displayMultiExportModal(orders) {
             // Update display
             document.getElementById('selectedCountDisplay').innerHTML = 
                 `<strong>${selectedModalOrders.size} orders selected</strong>`;
+            
+            // Update total quantity
+            updateTotalQuantityDisplay(exportData, selectedModalOrders);
+        });
+    });
+    
+    // Save items changes button handlers - FIXED
+    const saveButtons = modalContent.querySelectorAll('.save-items-btn');
+    saveButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const orderId = btn.dataset.orderId;
+            console.log('Save button clicked for order:', orderId);
+            saveItemsChanges(orderId, exportData, modalContent);
+            
+            // Update total quantity display
+            updateTotalQuantityDisplay(exportData, selectedModalOrders);
         });
     });
     
@@ -1131,7 +1352,7 @@ function displayMultiExportModal(orders) {
         }
         
         const selectedOrdersData = orders.filter(o => selectedModalOrders.has(o.id));
-        exportMultipleOrders(selectedOrdersData);
+        exportMultipleOrders(selectedOrdersData, exportData);
         modal.remove();
         
         // Clear selections
@@ -1145,10 +1366,149 @@ function displayMultiExportModal(orders) {
     });
 }
 
-function exportMultipleOrders(orders) {
-    console.log('Exporting multiple orders:', orders);
+function renderItemsDetail(orderId, container, itemsData) {
+    container.innerHTML = `
+        <div class="items-table">
+            <div style="display: flex; font-weight: bold; padding: 10px 0; border-bottom: 2px solid #999;">
+                <div style="flex: 0 0 30px; text-align: center;">✓</div>
+                <div style="flex: 1;">Item Name</div>
+                <div style="flex: 0 0 100px; text-align: center;">Color</div>
+                <div style="flex: 0 0 80px; text-align: center;">Size</div>
+                <div style="flex: 0 0 100px; text-align: center;">Original Qty</div>
+                <div style="flex: 0 0 120px; text-align: center;">Export Qty</div>
+            </div>
+            
+            ${itemsData.map((item, idx) => `
+                <div class="item-row" data-item-index="${idx}">
+                    <div style="flex: 0 0 30px; text-align: center;">
+                        <input type="checkbox" class="item-checkbox" data-order-id="${orderId}" data-item-index="${idx}" ${item.isSelected ? 'checked' : ''}>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="item-info">
+                            <strong>${item.itemName}</strong>
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 100px; text-align: center;">${item.color}</div>
+                    <div style="flex: 0 0 80px; text-align: center;">${item.size}</div>
+                    <div style="flex: 0 0 100px; text-align: center;">${item.originalQty}</div>
+                    <div style="flex: 0 0 120px; text-align: center;">
+                        <input type="number" class="item-qty-input" data-order-id="${orderId}" data-item-index="${idx}" value="${item.quantity}" min="0" ${!item.isSelected ? 'disabled' : ''}>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
     
-    // Combine all order data
+    // Add event listeners for checkboxes
+    const itemCheckboxes = container.querySelectorAll('.item-checkbox');
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const orderId = e.target.dataset.orderId;
+            const itemIndex = parseInt(e.target.dataset.itemIndex);
+            const qtyInput = container.querySelector(`input[type="number"][data-item-index="${itemIndex}"]`);
+            
+            if (e.target.checked) {
+                qtyInput.disabled = false;
+                qtyInput.value = itemsData[itemIndex].originalQty;
+            } else {
+                qtyInput.disabled = true;
+                qtyInput.value = 0;
+            }
+        });
+    });
+    
+    // Add event listeners for quantity inputs
+    const qtyInputs = container.querySelectorAll('.item-qty-input');
+    qtyInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value) || 0;
+            if (value < 0) {
+                e.target.value = 0;
+            }
+        });
+    });
+}
+
+function saveItemsChanges(orderId, exportData, modal) {
+    console.log('saveItemsChanges called for orderId:', orderId);
+    
+    const container = document.getElementById(`items-container-${orderId}`);
+    
+    if (!container) {
+        console.error('Container not found for orderId:', orderId);
+        alert('Error: Could not find items container');
+        return;
+    }
+    
+    const checkboxes = container.querySelectorAll('.item-checkbox');
+    const qtyInputs = container.querySelectorAll('.item-qty-input');
+    
+    console.log('Found checkboxes:', checkboxes.length, 'Found inputs:', qtyInputs.length);
+    
+    let totalOrderQty = 0;
+    
+    // Update export data based on current values
+    exportData[orderId].items.forEach((item, idx) => {
+        const checkbox = Array.from(checkboxes).find(cb => parseInt(cb.dataset.itemIndex) === idx);
+        const qtyInput = Array.from(qtyInputs).find(qi => parseInt(qi.dataset.itemIndex) === idx);
+        
+        if (checkbox && qtyInput) {
+            item.isSelected = checkbox.checked;
+            item.quantity = checkbox.checked ? parseInt(qtyInput.value) || 0 : 0;
+            totalOrderQty += item.quantity;
+            
+            console.log(`Item ${idx}: Selected=${item.isSelected}, Qty=${item.quantity}`);
+        }
+    });
+    
+    exportData[orderId].totalQty = totalOrderQty;
+    
+    console.log('Updated order total qty:', totalOrderQty);
+    
+    // Update the table display - multiple selectors to ensure we find it
+    let qtyDisplay = modal.querySelector(`.order-qty-display[data-order-id="${orderId}"]`);
+    if (!qtyDisplay) {
+        qtyDisplay = modal.querySelector(`tr[data-order-id="${orderId}"] .order-qty-display`);
+    }
+    if (!qtyDisplay) {
+        qtyDisplay = modal.querySelector(`tr[data-order-id="${orderId}"] td:last-child`);
+    }
+    
+    if (qtyDisplay) {
+        qtyDisplay.textContent = totalOrderQty;
+        console.log('Updated display qty to:', totalOrderQty);
+    } else {
+        console.warn('Could not find qty display element');
+    }
+    
+    // Close the expanded row
+    const detailRow = modal.querySelector(`.items-detail-row[data-order-id="${orderId}"]`);
+    const expandIcon = modal.querySelector(`.expand-icon[data-order-id="${orderId}"]`);
+    if (detailRow && expandIcon) {
+        detailRow.classList.remove('expanded');
+        expandIcon.textContent = '▶';
+        console.log('Collapsed detail row');
+    }
+    
+    alert('Changes saved successfully!');
+}
+
+function updateTotalQuantityDisplay(exportData, selectedModalOrders) {
+    let totalQty = 0;
+    selectedModalOrders.forEach(orderId => {
+        if (exportData[orderId]) {
+            totalQty += exportData[orderId].totalQty;
+        }
+    });
+    const totalDisplay = document.getElementById('totalQtyDisplay');
+    if (totalDisplay) {
+        totalDisplay.textContent = totalQty;
+    }
+}
+
+function exportMultipleOrders(orders, exportData) {
+    console.log('Exporting multiple orders with modified quantities:', orders, exportData);
+    
     const orderNumbers = [];
     const partyNames = [];
     const orderDates = [];
@@ -1159,21 +1519,19 @@ function exportMultipleOrders(orders) {
         partyNames.push(order.partyName || 'N/A');
         orderDates.push(order.dateTime ? new Date(order.dateTime).toLocaleDateString() : 'N/A');
         
-        // Extract items
-        order.items.forEach((item) => {
-            if (item.quantities && typeof item.quantities === 'object') {
-                Object.entries(item.quantities).forEach(([size, qty]) => {
-                    if (qty > 0) {
-                        allItems.push({
-                            itemName: item.name,
-                            color: item.color,
-                            size: size,
-                            quantity: qty
-                        });
-                    }
-                });
-            }
-        });
+        // Use modified export data instead of original items
+        if (exportData[order.id]) {
+            exportData[order.id].items.forEach(item => {
+                if (item.isSelected && item.quantity > 0) {
+                    allItems.push({
+                        itemName: item.itemName,
+                        color: item.color,
+                        size: item.size,
+                        quantity: item.quantity
+                    });
+                }
+            });
+        }
     });
     
     if (allItems.length === 0) {
@@ -1181,11 +1539,11 @@ function exportMultipleOrders(orders) {
         return;
     }
     
-    // Create combined order data
+    // Create combined order data with modified quantities
     const combinedOrderData = {
         orderNumber: orderNumbers.join(','),
         partyName: partyNames.join(','),
-        orderDate: [...new Set(orderDates)].join(','), // Unique dates only
+        orderDate: [...new Set(orderDates)].join(','),
         items: allItems
     };
     
