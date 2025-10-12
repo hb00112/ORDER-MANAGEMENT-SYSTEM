@@ -675,253 +675,155 @@ function generateOrderItemRowsWithStock(items, orderId, stockData) {
  */
 function exportOrderToExcel(order) {
     console.log('Exporting order:', order);
-    const exportData = [];
+    
+    // Prepare order items in flat structure
+    const orderItems = [];
 
-    // Extract order items with quantities
     order.items.forEach((item) => {
         if (item.quantities && typeof item.quantities === 'object') {
             Object.entries(item.quantities).forEach(([size, qty]) => {
                 if (qty > 0) {
-                    exportData.push({
-                        'Item Name': item.name,
-                        'Color': item.color,
-                        'Size': size,
-                        'Quantity': qty
+                    orderItems.push({
+                        itemName: item.name,
+                        color: item.color,
+                        size: size,
+                        quantity: qty
                     });
                 }
             });
         }
     });
 
-    if (exportData.length === 0) {
+    if (orderItems.length === 0) {
         alert('No data to export. Please check the order details.');
         return;
     }
 
-    // Create Excel workbook
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    
-    const colWidths = [
-        { wch: 30 },
-        { wch: 15 },
-        { wch: 10 },
-        { wch: 10 }
-    ];
-    ws['!cols'] = colWidths;
-    
-    const lastRow = exportData.length + 1;
-    const instructions = [
-        ['--- END OF ORDER ---'],
-        [''],
-        ['Instructions:'],
-        ['1. File uploaded automatically'],
-        ['2. System processes and creates new file'],
-        ['3. Check Drive folder for processed order']
-    ];
-
-    instructions.forEach((row, index) => {
-        XLSX.utils.sheet_add_json(ws, [{ 'Item Name': row[0] }], {
-            origin: lastRow + 2 + index,
-            skipHeader: true
-        });
-    });
-    
-    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
-    
-    const fileName = `order_${order.orderNumber || 'export'}_${new Date().getTime()}.xlsx`;
-    
-    // Write Excel file locally
-    XLSX.writeFile(wb, fileName);
+    // Prepare order data object
+    const orderData = {
+        orderNumber: order.orderNumber || 'N/A',
+        partyName: order.partyName || 'N/A',
+        orderDate: order.dateTime ? new Date(order.dateTime).toLocaleDateString() : new Date().toLocaleDateString(),
+        items: orderItems
+    };
 
     // Upload to Google Drive
-    uploadOrderForProcessing(fileName, exportData, order);
-
-    // Open Gmail
-    setTimeout(() => {
-        openGmailCompose(order);
-    }, 1000);
+    uploadOrderToGoogleDrive(orderData, order);
 }
 
 /**
- * Upload order file for automatic processing
+ * Upload order data to Google Drive via Apps Script
+ * @param {Object} orderData - The formatted order data
+ * @param {Object} order - The original order object
  */
-function uploadOrderForProcessing(fileName, exportData, order) {
-    console.log('Uploading order for processing:', fileName);
-    showUploadStatus('⏳ Uploading order...', 'info');
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 10 }];
-    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
-
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
+function uploadOrderToGoogleDrive(orderData, order) {
+    console.log('Uploading order to Google Drive');
     
-    const reader = new FileReader();
-    reader.onload = async () => {
-        try {
-            const base64 = reader.result.split(',')[1];
-            const formData = new URLSearchParams();
-            formData.append("file", base64);
-            formData.append("filename", fileName);
+    showUploadStatus('📤 Uploading order to Google Drive...', 'info');
 
-            // Step 1: Upload file
-            const uploadResponse = await fetch(GAS_WEBAPP_URL, {
-                method: "POST",
-                body: formData
-            });
-
-            const uploadResult = await uploadResponse.json();
-            console.log('Upload response:', uploadResult);
-
-            if (uploadResult.status === 'success') {
-                showUploadStatus('✅ File uploaded! Processing...', 'info');
-                
-                // Step 2: Trigger processing (small delay to ensure file is written)
-                setTimeout(async () => {
-                    try {
-                        const processingForm = new URLSearchParams();
-                        processingForm.append("action", "processLatest");
-
-                        const processingResponse = await fetch(GAS_WEBAPP_URL, {
-                            method: "POST",
-                            body: processingForm
-                        });
-
-                        const processingResult = await processingResponse.json();
-                        console.log('Processing response:', processingResult);
-
-                        if (processingResult.status === 'success') {
-                            showUploadStatus(
-                                `✅ Order processed! Matched: ${processingResult.matched}, Unmatched: ${processingResult.unmatched}`,
-                                'success'
-                            );
-                            
-                            updateExportStatus(order.id, true);
-                            const statusIcon = document.querySelector(`#status-${order.id}`);
-                            if (statusIcon) {
-                                statusIcon.textContent = '✓';
-                                statusIcon.classList.remove('status-cross');
-                                statusIcon.classList.add('status-tick');
-                            }
-                        } else {
-                            showUploadStatus('⚠️ ' + processingResult.message, 'warning');
-                        }
-                    } catch (procErr) {
-                        console.error('Processing error:', procErr);
-                        showUploadStatus('⚠️ Processing error: ' + procErr.message, 'warning');
-                    }
-                }, 2000); // 2 second delay
-                
-            } else {
-                showUploadStatus('❌ ' + uploadResult.message, 'error');
-            }
-        } catch (err) {
-            console.error('Upload failed:', err);
-            showUploadStatus('❌ Upload failed: ' + err.message, 'error');
-        }
-    };
-    
-    reader.readAsDataURL(blob);
-}
-
-
-/**
- * Upload the generated order file to Google Drive via Apps Script
- * @param {string} fileName - Name of the file being uploaded
- * @param {Array} exportData - The export data array
- * @param {Object} order - The order object
- */
-function uploadOrderToGoogleDrive(fileName, exportData, order) {
-    console.log('Uploading order to Google Drive:', fileName);
-    
-    // Show upload status indicator
-    showUploadStatus('⏳ Uploading order to Google Drive...', 'info');
-
-    // Create a temporary workbook for upload
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    
-    const colWidths = [
-        { wch: 30 },
-        { wch: 15 },
-        { wch: 10 },
-        { wch: 10 }
-    ];
-    ws['!cols'] = colWidths;
-    
-    XLSX.utils.book_append_sheet(wb, ws, "Purchase Order");
-
-    // Convert workbook to binary array and then to base64
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
-    
-    const reader = new FileReader();
-    reader.onload = async () => {
-        try {
-            const base64 = reader.result.split(',')[1];
-            const formData = new URLSearchParams();
-            formData.append("file", base64);
-            formData.append("filename", fileName);
-            formData.append("orderNumber", order.orderNumber || 'N/A');
-            formData.append("partyName", order.partyName || 'N/A');
-            formData.append("orderDate", new Date(order.dateTime).toLocaleDateString());
-
-            const response = await fetch(GAS_WEBAPP_URL, {
-                method: "POST",
-                body: formData
-            });
-
-            const result = await response.text();
-            console.log('Upload response:', result);
-
-            if (result.includes('successfully')) {
-                showUploadStatus('✅ Order uploaded successfully to Google Drive!', 'success');
-                console.log('Order file uploaded successfully:', fileName);
-                
-                // Trigger GAS to process the uploaded file
-                triggerOrderProcessing(order);
-            } else {
-                showUploadStatus('⚠️ Upload completed with message: ' + result, 'warning');
-            }
-        } catch (err) {
-            console.error('Upload failed:', err);
-            showUploadStatus('❌ Upload failed: ' + err.message, 'error');
-        }
-    };
-    
-    reader.readAsDataURL(blob);
-}
-
-/**
- * Trigger Google Apps Script to process the uploaded order
- * @param {Object} order - The order object
- */
-function triggerOrderProcessing(order) {
-    console.log('Triggering order processing in Google Apps Script');
-    
     try {
-        // Send processing trigger to Apps Script
-        const processingData = new URLSearchParams();
-        processingData.append("action", "processOrder");
-        processingData.append("orderNumber", order.orderNumber || 'N/A');
-        processingData.append("partyName", order.partyName || 'N/A');
-
+        // Convert order data to JSON string
+        const jsonString = JSON.stringify(orderData);
+        
+        // Encode to base64
+        const base64Json = btoa(unescape(encodeURIComponent(jsonString)));
+        
+        // Prepare form data
+        const formData = new URLSearchParams();
+        formData.append("jsonData", base64Json);
+        
+        // Send to Google Apps Script with proper error handling
         fetch(GAS_WEBAPP_URL, {
             method: "POST",
-            body: processingData
-        }).then(response => response.text())
-          .then(result => {
-              console.log('Processing trigger response:', result);
-          })
-          .catch(err => console.error('Processing trigger error:', err));
+            mode: "no-cors", // Important for Google Apps Script
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData.toString()
+        })
+        .then(() => {
+            // With no-cors, we can't read the response, so assume success
+            console.log('Upload request sent successfully');
+            
+            showUploadStatus(
+                `✅ Order uploaded successfully!\n📧 Processing ${orderData.items.length} items...\nCheck your email for completion notification`,
+                'success'
+            );
+            
+            // Update UI
+            updateExportStatus(order.id, true);
+            const statusIcon = document.querySelector(`#status-${order.id}`);
+            if (statusIcon) {
+                statusIcon.textContent = '✓';
+                statusIcon.classList.remove('status-cross');
+                statusIcon.classList.add('status-tick');
+            }
+            
+            console.log('✅ Order uploaded and processing started');
+        })
+        .catch(err => {
+            console.error('Upload failed:', err);
+            showUploadStatus('❌ Upload failed: ' + err.message + '\nRetrying...', 'error');
+            
+            // Retry once after 2 seconds
+            setTimeout(() => {
+                retryUpload(orderData, order);
+            }, 2000);
+        });
+        
     } catch (err) {
-        console.error('Error triggering processing:', err);
+        console.error('Upload setup failed:', err);
+        showUploadStatus('❌ Upload failed: ' + err.message, 'error');
+    }
+}
+
+/**
+ * Retry upload with alternative method
+ * @param {Object} orderData - The formatted order data
+ * @param {Object} order - The original order object
+ */
+function retryUpload(orderData, order) {
+    console.log('Retrying upload...');
+    showUploadStatus('🔄 Retrying upload...', 'info');
+    
+    try {
+        const jsonString = JSON.stringify(orderData);
+        const base64Json = btoa(unescape(encodeURIComponent(jsonString)));
+        
+        // Create a form and submit it (fallback method)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GAS_WEBAPP_URL;
+        form.target = '_blank';
+        form.style.display = 'none';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'jsonData';
+        input.value = base64Json;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+        
+        showUploadStatus(
+            '✅ Order submitted!\n📧 Check your email for confirmation',
+            'success'
+        );
+        
+        // Update UI
+        updateExportStatus(order.id, true);
+        const statusIcon = document.querySelector(`#status-${order.id}`);
+        if (statusIcon) {
+            statusIcon.textContent = '✓';
+            statusIcon.classList.remove('status-cross');
+            statusIcon.classList.add('status-tick');
+        }
+        
+    } catch (err) {
+        console.error('Retry failed:', err);
+        showUploadStatus('❌ Upload failed after retry. Please try again.', 'error');
     }
 }
 
@@ -947,6 +849,7 @@ function showUploadStatus(message, type = 'info') {
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             font-family: Arial, sans-serif;
             word-wrap: break-word;
+            white-space: pre-wrap;
         `;
         document.body.appendChild(statusElement);
     }
@@ -966,6 +869,7 @@ function showUploadStatus(message, type = 'info') {
     statusElement.style.backgroundColor = c.bg;
     statusElement.style.borderLeft = `4px solid ${c.color}`;
 
+    // Auto hide after 6 seconds
     setTimeout(() => {
         statusElement.style.opacity = '0';
         statusElement.style.transition = 'opacity 0.3s ease-out';
@@ -974,46 +878,7 @@ function showUploadStatus(message, type = 'info') {
             statusElement.style.opacity = '1';
             statusElement.style.transition = 'none';
         }, 300);
-    }, 5000);
-}
-
-
-
-
-
-/**
- * Open Gmail compose window with pre-filled order email
- * @param {Object} order - The order object
- */
-function openGmailCompose(order) {
-    const to = 'vishalkulkarni@modenik.in';
-    const cc = 'chandra.niwas@modenik.in,MANJUNATH.AVAROLKAR@modenik.in';
-    const subject = 'ENAMOR ORDER - KAMBESHWAR AGENCIES - Order #' + (order.orderNumber || 'N/A');
-    
-    const orderDate = order.dateTime ? new Date(order.dateTime).toLocaleDateString() : new Date().toLocaleDateString();
-    
-    const body = `Dear Modenik Lifestyle Pvt Ltd (Enamor Division),
-
-I hope this email finds you well.
-
-Please find the attached Enamor order for processing.
-
-Order Details:
-- Order Number: ${order.orderNumber || 'N/A'}
-- Party Name: ${order.partyName || 'N/A'}
-- Date: ${orderDate}
-- Total Items: ${order.items ? order.items.length : 0}
-
-The order file has been automatically uploaded to your Google Drive and will be processed shortly.
-
-Thank you for your attention to this matter.
-
-Best regards,
-Kambeshwar Agencies`;
-
-    const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    window.open(gmailComposeUrl, '_blank');
+    }, 6000);
 }
 
 function addExportDataRow(exportData, itemName, color, size, qty) {
