@@ -1,5 +1,5 @@
 //main app firebase configuration file
-/*const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyBRV-i_70Xdk86bNuQQ43jiYkRNCXGvvyo",
     authDomain: "hcoms-221aa.firebaseapp.com",
     databaseURL: "https://hcoms-221aa-default-rtdb.firebaseio.com",
@@ -10,9 +10,9 @@
     measurementId: "G-JB143EY71N"
 };
 firebase.initializeApp(firebaseConfig);
-*/
 
 
+/*
 //testing firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -26,3 +26,4 @@ const firebaseConfig = {
     measurementId: "G-15VMWPH500"
   };
 firebase.initializeApp(firebaseConfig);
+*/
