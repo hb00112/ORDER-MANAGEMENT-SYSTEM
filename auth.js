@@ -70,17 +70,14 @@ function checkUserStatus() {
         const storedUsername = localStorage.getItem('hcUsername');
         if (storedUsername) {
             if (storedUsername === 'HEMANT(ADMIN)') {
-                // For HEMANT(ADMIN), we assume they've already been validated during registration
                 username = storedUsername;
                 document.getElementById('userNameDisplay').textContent = username;
                 console.log('Welcome back, Administrator ' + username);
                 
-                // Show PDF upload button for Manjunath
-              // Show PDF upload button for authorized users
-if (['Manjunath', 'HEMANT(ADMIN)'].includes(username)) {
-    showPdfUploadButton();
-}
-
+                // Show both PDF upload and Item Data buttons for HEMANT
+                if (['Manjunath', 'HEMANT(ADMIN)'].includes(username)) {
+                    showPdfUploadButton();
+                }
                 
                 resolve('active');
             } else {
@@ -91,10 +88,9 @@ if (['Manjunath', 'HEMANT(ADMIN)'].includes(username)) {
                         document.getElementById('userNameDisplay').textContent = username;
                         console.log('Welcome back, ' + username);
                         
-                       if (['Manjunath', 'HEMANT(ADMIN)'].includes(username)) {
-    showPdfUploadButton();
-}
-
+                        if (['Manjunath', 'HEMANT(ADMIN)'].includes(username)) {
+                            showPdfUploadButton();
+                        }
                         
                         resolve('active');
                     } else {

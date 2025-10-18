@@ -1,1164 +1,8 @@
 let cart = [];
 
 // Predefined items
-let items=
-[
-  {
-    "name": "A014",
-    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40C","40D","40Z","42D","42Z"],
-    "colors": ["BLACK","MASAI","PEARL","SKIN"],
-    "colorname": ["BLACK : BLACK, 1029,1049,1099","MASAI : MASAI, 1029,1049,1099","PEARL : PEARL, 1029,1049,1099","SKIN : SKIN, 1029,1049,1099"]
-  },
-  {
-    "name": "A017",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLACK","CPM","ODM","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 899,949","CPM : CAPRI MELANGE, 899,949","ODM : ORCHID MELANGE, 899,949","SKIN : SKIN, 899,949","WHITE : WHITE, 899,949"]
-  },
-  {
-    "name": "A019",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["BLACK","SKIN","RSBLSH"],
-    "colorname": ["BLACK : BLACK, 949","SKIN : SKIN, 949","RSBLSH : ROSE BLUSH, 949"]
-  },
-  {
-    "name": "A022",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","GRYMRL","PEARL","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 479,499","SKIN : SKIN, 479,499","WHITE : WHITE, 479,499","PEARL : PEARL, 479,499","GRYMRL : GREY MELANGE, 479,499"]
-  },
-  {
-    "name": "A027",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["GRYMEL","BLACK","BDE","GRW","PLS","WHITE","ROD","LBLU"],
-    "colorname": ["GRYMEL : GREY MELANGE, 799,819","BLACK : BLACK, 799,819","BDE : BLUSHING BRIDE, 799,819","PLS : PALE SKIN, 799,819","GRW : GRAPE WINE, 799,819","WHITE : WHITE, 799,819","ROD : ROSE ORCHID, 799,819","LBLU : LAPIS BLUE, 799,819"]
-  },
-  {
-    "name": "A032",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["CHYBLS","ECL","SLI","BLACK","RTE","WHITE"],
-    "colorname": ["CHYBLS : CHERRY BLOSSOM, 1049","ECL : ECLIPSE, 1049","SLI : SILVER LILAC, 1049","BLACK : BLACK, 1049","RTE : ROSETTE, 1049","WHITE : WHITE, 1049"]
-  },
-  {
-    "name": "A039",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["BLACK","EVEBLU","GRYMRL","GRW","PEARL","SKIN","WHITE","LILAST","LIMAPR"],
-    "colorname": ["BLACK : BLACK, 849,899","EVEBLU : EVENING BLUE, 849,899","GRYMRL : GREY MELANGE, 849,899","GRW : GRAPE WINE, 849,899","PEARL : PEARL, 849,899","SKIN : SKIN, 849,899","WHITE : WHITE, 849,899","LILAST : LILAC ASTER, 899,949","LIMAPR : LILAC MARBLE, 849,899"]
-  },
-  {
-    "name": "A042",
-    "sizes": ["32B","32C","32D","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","42C"],
-    "colors": ["BLACK","PURPLE","SKIN","WHITE","CMG","GSP","ODM","PEARL","RVL","TMG"],
-    "colorname": ["BLACK : BLACK, 749,779,819","PURPLE : PURPLE, 749,779,819","SKIN : SKIN, 749,779,819","WHITE : WHITE, 749,779,819","CMG : CHAMBRAY MELANGE, 749,779,819","GSP : GINKOSCATTERED PRINT, 799,829,879","ODM : ORCHID MELANGE, 749,779,819","PEARL : PEARL, 749,779,819","RVL : REVELLO PRINT, 799,829,879","TMG : TOMATO MELANGE, 749,779,819"]
-  },
-  {
-    "name": "A055",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["GRW","BLACK","PEARL","SKIN","WHITE"],
-    "colorname": ["GRW : GRAPE WINE, 599","BLACK : BLACK, 599","PEARL : PEARL, 599","SKIN : SKIN, 599","WHITE : WHITE, 599"]
-  },
-  {
-    "name": "A058",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["BLACK","PLS","PHB","WHITE"],
-    "colorname": ["BLACK : BLACK, 929,979","PLS : PALE SKIN, 929,979","PHB : PEACH BLOSSOM, 929,979","WHITE : WHITE, 929,979"]
-  },
-  {
-    "name": "A064",
-    "sizes": ["32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["BLACK","RTE","GRW"],
-    "colorname": ["BLACK : BLACK, 1299,1349","RTE : ROSETTE, 1299,1349","GRW : GRAPE WINE, 1299,1349"]
-  },
-  {
-    "name": "A072",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["BLACK","PHB","PLS"],
-    "colorname": ["BLACK : BLACK, 549","PHB : PEACH BLOSSOM, 549","PLS : PALE SKIN, 549"]
-  },
-  {
-    "name": "A077",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["ECL","OLT","RSBLSH","GRW","HOB"],
-    "colorname": ["ECL : ECLIPSE, 1099","OLT : PEARL BLUSH, 1099","RSBLSH : ROSE BLUSH, 1099","GRW : GRAPE WINE, 1099","HOB : HONEY BEIGE, 1099"]
-  },
-  {
-    "name": "A078",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D"],
-    "colors": ["BLACK","PLS"],
-    "colorname": ["BLACK : BLACK, 1049,1069","PLS : PALE SKIN, 1049,1069"]
-  },
-  {
-    "name": "A106",
-    "sizes": ["XS","S","M","L","XL","2XL"],
-    "colors": ["BLACK","BDE","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 699,719","SKIN : SKIN, 699,719","BDE : BLUSHING BRIDE, 699,719","WHITE : WHITE, 699,719,669"]
-  },
-  {
-    "name": "A112",
-    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40C","40D","40Z","42C","42D","42Z"," 32B"," 32C"," 32D"," 32Z"],
-    "colors": ["BLACK","CMG","GRW","PLS","PBH","RTE","WHITE"],
-    "colorname": ["BLACK : BLACK, 1049,1079,1099","CMG : CHAMBRAY MELANGE, 1049,1079,1099","GRW : GRAPE WINE, 1049,1079,1099","PLS : PALE SKIN, 999,1029,1049,1079,1099","PBH : PEACH BLUSH, 999,1029,1049,1079,1099","RTE : ROSETTE, 1049,1079,1099","WHITE : WHITE, 1049,1079,1099"]
-  },
-  {
-    "name": "A125",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["WHITE","GRYMEL","CHAMEL","BLACK","SKIN"],
-    "colorname": ["WHITE : WHITE, 549","GRYMEL : GREY MELANGE, 549","CHAMEL : CHARCOAL MELANGE, 549","BLACK : BLACK, 549","SKIN : SKIN, 549"]
-  },
-  {
-    "name": "A132",
-    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
-    "colors": ["PLS","CBP","BLACK"],
-    "colorname": ["PLS : PALE SKIN, 1299,1449","CBP : CHERRY BLOSSOM PRINT, 1299,1449","BLACK : BLACK, 1299,1449"]
-  },
-  {
-    "name": "A142",
-    "sizes": ["34D","34F","34Z","36D","36F","36Z","38D","38F","38Z","40D","40F","40Z"],
-    "colors": ["PLS","WHITE","BLACK"],
-    "colorname": ["PLS : PALE SKIN, 849","WHITE : WHITE, 849","BLACK : BLACK, 849"]
-  },
-  {
-    "name": "A165",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLACK","PLS","TSE"],
-    "colorname": ["BLACK : BLACK, 1149","PLS : PALE SKIN, 1149","TSE : TIBETAN STONE, 1149"]
-  },
-  {
-    "name": "A202",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK","LILAS","NUTMEG","CHOCOF","CLGR","GOBBLU"],
-    "colorname": ["NAVY : NAVY, 949,1049","JETBLK : JET BLACK, 949,1049","LILAS : LILAS, 949,1049","NUTMEG : NUTMEG, 949,1049","CHOCOF : Choco Fudge, 949,1049","CLGR : CLOUD GREY, 949,1049","GOBBLU : Goblin Blue, 949,1049"]
-  },
-  {
-    "name": "A204",
-    "sizes": ["S","M","L","XL","2XL","Xl","2Xl"],
-    "colors": ["PFPGCO","HTMBCO","STBRPR","GASPPR"],
-    "colorname": ["PFPGCO : PAINTED FLOWERPASTEL GREEN COMBO, 1149,1249","HTMBCO : HALFTONE MEDIEVAL BLUE COMBO, 1149,1249","STBRPR : STEP BRUSH PRINT, 1149,1249","GASPPR : GALAXY SPLATTER PRT, 1149,1249"]
-  },
-  {
-    "name": "A205",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LILAS","NUTMEG","NAVY","JETBLK"],
-    "colorname": ["LILAS : LILAS, 1299,1399","NUTMEG : NUTMEG, 1299,1399","NAVY : NAVY, 1299,1399","JETBLK : JET BLACK, 1299,1399"]
-  },
-  {
-    "name": "A206",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LILAS","CHOCOF","NAVY","JETBLK"],
-    "colorname": ["LILAS : LILAS, 1049,1149","CHOCOF : Choco Fudge, 1049,1149","NAVY : NAVY, 1049,1149","JETBLK : JET BLACK, 1049,1149"]
-  },
-  {
-    "name": "A301",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BRWHEX","LILEGY","CHWHST","NVYEXP","JBLKEX"],
-    "colorname": ["BRWHEX : BRIGHT WHITE EXPLORE�, 999,1099","LILEGY : LILAS NEW ENERGY, 999,1099","CHWHST : CHALKY WHITE STRONGEST, 999,1099","NVYEXP : NAVY EXPLORE, 999,1099","JBLKEX : JET BLACK DREAMS, 999,1099"]
-  },
-  {
-    "name": "A308",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CYLIME","POBLME","BLKMLG","NVYAR","PSMARG"],
-    "colorname": ["CYLIME : CYBER LIME MEL, 599,649","POBLME : POOL BLUE MEL, 599,649","BLKMLG : BLACK MELANGE - ACTIVE REFLECTIVE, 599,649","NVYAR : NAVY MELANGE - ACTIVE REFLECTIVE, 599,649","PSMARG : PASTEL TURQOISEMELANGE/ACTIVE REFLECTIVEGRAPHIC, 599,649"]
-  },
-  {
-    "name": "A309",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CYLIME","POBLME","NVYAR","BLKMLG"],
-    "colorname": ["CYLIME : CYBER LIME MEL, 699,749","POBLME : POOL BLUE MEL, 699,749","NVYAR : NAVY MELANGE - ACTIVE REFLECTIVE, 699,749","BLKMLG : BLACK MELANGE - ACTIVE REFLECTIVE, 699,749"]
-  },
-  {
-    "name": "A311",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LVCAGR","JBFEGR","LIRUFA","CPKMIP","NAMIPO","JERUFA"],
-    "colorname": ["LVCAGR : LAVENDER CALM GRAPHIC, 649,699","JBFEGR : JET BLACK FOREVER GRAPHIC, 649,699","LIRUFA : LILAS-RUN FASTER, 649,699","CPKMIP : CORAL PINK-MIND POSITIVE, 649,699","NAMIPO : NAVY-MIND POSITIVE, 649,699","JERUFA : JETBLK-RUN FASTER, 649,699"]
-  },
-  {
-    "name": "A313",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK","ORCBLM","PLBLUE"],
-    "colorname": ["NAVY : NAVY, 749,799","JETBLK : JET BLACK, 749,799","ORCBLM : ORCHID BLOOM, 749,799","PLBLUE : POOL BLUE, 749,799"]
-  },
-  {
-    "name": "A314",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LILAS","CLGR","NAVY","JETBLK"],
-    "colorname": ["LILAS : LILAS, 749,799","CLGR : CLOUD GREY, 749,799","NAVY : NAVY, 749,799","JETBLK : JET BLACK, 749,799"]
-  },
-  {
-    "name": "A402",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK","CHOCOF","NUTMEG","CLGR"],
-    "colorname": ["NAVY : NAVY, 1499,1649","JETBLK : JET BLACK, 1499,1649","CHOCOF : Choco Fudge, 1499,1649","NUTMEG : NUTMEG, 1499,1649","CLGR : CLOUD GREY, 1499,1649"]
-  },
-  {
-    "name": "A605",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK","OLVNT","ROUGE","CHIVIO","CHOCOF","NUTMEG","CLGR"],
-    "colorname": ["NAVY : NAVY, 1049,1099","JETBLK : JET BLACK, 1049,1099","OLVNT : OLIVE NIGHT, 1049,1099","ROUGE : ROUGE, 1049,1099","CHIVIO : CHINESE VIOLET, 1049","CHOCOF : Choco Fudge, 1049,1099","NUTMEG : NUTMEG, 1049,1099","CLGR : CLOUD GREY, 1049,1099"]
-  },
-  {
-    "name": "A606",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LIRUFA","NARUFA","JBRUFA"],
-    "colorname": ["LIRUFA : LILAS-RUN FASTER, 1399,1549","NARUFA : NAVY RUN FASTER, 1399,1549","JBRUFA : JETBLACK RUN FASTER, 1399,1549"]
-  },
-  {
-    "name": "A607",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["STBRPR","GASPPR"],
-    "colorname": ["STBRPR : STEP BRUSH PRINT, 1299,1429","GASPPR : GALAXY SPLATTER PRT, 1299,1429"]
-  },
-  {
-    "name": "A610",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","NAVY","LILAS","NUTMEG"],
-    "colorname": ["JETBLK : JET BLACK, 1399,1549","NAVY : NAVY, 1399,1549","LILAS : LILAS, 1399,1549","NUTMEG : NUTMEG, 1399,1549"]
-  },
-  {
-    "name": "A703",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CHOCOF","NAVY","JETBLK"],
-    "colorname": ["CHOCOF : Choco Fudge, 949,1049","NAVY : NAVY, 949,1049","JETBLK : JET BLACK, 949,1049"]
-  },
-  {
-    "name": "A714",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","NAVY","CLGR","LILAS"],
-    "colorname": ["JETBLK : JET BLACK, 749,799","NAVY : NAVY, 749,799","CLGR : CLOUD GREY, 749,799","LILAS : LILAS, 749,799"]
-  },
-  {
-    "name": "AB75",
-    "sizes": ["34B","34C","34D","36B","36C","36D","38B","38C","38D","40B","40C","40D"],
-    "colors": ["PEARL","BLACK","PLS","PURPLE","WHITE","ODM"],
-    "colorname": ["PEARL : PEARL, 849,929","BLACK : BLACK, 849,929","PLS : PALE SKIN, 849,929","PURPLE : PURPLE, 849,929","WHITE : WHITE, 849,929","ODM : ORCHID MELANGE, 849,929"]
-  },
-  {
-    "name": "BB01",
-    "sizes": ["XS","S","M","2xs"],
-    "colors": ["SKIN","WHITE"],
-    "colorname": ["SKIN : SKIN, 379","WHITE : WHITE, 379"]
-  },
-  {
-    "name": "BB02",
-    "sizes": ["XS","S","M","2xs"],
-    "colors": ["BLACK","PEARL","WHITE"],
-    "colorname": ["BLACK : BLACK, 379","PEARL : PEARL, 379","WHITE : WHITE, 379"]
-  },
-  {
-    "name": "BR08",
-    "sizes": ["M","L","XL","2XL"],
-    "colors": ["BLACK","BUFF"],
-    "colorname": ["BLACK : BLACK, 1299","BUFF : BUFF, 1299"]
-  },
-  {
-    "name": "BR11",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","HOB"],
-    "colorname": ["HOB : HONEY BEIGE, 1999","BLACK : BLACK, 1999"]
-  },
-  {
-    "name": "CB07",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCP","MCS"],
-    "colorname": ["MCP : MULTICOLORPRINT, 729,759","MCS : MULTICOLORSOLID, 659,689"]
-  },
-  {
-    "name": "CB09",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCS","MCP"],
-    "colorname": ["MCS : MULTICOLORSOLID, 499,529","MCP : MULTICOLORPRINT, 549,579"]
-  },
-  {
-    "name": "CB17",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCP","MCS"],
-    "colorname": ["MCP : MULTICOLORPRINT, 649,679","MCS : MULTICOLORSOLID, 599,629"]
-  },
-  {
-    "name": "CH03",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MCP","MCS"],
-    "colorname": ["MCP : MULTICOLORPRINT, 549,579","MCS : MULTICOLORSOLID, 499,529"]
-  },
-  {
-    "name": "CH07",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCP","MCS"],
-    "colorname": ["MCP : MULTICOLORPRINT, 729,759","MCS : MULTICOLORSOLID, 659,689"]
-  },
-  {
-    "name": "CH09",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCS","MCP"],
-    "colorname": ["MCS : MULTICOLORSOLID, 499,529","MCP : MULTICOLORPRINT, 549,579"]
-  },
-  {
-    "name": "CR17",
-    "sizes": ["S","M","L","XL","2XL"," 2XL"," L"," M"," S"," XL"],
-    "colors": ["MCD(3P or 6P)","MCM","MCP","MCR(6P)"],
-    "colorname": ["MCM : MULTICOLORMEDIUM, 629,599","MCP : MULTICOLORPRINT, 679,649","MCD : MULTICOLORDARK, 629,599,1048,998","MCR : MULTICOLORS, 1108,1048"]
-  },
-  {
-    "name": "CW01",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["STI","PLMWIN","JETBLK","ORIONB","SKIN"],
-    "colorname": ["STI : STRAWBERRY ICE, 329,339","PLMWIN : PLUM WINE, 329,339","JETBLK : JET BLACK, 329,339","ORIONB : ORION BLUE, 329,339","SKIN : SKIN, 329,339"]
-  },
-  {
-    "name": "CW17",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["MCS"],
-    "colorname": ["MCS : MULTICOLORSOLID, 499,519"]
-  },
-  {
-    "name": "E001",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 299","SKIN : SKIN, 299","WHITE : WHITE, 299"]
-  },
-  {
-    "name": "E003",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 449","SKIN : SKIN, 449","WHITE : WHITE, 449"]
-  },
-  {
-    "name": "E007",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["SKIN","WHITE","BLACK"],
-    "colorname": ["SKIN : SKIN, 399","WHITE : WHITE, 399","BLACK : BLACK, 399"]
-  },
-  {
-    "name": "E014",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CCM","JETBLK","MGM","NAVY","TGTCA","CHOCOF","CLGR"],
-    "colorname": ["CCM : CHARCOALMELANGE, 999,1099","JETBLK : JET BLACK, 999,1099","MGM : MEDIUMGREY MELANGE, 999,1099","NAVY : NAVY, 999,1099","TGTCA : THAIGRNCIR\TERRACOT, 999,1099","CHOCOF : Choco Fudge, 999,1099","CLGR : CLOUD GREY, 999,1099"]
-  },
-  {
-    "name": "E016",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","BTWH","SKIN","HLMLLC","HTRRSE","HBSCS","LGM","LTBM"],
-    "colorname": ["JETBLK : JET BLACK, 289,299","BTWH : BRIGHT WHITE, 289,299","SKIN : SKIN, 289,299","HLMLLC : HEIRLOOM LILAC, 289,299","HTRRSE : HEATHER ROSE, 289,299","HBSCS : HIBISCUS, 289,299","LGM : LIGHT GREY MELANGE, 289,299","LTBM : LIGHT BLUE MELANGE, 289,299"]
-  },
-  {
-    "name": "E018",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CCM","JETBLK","MGM","NAVY","CLGR","CHOCOF"],
-    "colorname": ["CCM : CHARCOALMELANGE, 899,989","JETBLK : JET BLACK, 899,989","MGM : MEDIUMGREY MELANGE, 899,989","NAVY : NAVY, 899,989","CLGR : CLOUD GREY, 899,989","CHOCOF : Choco Fudge, 899,989"]
-  },
-  {
-    "name": "E025",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","WHITE","NAVY","PHP"],
-    "colorname": ["BLACK : BLACK, 299","WHITE : WHITE, 299","NAVY : NAVY, 299","PHP : PEACH PINK, 299"]
-  },
-  {
-    "name": "E032",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 299","SKIN : SKIN, 299","WHITE : WHITE, 299"]
-  },
-  {
-    "name": "E044",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CCM","JETBLK","MGM","NAVY","CLGR","CHOCOF"],
-    "colorname": ["CCM : CHARCOALMELANGE, 799,879","MGM : MEDIUMGREY MELANGE, 799,879","NAVY : NAVY, 799,879","JETBLK : JET BLACK, 799,879","CLGR : CLOUD GREY, 799,879","CHOCOF : Choco Fudge, 799,879"]
-  },
-  {
-    "name": "E047",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","MGM","JBK","RSPBRRY","ORCBLM","PLBLUE"],
-    "colorname": ["NAVY : NAVY, 599,649","MGM : MEDIUMGREY MELANGE, 599","JBK : JETBLACK, 599,649","RSPBRRY : RASPBERRY, 599,649","ORCBLM : ORCHID BLOOM, 599,649","PLBLUE : POOL BLUE, 599,649"]
-  },
-  {
-    "name": "E048",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","RAIFOR","NAVY","DRKSLT","DARPUR","NUTMEG","CVFPRT","SGBPRT","CLGPRT","NAAPRT","ELMGRN","PRPLDA","CBPAOP","MBTAOP"],
-    "colorname": ["JETBLK : JET BLACK, 1049,1159","RAIFOR : RAIN FOREST, 1049,1159","NAVY : NAVY, 1049,1159","DRKSLT : DARK SLATE, 1049,1159","DARPUR : Dark Purple, 1049,1159","NUTMEG : NUTMEG, 1049,1159","CVFPRT : CHALKY VIOLET FLOWER PRT, 1149,1249","SGBPRT : SAP GREEN BLOOM PRT, 1149,1249","CLGPRT : CLOUND GREY PETAL PRT, 1149,1249","NAAPRT : NAVY ABSTRACT ALLURE PRT, 1149,1249","ELMGRN : ELM GREEN, 1049,1159","PRPLDA : PURPLE DASH AOP, 1149,1299","CBPAOP : CORNFLOWER BLUEPOPPY AOP, 1149,1299","MBTAOP : MEDIEVAL BLUETIE DYE AOP, 1149,1299"]
-  },
-  {
-    "name": "E057",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK"],
-    "colorname": ["NAVY : NAVY, 699,769","JETBLK : JET BLACK, 699"]
-  },
-  {
-    "name": "E060",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MDB","JETBLK","JADE","CHOCOF","NVMEL","MGM"],
-    "colorname": ["MDB : MEDIEVAL BLUE, 1249,1349","JETBLK : JET BLACK, 1249,1349","JADE : JADE, 1249,1349","CHOCOF : Choco Fudge, 1249,1349","NVMEL : NAVY MELANGE, 1249,1349","MGM : MEDIUMGREY MELANGE, 1249,1349"]
-  },
-  {
-    "name": "E062",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","NAVY","DPTL","MRBLUE","CKVT","LFBPRT","NYZPRT","LCRPRT","JABPRT","BLPPRT"],
-    "colorname": ["JETBLK : JET BLACK, 679,749","NAVY : NAVY, 679,749","DPTL : DEEP TEAL, 679,749","MRBLUE : MARINE BLUE, 679,749","CKVT : Chalky Violet, 679,749","LFBPRT : LAVENDER FLOWER BLOOM PRT, 749,799","NYZPRT : NAVY ZIGZAG PRT, 749,799","LCRPRT : LILAS CREEPER PRT, 749,799","JABPRT : JADE ABSTRACT PRT, 749,799","BLPPRT : BLACK POPPY PRT, 749,799"]
-  },
-  {
-    "name": "E064",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NUTMEG","DARPUR","DRKSLT","DBY"],
-    "colorname": ["NUTMEG : NUTMEG, 1299,1399","DARPUR : Dark Purple, 1299,1399","DRKSLT : DARK SLATE, 1299,1399","DBY : DEEP RUBY, 1299"]
-  },
-  {
-    "name": "E068",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["ROUGE","JETBLK","OLVNT","NAVY","NUTMEG","CLGR","CHOCOF"],
-    "colorname": ["ROUGE : ROUGE, 1849,1999","JETBLK : JET BLACK, 1849,1999","OLVNT : OLIVE NIGHT, 1849,1999","NAVY : NAVY, 1849,1999","NUTMEG : NUTMEG, 1849,1999","CLGR : CLOUD GREY, 1849,1999","CHOCOF : Choco Fudge, 1849,1999"]
-  },
-  {
-    "name": "E078",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["NAVY","JETBLK"],
-    "colorname": ["NAVY : NAVY, 749,829","JETBLK : JET BLACK, 749,829"]
-  },
-  {
-    "name": "E080",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["JETBLK"],
-    "colorname": ["JETBLK : JET BLACK, 849"]
-  },
-  {
-    "name": "E089",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["RASMEL","CHCOME","CVOMEL","GGMMRG","BLMMRG"],
-    "colorname": ["RASMEL : RASPBERRY MELANGE, 699,749","CHCOME : CHOCOFUDGE MEL, 699,749","CVOMEL : CHALKY VIOLET MEL, 699,749","GGMMRG : GULL GREYMELANGE/MATRIX REFLECTIVEGRAPHIC, 699","BLMMRG : BLACKMELANGE/MATRIX REFLECTIVEGRAPHIC, 699"]
-  },
-  {
-    "name": "E095",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["WHITE","SKIN"],
-    "colorname": ["WHITE : WHITE, 399","SKIN : SKIN, 399"]
-  },
-  {
-    "name": "E147",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CFBDDG","ELGDDG","CHVLEG","CORFAB","NVYFAB","PBGOTH","OBGOTH"],
-    "colorname": ["CFBDDG : CBLUE DREAMER GRAPHICS, 699","ELGDDG : ELGR DAY DREAMER GR, 699","CHVLEG : CHIVIOLET LMT EDT GR, 699","CORFAB : CORAL FABULOUS, 699,769","NVYFAB : NAVY FABULOUS, 699,769","PBGOTH : POOLBLUE GOOD THINGS, 699,769","OBGOTH : Orchid BLM GTHS, 699,769"]
-  },
-  {
-    "name": "E247",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["LCDA","LIWA","PSBAOP"],
-    "colorname": ["LCDA : LEMON CREAM DEER AOP, 729","LIWA : LILAC IRIS WHALE AOP, 729","PSBAOP : PURPLE SLATEBIRD AOP, 729"]
-  },
-  {
-    "name": "E306",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["EBMELB","MGMBLK","ROMROU","DFMDUF","MABMEL","CVOMEL"],
-    "colorname": ["EBMELB : ELEMENTAL BLUE MEL/ ELEMENTAL BLUE, 579,629","MGMBLK : MEDIUM GREY MEL/ BLACK, 579,629","ROMROU : ROUGE MEL/ ROUGE, 579,629","DFMDUF : DULL FOREST MELANGE/DULL FOREST, 579,629","MABMEL : MARINE BLUE MEL, 579,629","CVOMEL : CHALKY VIOLET MEL, 579,629"]
-  },
-  {
-    "name": "E310",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","MRBLUE","DARPUR"],
-    "colorname": ["JETBLK : JET BLACK, 899,949","MRBLUE : MARINE BLUE, 899,949","DARPUR : Dark Purple, 899,949"]
-  },
-  {
-    "name": "E311",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["CHIVIO","LILAS","NAVY","JETBLK"],
-    "colorname": ["CHIVIO : CHINESE VIOLET, 699,749","LILAS : LILAS, 699,749","NAVY : NAVY, 699,749","JETBLK : JET BLACK, 699,749"]
-  },
-  {
-    "name": "E3G5",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LAVEGR","ROUEGR","MAREGR","REOEGR","COPKSR","BLBESR","PISPOS","JBLKMG","BWHTMG"],
-    "colorname": ["LAVEGR : LAVENDER EXPECT GRAPHIC, 799","ROUEGR : ROUGE EASY GRAPHIC, 799,849","MAREGR : MARMALADE EXPECT GRAPHIC, 799,849","REOEGR : RED OCHRE EASY GRAPHIC, 799","COPKSR : CORALPINK SUNRISE, 799,849","BLBESR : BLUEBELL SUNRISE, 799,849","PISPOS : PISTAGREEN POSITIVE, 799,849","JBLKMG : JET BLACK MAGICAL, 799,849","BWHTMG : BRIGHT WHITE MAGICAL, 799,849"]
-  },
-  {
-    "name": "E3G7",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["RARIUP","SAKGRW","MBEYRS","JBKFLG","BWTBAL"],
-    "colorname": ["RARIUP : RASPBERRY RISE UP, 799,849","SAKGRW : SAFFRON KEEP GROWING, 799,849","MBEYRS : MARINE BLUE BE YOURSELF, 799,849","JBKFLG : JETBLACK FEELING, 799,849","BWTBAL : BRIGHT WHITE BALANCE, 799,849"]
-  },
-  {
-    "name": "E3S5",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LPBSTP","BWPBSP","PBSBSP","JBKRSP"],
-    "colorname": ["LPBSTP : LILAS/POOL BLUE STRIPS, 749,799","BWPBSP : BRT WHITE/POOL BLUE STRIPS, 749,799","PBSBSP : POOL BLUE/SEA BLUE STRIPS, 749,799","JBKRSP : JET BLACK/ RED STRIPS, 749,799"]
-  },
-  {
-    "name": "E404",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JETBLK","NAVY","DRKSLT","DARPUR","NUTMEG"],
-    "colorname": ["JETBLK : JET BLACK, 1049,1149","NAVY : NAVY, 1049,1149","DRKSLT : DARK SLATE, 1049,1149","DARPUR : Dark Purple, 1049,1149","NUTMEG : NUTMEG, 1049,1149"]
-  },
-  {
-    "name": "E406",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MDB","OLIVE","DUSOR","JETBLK"],
-    "colorname": ["MDB : MEDIEVAL BLUE, 1499,1649","OLIVE : OLIVE, 1499,1649","DUSOR : DUSKY ORCHID, 1499","JETBLK : JET BLACK, 1499,1649"]
-  },
-  {
-    "name": "E407",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["DAROLI","JETBLK","MODING"],
-    "colorname": ["DAROLI : DARK OLIVE, 1349,1499","JETBLK : JET BLACK, 1349,1499","MODING : MOOD INDIGO, 1349,1499"]
-  },
-  {
-    "name": "E4A4",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JNGLAO","DCHKCA","OLPSLA","PRPLIN","BKSPRA"],
-    "colorname": ["JNGLAO : JUNGLE GREEN LEAFY AOP, 1149","DCHKCA : DARK CHOCOLATE CHAIN AOP, 1149,1249","OLPSLA : OLIVE PAISLEY AOP, 1149,1249","PRPLIN : PURPEL INDIE AOP, 1149","BKSPRA : BLACK SPRAY AOP, 1149,1249"]
-  },
-  {
-    "name": "E4A5",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["FPGAOP","PBTAOP","BLWHCH","GRNCHK","LIBLCK","BLBOPR","VIBLPR","BFT"],
-    "colorname": ["FPGAOP : FND PINK GARDEN FLR AOP, 999,1049","PBTAOP : PBLUE TROPICAL LVS AOP, 999,1049","BLWHCH : Black / White Checks, 999,1049","GRNCHK : Green Checks, 999,1049","LIBLCK : LIGHT BLUE CHECKS, 999,1049","BLBOPR : BLUE BOTANICAL PRINT, 999,1049","VIBLPR : VINTAGE BLOOM PRINT, 999,1049","BFT : BLACK FLORAL PRINT, 999,1049"]
-  },
-  {
-    "name": "E702",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MDB","JETBLK","CHIVIO","JADE"],
-    "colorname": ["MDB : MEDIEVAL BLUE, 899,949","JETBLK : JET BLACK, 899,949","CHIVIO : CHINESE VIOLET, 899,949","JADE : JADE, 899,949"]
-  },
-  {
-    "name": "E7A1",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLWHCH","GRNCHK","LIBLCK","VIBLPR","BLBOPR","BFT"],
-    "colorname": ["BLWHCH : Black / White Checks, 749,799","GRNCHK : Green Checks, 749,799","LIBLCK : LIGHT BLUE CHECKS, 749,799","VIBLPR : VINTAGE BLOOM PRINT, 749,799","BLBOPR : BLUE BOTANICAL PRINT, 749,799","BFT : BLACK FLORAL PRINT, 749,799"]
-  },
-  {
-    "name": "EA64",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["JBKABT","NVYABT","OLVFLO"],
-    "colorname": ["JBKABT : JBK ABSTRACT ALCHEMY, 1399,1499","NVYABT : NAVY ABSTRACT, 1399,1499","OLVFLO : OLIVE FLORAL, 1399,1499"]
-  },
-  {
-    "name": "F023",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLACK","PWL","SIL","SOR","FRHPRT","NSTLGR","IGY"],
-    "colorname": ["BLACK : BLACK, 1099","PWL : PINK WILD LACE PRINT, 1199","SIL : SILVER ROSE PRINT, 1199","SOR : SORRENTO PRINT, 1199","FRHPRT : FRINGED HIBISCUS PRINT, 1199","NSTLGR : NOSTALGIA ROSE, 1099","IGY : INK GREY, 1099"]
-  },
-  {
-    "name": "F037",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["ALS","BLACK","OCH","LSBNBL","PSTLIL","WHITE"],
-    "colorname": ["ALS : ALMOND SKIN, 1399","BLACK : BLACK, 1399","OCH : ORCHID SMOKE, 1399","LSBNBL : LISBON BLUE, 1399","PSTLIL : PASTEL LILAC, 1399","WHITE : WHITE, 1399"]
-  },
-  {
-    "name": "F048",
-    "sizes": ["34C","34D","34F","34Z","36C","36D","36F","36Z","38C","38D","38F","38Z","40C","40D","40F","40Z"],
-    "colors": ["PLUM","TSK"],
-    "colorname": ["PLUM : PLUM, 1249,1379","TSK : TAN SKIN, 1249,1379"]
-  },
-  {
-    "name": "F057",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["HOB","IGY","BLACK"],
-    "colorname": ["HOB : HONEY BEIGE, 1499","IGY : INK GREY, 1499","BLACK : BLACK, 1499"]
-  },
-  {
-    "name": "F065",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLACK","ARO","AUM","CLM","WFM","HOB","BRDAPC"],
-    "colorname": ["BLACK : BLACK, 1299","AUM : AUTUMN MELODY PRINT, 1399","CLM : PINK CHAMPAGNE, 1299","WFM : WILDFLOWER MELODY, 1399","ARO : AMARANTO PRINT, 1399","HOB : HONEY BEIGE, 1299","BRDAPC : BRANDIED APRICOT, 1299"]
-  },
-  {
-    "name": "F074",
-    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z"],
-    "colors": ["BLACK","BUFF"],
-    "colorname": ["BLACK : BLACK, 1499,1649","BUFF : BUFF, 1499,1649"]
-  },
-  {
-    "name": "F084",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","NUDE","STI"],
-    "colorname": ["BLACK : BLACK, 1599","NUDE : NUDE, 1599","STI : STRAWBERRY ICE, 1599"]
-  },
-  {
-    "name": "F091",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["FRVRR","LBLU","PLUM"],
-    "colorname": ["FRVRR : FOREVER ROSE, 1949","LBLU : LAPIS BLUE, 1949","PLUM : PLUM, 1949"]
-  },
-  {
-    "name": "F096",
-    "sizes": ["34F","34Z","36C","36F","36Z","38C","38F","38G","38Z","40C","40F","40Z","42F","42G","42Z","44D","44Z","34C","34D","36D","38D","40D","42D"],
-    "colors": ["BLACK","IGY","PEARL"],
-    "colorname": ["IGY : INK GREY, 1549,1599","PEARL : PEARL, 1549,1599","BLACK : BLACK, 1599,1549"]
-  },
-  {
-    "name": "F097",
-    "sizes": ["34C","34D","34Z","36C","36D","36Z","38C","38D","38Z","40C","40D","40Z","42C","42D"],
-    "colors": ["MNPP","PEARL","BLACK","VIFP"],
-    "colorname": ["MNPP : MIDNIGHT PEONY PRINT, 1599,1649","PEARL : PEARL, 1499,1549","BLACK : BLACK, 1499,1549","VIFP : Vintage Floral print, 1599,1649"]
-  },
-  {
-    "name": "F114",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["BLACK","NSTLGR","HOB"],
-    "colorname": ["BLACK : BLACK, 1599","NSTLGR : NOSTALGIA ROSE, 1599","HOB : HONEY BEIGE, 1599"]
-  },
-  {
-    "name": "F118",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["DSR","VLTTLP"],
-    "colorname": ["DSR : DUSTY ROSE, 1599","VLTTLP : VIOLET TULIP, 1599"]
-  },
-  {
-    "name": "F121",
-    "sizes": ["32D","32Z","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
-    "colors": ["SLI","BLACK","HOB","VINROS","LBLU"],
-    "colorname": ["SLI : SILVER LILAC, 1149,1299","BLACK : BLACK, 1149,1299","HOB : HONEY BEIGE, 1149,1299","VINROS : VINTAGE ROSE, 1149,1299","LBLU : LAPIS BLUE, 1149,1299"]
-  },
-  {
-    "name": "F122",
-    "sizes": ["34C","34D","34F","34Z","36C","36D","36F","36Z","38C","38D","38F","38Z","40C","40D","40F","40Z"],
-    "colors": ["BKC","RTE"],
-    "colorname": ["BKC : BLACKBERRY CORDIAL, 1499,1649","RTE : ROSETTE, 1499,1649"]
-  },
-  {
-    "name": "F123",
-    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","40B","40C"],
-    "colors": ["HOB","BLACK","NSTLGR"],
-    "colorname": ["HOB : HONEY BEIGE, 1599,1749","BLACK : BLACK, 1599,1749","NSTLGR : NOSTALGIA ROSE, 1599,1749"]
-  },
-  {
-    "name": "F124",
-    "sizes": ["34C","34D","34Z","34F","34G","36C","36D","36Z","36F","36G","38C","38D","38Z","38F","38G","40C","40D","40Z","40F"],
-    "colors": ["BLACK","CEDWOD","HOB"],
-    "colorname": ["BLACK : BLACK, 1599,1699","CEDWOD : CEDAR WOOD, 1599,1699","HOB : HONEY BEIGE, 1599,1699"]
-  },
-  {
-    "name": "F131",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["HOB","BLACK","NSTLGR"],
-    "colorname": ["HOB : HONEY BEIGE, 999","BLACK : BLACK, 999","NSTLGR : NOSTALGIA ROSE, 999"]
-  },
-  {
-    "name": "F132",
-    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
-    "colors": ["BLACK","HOB"],
-    "colorname": ["BLACK : BLACK, 1199,1299","HOB : HONEY BEIGE, 1199,1299"]
-  },
-  {
-    "name": "F133",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLACK","RIOPRT","OLT"],
-    "colorname": ["BLACK : BLACK, 1299","RIOPRT : RIO PRINT, 1399","OLT : PEARL BLUSH, 1299"]
-  },
-  {
-    "name": "F137",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["LSBNBL","PSTLIL","ALS"],
-    "colorname": ["LSBNBL : LISBON BLUE, 1499","PSTLIL : PASTEL LILAC, 1499","ALS : ALMOND SKIN, 1499"]
-  },
-  {
-    "name": "F143",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C"],
-    "colors": ["MONGRY","NUDROS"],
-    "colorname": ["MONGRY : MOON GREY, 1799","NUDROS : NUDE ROSE, 1799"]
-  },
-  {
-    "name": "F151",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["GLDNHZ","LICMST"],
-    "colorname": ["GLDNHZ : GOLDEN HAZE, 1499","LICMST : LILAC MIST, 1499"]
-  },
-  {
-    "name": "F165",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["DNT","FVP","HOB","BLACK","PCHCRL"],
-    "colorname": ["DNT : DAINTY PETAL PRINT, 1449","FVP : FESTIVE PETAL PRINT, 1399","HOB : HONEY BEIGE, 1349","BLACK : BLACK, 1349","PCHCRL : PEACH CORAL, 1349"]
-  },
-  {
-    "name": "F191",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","38B","38C"],
-    "colors": ["BLWVE","CRLWVE"],
-    "colorname": ["BLWVE : BLUE WAVE, 2299","CRLWVE : CORAL WAVE, 2299"]
-  },
-  {
-    "name": "F192",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["BLWVE","CRLWVE"],
-    "colorname": ["BLWVE : BLUE WAVE, 1999","CRLWVE : CORAL WAVE, 1999"]
-  },
-  {
-    "name": "F193",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C","38D"],
-    "colors": ["PLMSWL","AQSWL"],
-    "colorname": ["PLMSWL : PLUM SWILL, 1899","AQSWL : AQUA SWILL, 1899"]
-  },
-  {
-    "name": "F194",
-    "sizes": ["32B","32C","32D","34B","34C","34D","36B","36C","36D","38B","38C"],
-    "colors": ["PLMSWL","AQSWL"],
-    "colorname": ["PLMSWL : PLUM SWILL, 2199","AQSWL : AQUA SWILL, 2199"]
-  },
-  {
-    "name": "FB06",
-    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38C","38D","38Z","40B","40C","40D","40Z","42B","42C","42D","42Z","38B"],
-    "colors": ["WHITE","BLACK","MASAI","PLS"],
-    "colorname": ["MASAI : MASAI, 1199,1299","PLS : PALE SKIN, 1199,1299","WHITE : WHITE, 1199,1299","BLACK : BLACK, 1199,1299"]
-  },
-  {
-    "name": "FB12",
-    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
-    "colors": ["BUFF","ECL","GRW","MASAI","CLM","BLACK","WHITE"],
-    "colorname": ["BUFF : BUFF, 1299,1419","ECL : ECLIPSE, 1299,1419","GRW : GRAPE WINE, 1299,1419","MASAI : MASAI, 1299,1419","CLM : PINK CHAMPAGNE, 1299,1419","BLACK : BLACK, 1299,1419","WHITE : WHITE, 1299,1419"]
-  },
-  {
-    "name": "IO05",
-    "sizes": ["32B","32C","34B","34C","36B","36C","38B","38C"],
-    "colors": ["HOB","RSBLSH","ECL"],
-    "colorname": ["HOB : HONEY BEIGE, 1049","RSBLSH : ROSE BLUSH, 1049","ECL : ECLIPSE, 1049"]
-  },
-  {
-    "name": "IP12",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["GRW","ECL"],
-    "colorname": ["GRW : GRAPE WINE, 499","ECL : ECLIPSE, 499"]
-  },
-  {
-    "name": "IP37",
-    "sizes": [" S"," M"," L"," XL"," 2XL"],
-    "colors": ["ALS","PSTLIL","OCH","LSBNBL","JETBLK"],
-    "colorname": ["ALS : ALMOND SKIN, 399,409","PSTLIL : PASTEL LILAC, 399,409","OCH : ORCHID SMOKE, 399,409","LSBNBL : LISBON BLUE, 399,409","JETBLK : JET BLACK, 399,409"]
-  },
-  {
-    "name": "MB01",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MCS"],
-    "colorname": ["MCS : MULTICOLORSOLID, 529,549"]
-  },
-  {
-    "name": "MH01",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["MCS"],
-    "colorname": ["MCS : MULTICOLORSOLID, 529,549"]
-  },
-  {
-    "name": "MT02",
-    "sizes": ["34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","38Z","40B","40C","40D","40Z"],
-    "colors": ["CPM","GRW","ODM","SKIN"],
-    "colorname": ["CPM : CAPRI MELANGE, 949,979,1049","GRW : GRAPE WINE, 949,979,1049","ODM : ORCHID MELANGE, 949,979,1049","SKIN : SKIN, 949,979,1049"]
-  },
-  {
-    "name": "N118",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["DSR","VLTTLP"],
-    "colorname": ["DSR : DUSTY ROSE, 2099","VLTTLP : VIOLET TULIP, 2099"]
-  },
-  {
-    "name": "N151",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["GLDNHZ","LICMST"],
-    "colorname": ["GLDNHZ : GOLDEN HAZE, 1999","LICMST : LILAC MIST, 1999"]
-  },
-  {
-    "name": "N191",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLWVE","CRLWVE"],
-    "colorname": ["BLWVE : BLUE WAVE, 1999","CRLWVE : CORAL WAVE, 1999"]
-  },
-  {
-    "name": "N193",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["PLMSWL","AQSWL"],
-    "colorname": ["PLMSWL : PLUM SWILL, 1999","AQSWL : AQUA SWILL, 1999"]
-  },
-  {
-    "name": "P000",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["ARO","SOR","AUM","BLACK","PWL","SIL","WFM"],
-    "colorname": ["AUM : AUTUMN MELODY PRINT, 469","BLACK : BLACK, 409","PWL : PINK WILD LACE PRINT, 469","SIL : SILVER ROSE PRINT, 469","WFM : WILDFLOWER MELODY, 469","ARO : AMARANTO PRINT, 469","SOR : SORRENTO PRINT, 469"]
-  },
-  {
-    "name": "P037",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["LSBNBL","PSTLIL","ALS"],
-    "colorname": ["LSBNBL : LISBON BLUE, 849","PSTLIL : PASTEL LILAC, 849","ALS : ALMOND SKIN, 849"]
-  },
-  {
-    "name": "P091",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["LBLU","PLUM"],
-    "colorname": ["LBLU : LAPIS BLUE, 729","PLUM : PLUM, 729"]
-  },
-  {
-    "name": "P122",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BKC","RTE"],
-    "colorname": ["BKC : BLACKBERRY CORDIAL, 499","RTE : ROSETTE, 499"]
-  },
-  {
-    "name": "P151",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["GLDNHZ","LICMST"],
-    "colorname": ["GLDNHZ : GOLDEN HAZE, 499","LICMST : LILAC MIST, 499"]
-  },
-  {
-    "name": "P165",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["DNT","FVP"],
-    "colorname": ["DNT : DAINTY PETAL PRINT, 569","FVP : FESTIVE PETAL PRINT, 569"]
-  },
-  {
-    "name": "P191",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLWVE","CRLWVE"],
-    "colorname": ["BLWVE : BLUE WAVE, 699","CRLWVE : CORAL WAVE, 699"]
-  },
-  {
-    "name": "P193",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["PLMSWL","AQSWL"],
-    "colorname": ["PLMSWL : PLUM SWILL, 599","AQSWL : AQUA SWILL, 599"]
-  },
-  {
-    "name": "PB40",
-    "sizes": ["S","M","L","XL","2XL"," S"," M"," L"," XL"," 2XL"],
-    "colors": ["JETBLK","HOB","QUP","JADETE","IGY","GRW","NSTLGR","FIRORC"],
-    "colorname": ["JETBLK : JET BLACK, 349,359","HOB : HONEY BEIGE, 349,359","QUP : QUEEN PINK, 349,359","JADETE : JADEITE, 349,359","IGY : INK GREY, 349,359","GRW : GRAPE WINE, 349,359","NSTLGR : NOSTALGIA ROSE, 349,359","FIRORC : FAIR ORCHID, 349,359"]
-  },
-  {
-    "name": "PH40",
-    "sizes": ["S","M","L","XL","2XL"," S"," M"," L"," XL"," 2XL"],
-    "colors": ["JETBLK","HOB","QUP","JADETE","IGY","GRW","NSTLGR","FIRORC"],
-    "colorname": ["JETBLK : JET BLACK, 349,359","HOB : HONEY BEIGE, 349,359","QUP : QUEEN PINK, 349,359","JADETE : JADEITE, 349,359","IGY : INK GREY, 349,359","GRW : GRAPE WINE, 349,359","NSTLGR : NOSTALGIA ROSE, 349,359","FIRORC : FAIR ORCHID, 349,359"]
-  },
-  {
-    "name": "PP12",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","GRW"],
-    "colorname": ["BLACK : BLACK, 449,469","GRW : GRAPE WINE, 449,469"]
-  },
-  {
-    "name": "PS40",
-    "sizes": ["S","M","L","XL","2XL"," S"," M"," L"," XL"," 2XL"],
-    "colors": ["JETBLK","HOB","QUP","JADETE","IGY","GRW","NSTLGR","FIRORC"],
-    "colorname": ["JETBLK : JET BLACK, 399,409","HOB : HONEY BEIGE, 399,409","QUP : QUEEN PINK, 399,409","JADETE : JADEITE, 399,409","IGY : INK GREY, 399,409","GRW : GRAPE WINE, 399,409","NSTLGR : NOSTALGIA ROSE, 399,409","FIRORC : FAIR ORCHID, 399,409"]
-  },
-  {
-    "name": "SB06",
-    "sizes": ["XS","S","M","L","XL","2XL"," 2XL"],
-    "colors": ["CPM","TMG","BLACK","GRYMRL","GRW","PEARL","SKIN","WHITE"],
-    "colorname": ["BLACK : BLACK, 429,449","SKIN : SKIN, 429,449","WHITE : WHITE, 429,449","PEARL : PEARL, 429,449","CPM : CAPRI MELANGE, 429,449","TMG : TOMATO MELANGE, 429,449","GRW : GRAPE WINE, 429,449","GRYMRL : GREY MELANGE, 429,449"]
-  },
-  {
-    "name": "SB08",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["BLACK","GRW","GRYMEL","PEARL"],
-    "colorname": ["BLACK : BLACK, 899,929","GRW : GRAPE WINE, 899,929","GRYMEL : GREY MELANGE, 899,929","PEARL : PEARL, 899,929"]
-  },
-  {
-    "name": "SB18",
-    "sizes": ["32B","32C","32D","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D"],
-    "colors": ["BLACK","GRYMEL","NISH"],
-    "colorname": ["BLACK : BLACK, 1999","GRYMEL : GREY MELANGE, 1999","NISH : NIGHT SHADE, 1999"]
-  },
-  {
-    "name": "SB25",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["GRYMEL","PEARL"],
-    "colorname": ["GRYMEL : GREY MELANGE, 1349","PEARL : PEARL, 1349"]
-  },
-  {
-    "name": "SB28",
-    "sizes": ["S","M","L","XL","LAR","MED","SMA","XLA"],
-    "colors": ["BLACK","GRYMEL","PFI","SOLBLK"],
-    "colorname": ["BLACK : BLACK, 649,669","GRYMEL : GREY MELANGE, 649,669","PFI : PARFAIT PINK, 649,669","SOLBLK : SOLID BLACK, 649"]
-  },
-  {
-    "name": "SB29",
-    "sizes": ["32B","32C","32D","32Z","34B","34C","34D","34Z","36B","36C","36D","36Z","38B","38C","38D","30D"],
-    "colors": ["BLACK","NSH"],
-    "colorname": ["BLACK : BLACK, 1999","NSH : NIGHTSHADE, 1999"]
-  },
-  {
-    "name": "SB38",
-    "sizes": ["S","M","L","XL"],
-    "colors": ["WHITE","GRA","FUCPUR"],
-    "colorname": ["WHITE : WHITE, 799","GRA : GRAPHITE, 799","FUCPUR : FUCHIA PURPLE, 799"]
-  },
+let items = [];
 
-  {
-    "name": "TH01",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","PLS","PEI"],
-    "colorname": ["BLACK : BLACK, 899,949","PLS : PALE SKIN, 899,949","PEI : PEAR PINK, 899,949"]
-  },
-  {
-    "name": "TH02",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","PLS","PEI"],
-    "colorname": ["BLACK : BLACK, 1049,1099","PLS : PALE SKIN, 1049,1099","PEI : PEAR PINK, 1049,1099"]
-  },
-  {
-    "name": "TH03",
-    "sizes": ["S","M","L","XL","2XL"],
-    "colors": ["BLACK","PLS","PEI"],
-    "colorname": ["BLACK : BLACK, 1199,1249","PLS : PALE SKIN, 1199,1249","PEI : PEAR PINK, 1199,1249"]
-  },
-  {
-    "name": "TS09",
-    "sizes": ["M","L","XL","2XL"],
-    "colors": ["BLACK","BUFF"],
-    "colorname": ["BLACK : BLACK, 1399","BUFF : BUFF, 1399"]
-  }
-]
-
-
- ;
-/*Sub ConvertToJSON()
-    Application.ScreenUpdating = False
-    Application.Calculation = xlCalculationManual
-    
-    Dim ws As Worksheet
-    Set ws = ActiveSheet
-    
-    Dim dict As Object
-    Set dict = CreateObject("Scripting.Dictionary")
-    
-    ' Create standard size order dictionary
-    Dim sizeOrder As Object
-    Set sizeOrder = CreateObject("Scripting.Dictionary")
-    sizeOrder.Add "XS", 1
-    sizeOrder.Add "S", 2
-    sizeOrder.Add "M", 3
-    sizeOrder.Add "L", 4
-    sizeOrder.Add "XL", 5
-    sizeOrder.Add "2XL", 6
-    
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, 4).End(xlUp).Row ' Column D
-    
-    ' Read all data into arrays first for faster processing
-    Dim dataRange As Range
-    Set dataRange = ws.Range("D2:L" & lastRow)
-    Dim data As Variant
-    data = dataRange.Value
-    
-    ' Process all rows in one pass
-    Dim i As Long
-    For i = 1 To UBound(data, 1)
-        Dim currentName As String
-        currentName = CStr(data(i, 1)) ' Column D (index 1 in range D:L)
-        
-        If Not dict.exists(currentName) Then
-            Dim item As Object
-            Set item = CreateObject("Scripting.Dictionary")
-            
-            Set item("sizes") = CreateObject("Scripting.Dictionary")
-            Set item("colors") = CreateObject("Scripting.Dictionary")
-            Set item("colorname") = CreateObject("Scripting.Dictionary")
-            
-            item.Add "name", currentName
-            dict.Add currentName, item
-        End If
-        
-        ' Add size if not exists
-        Dim currentSize As String
-        currentSize = CStr(data(i, 8)) ' Column K (index 8 in range D:L)
-        If Len(Trim(currentSize)) > 0 Then
-            If Not dict(currentName)("sizes").exists(currentSize) Then
-                dict(currentName)("sizes").Add currentSize, currentSize
-            End If
-        End If
-        
-        ' Add color if not exists
-        Dim currentColor As String
-        currentColor = CStr(data(i, 3)) ' Column F (index 3 in range D:L)
-        If Len(Trim(currentColor)) > 0 Then
-            If Not dict(currentName)("colors").exists(currentColor) Then
-                dict(currentName)("colors").Add currentColor, currentColor
-            End If
-        End If
-        
-        ' Create base color key (combining F and G columns)
-        Dim baseColorKey As String
-        baseColorKey = currentColor & " : " & CStr(data(i, 4)) ' Columns F and G (indices 3 and 4 in range D:L)
-        
-        ' Handle L column values with deduplication
-        Dim lValue As String
-        lValue = CStr(data(i, 9)) ' Column L (index 9 in range D:L)
-        
-        If Len(Trim(baseColorKey)) > 0 Then
-            Dim finalColorKey As String
-            finalColorKey = baseColorKey
-            
-            If Len(Trim(lValue)) > 0 Then
-                ' Check if we already have this base color
-                Dim existingKey As Variant
-                Dim foundKey As String
-                foundKey = ""
-                
-                For Each existingKey In dict(currentName)("colorname").Keys
-                    If Left(existingKey, Len(baseColorKey)) = baseColorKey Then
-                        foundKey = existingKey
-                        Exit For
-                    End If
-                Next existingKey
-                
-                If foundKey <> "" Then
-                    ' Remove existing entry
-                    dict(currentName)("colorname").Remove foundKey
-                    ' Add combined L values with deduplication
-                    Dim existingNumbers As String
-                    If InStr(foundKey, ", ") > 0 Then
-                        existingNumbers = Mid(foundKey, InStr(foundKey, ", ") + 2)
-                        finalColorKey = baseColorKey & ", " & DeduplicateNumbers(existingNumbers & "," & lValue)
-                    Else
-                        finalColorKey = baseColorKey & ", " & lValue
-                    End If
-                Else
-                    finalColorKey = baseColorKey & ", " & lValue
-                End If
-            End If
-            
-            If Not dict(currentName)("colorname").exists(finalColorKey) Then
-                dict(currentName)("colorname").Add finalColorKey, finalColorKey
-            End If
-        End If
-    Next i
-    
-    ' Sort dictionary keys in ascending order
-    Dim sortedKeys As Object
-    Set sortedKeys = CreateObject("System.Collections.ArrayList")
-    
-    Dim dictKey As Variant
-    For Each dictKey In dict.Keys
-        sortedKeys.Add dictKey
-    Next dictKey
-    
-    sortedKeys.Sort
-    
-    ' Generate JSON string
-    Dim json As String
-    json = "[" & vbNewLine
-    
-    Dim isFirst As Boolean
-    isFirst = True
-    
-    Dim keyIndex As Long
-    For keyIndex = 0 To sortedKeys.Count - 1
-        dictKey = sortedKeys(keyIndex)
-        If Not isFirst Then json = json & "," & vbNewLine
-        
-        Dim currentItem As Object
-        Set currentItem = dict(dictKey)
-        
-        json = json & Space(2) & "{" & vbNewLine & _
-               Space(4) & """name"": """ & currentItem("name") & """," & vbNewLine & _
-               Space(4) & """sizes"": " & SortedSizesToJSON(currentItem("sizes"), sizeOrder) & "," & vbNewLine & _
-               Space(4) & """colors"": " & DictToJSONArray(currentItem("colors")) & "," & vbNewLine & _
-               Space(4) & """colorname"": " & DictToJSONArray(currentItem("colorname")) & vbNewLine & _
-               Space(2) & "}"
-        
-        isFirst = False
-    Next keyIndex
-    
-    json = json & vbNewLine & "]"
-    
-    ' Get Desktop path and create file path
-    Dim desktopPath As String
-    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
-    Dim filePath As String
-    filePath = desktopPath & "\output.json"
-    
-    ' Write to file
-    Dim fileNum As Integer
-    fileNum = FreeFile
-    
-    Open filePath For Output As #fileNum
-        Print #fileNum, json
-    Close #fileNum
-    
-    Application.ScreenUpdating = True
-    Application.Calculation = xlCalculationAutomatic
-    
-    MsgBox "JSON file has been created at: " & filePath, vbInformation
-End Sub
-
-' New function to deduplicate numbers
-Private Function DeduplicateNumbers(ByVal numberString As String) As String
-    Dim numbers() As String
-    Dim uniqueDict As Object
-    Set uniqueDict = CreateObject("Scripting.Dictionary")
-    
-    ' Split the string into an array
-    numbers = Split(numberString, ",")
-    
-    ' Add each number to dictionary (automatically handles duplicates)
-    Dim num As Variant
-    For Each num In numbers
-        num = Trim(num)
-        If Len(num) > 0 Then
-            If Not uniqueDict.exists(num) Then
-                uniqueDict.Add num, num
-            End If
-        End If
-    Next num
-    
-    ' Join unique numbers back together
-    DeduplicateNumbers = Join(uniqueDict.Items, ",")
-End Function
-
-Private Function SortedSizesToJSON(dict As Object, sizeOrder As Object) As String
-    ' First, separate standard and custom sizes
-    Dim standardSizes As Object
-    Dim customSizes As Object
-    Set standardSizes = CreateObject("Scripting.Dictionary")
-    Set customSizes = CreateObject("Scripting.Dictionary")
-    
-    Dim size As Variant
-    For Each size In dict.Keys
-        If sizeOrder.exists(size) Then
-            standardSizes.Add sizeOrder(size), size
-        Else
-            customSizes.Add size, size
-        End If
-    Next size
-    
-    ' Combine sorted standard sizes with custom sizes
-    Dim json As String
-    json = "["
-    
-    ' Add standard sizes in order
-    Dim isFirst As Boolean
-    isFirst = True
-    
-    Dim i As Long
-    For i = 1 To sizeOrder.Count
-        For Each size In standardSizes.Keys
-            If size = i Then
-                If Not isFirst Then json = json & ","
-                json = json & """" & standardSizes(size) & """"
-                isFirst = False
-            End If
-        Next size
-    Next i
-    
-    ' Add custom sizes
-    For Each size In customSizes.Keys
-        If Not isFirst Then json = json & ","
-        json = json & """" & customSizes(size) & """"
-        isFirst = False
-    Next size
-    
-    json = json & "]"
-    SortedSizesToJSON = json
-End Function
-
-Private Function DictToJSONArray(dict As Object) As String
-    Dim json As String
-    json = "["
-    
-    Dim isFirst As Boolean
-    isFirst = True
-    
-    Dim key As Variant
-    For Each key In dict.Keys
-        If Not isFirst Then json = json & ","
-        json = json & """" & dict(key) & """"
-        isFirst = False
-    Next key
-    
-    json = json & "]"
-    DictToJSONArray = json
-End Function*/
 // Predefined parties
 let parties = [
    "Avni Traders Phonda",
@@ -1216,11 +60,287 @@ document.addEventListener("click", function (e) {
 createCartSummaryTable();
 
 document.getElementById("addToCartBtn").addEventListener("click", addToCart);
-document
-  .getElementById("saveOrderBtn")
-  .addEventListener("click", showOrderSummaryModal);
+document.getElementById("saveOrderBtn").addEventListener("click", showOrderSummaryModal);
 
 
+//indexed db item
+
+// Initialize IndexedDB for items
+function initItemIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('KA_OMS_Items_DB', 1);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      // Create items store
+      if (!db.objectStoreNames.contains('items')) {
+        const itemStore = db.createObjectStore('items', { keyPath: 'name' });
+        itemStore.createIndex('name', 'name', { unique: true });
+      }
+      
+      // Create metadata store for tracking updates
+      if (!db.objectStoreNames.contains('itemMetadata')) {
+        db.createObjectStore('itemMetadata', { keyPath: 'key' });
+      }
+    };
+  });
+}
+
+function saveItemDataToIndexedDB(itemsArray) {
+  return initItemIndexedDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['items', 'itemMetadata'], 'readwrite');
+      const itemStore = transaction.objectStore('items');
+      const metaStore = transaction.objectStore('itemMetadata');
+      
+      // Clear existing items
+      itemStore.clear();
+      
+      // Add all items
+      itemsArray.forEach(item => {
+        itemStore.add(item);
+      });
+      
+      // Update last sync timestamp
+      metaStore.put({
+        key: 'lastItemSync',
+        timestamp: Date.now()
+      });
+      
+      transaction.oncomplete = () => {
+        console.log('Items saved to IndexedDB');
+        resolve();
+      };
+      transaction.onerror = () => reject(transaction.error);
+    });
+  });
+}
+
+function loadItemDataFromIndexedDB() {
+  return initItemIndexedDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['items'], 'readonly');
+      const store = transaction.objectStore('items');
+      const request = store.getAll();
+      
+      request.onsuccess = () => {
+        console.log('Items loaded from IndexedDB:', request.result.length);
+        resolve(request.result);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  });
+}
+
+function transformFirebaseToItemFormat(firebaseItems) {
+  // Group items by Style
+  const groupedItems = {};
+  
+  firebaseItems.forEach(item => {
+    const styleName = item.Style;
+    
+    if (!groupedItems[styleName]) {
+      groupedItems[styleName] = {
+        name: styleName,
+        sizes: new Set(),
+        colors: new Set(),
+        colorDetails: {} // Store color name and MRP mapping
+      };
+    }
+    
+    // Add size
+    if (item.Size) {
+      groupedItems[styleName].sizes.add(item.Size);
+    }
+    
+    // Add color
+    if (item.Color) {
+      groupedItems[styleName].colors.add(item.Color);
+      
+      // Store color details (Color Name and MRP)
+      if (!groupedItems[styleName].colorDetails[item.Color]) {
+        groupedItems[styleName].colorDetails[item.Color] = {
+          colorName: item['Color Name'] || item.Color,
+          mrp: item.MRP ? item.MRP.trim() : ''
+        };
+      }
+    }
+  });
+  
+  // Convert to array format
+  const transformedItems = Object.values(groupedItems).map(item => {
+    // Convert Sets to sorted arrays
+    const sizes = Array.from(item.sizes).sort((a, b) => {
+      // Custom sort for sizes like 32B, 32C, 34B, etc.
+      const numA = parseInt(a);
+      const numB = parseInt(b);
+      if (numA !== numB) return numA - numB;
+      return a.localeCompare(b);
+    });
+    
+    const colors = Array.from(item.colors).sort();
+    
+    // Create colorname array in format: "COLOR : COLOR_NAME, MRP"
+    const colorname = colors.map(color => {
+      const details = item.colorDetails[color];
+      return `${color} : ${details.colorName}, ${details.mrp}`;
+    });
+    
+    return {
+      name: item.name,
+      sizes: sizes,
+      colors: colors,
+      colorname: colorname
+    };
+  });
+  
+  // Sort items by name
+  transformedItems.sort((a, b) => a.name.localeCompare(b.name));
+  
+  return transformedItems;
+}
+
+function fetchItemDataFromFirebase() {
+  return firebase.database().ref('itemData/items').once('value')
+    .then(snapshot => {
+      const firebaseData = snapshot.val();
+      if (!firebaseData) {
+        console.error('No item data found in Firebase');
+        return [];
+      }
+      
+      // Transform the data
+      const transformedItems = transformFirebaseToItemFormat(firebaseData);
+      console.log('Fetched and transformed items from Firebase:', transformedItems.length);
+      
+      return transformedItems;
+    })
+    .catch(error => {
+      console.error('Error fetching items from Firebase:', error);
+      throw error;
+    });
+}
+
+function checkForItemDataUpdates() {
+  return initItemIndexedDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['itemMetadata'], 'readonly');
+      const store = transaction.objectStore('itemMetadata');
+      const request = store.get('lastItemSync');
+      
+      request.onsuccess = () => {
+        const lastSync = request.result ? request.result.timestamp : 0;
+        
+        // Check Firebase for lastUpdated timestamp
+        firebase.database().ref('itemData/lastUpdated').once('value')
+          .then(snapshot => {
+            const firebaseLastUpdated = snapshot.val() || 0;
+            
+            // If Firebase data is newer, fetch updates
+            if (firebaseLastUpdated > lastSync) {
+              console.log('Item data updates available');
+              resolve(true);
+            } else {
+              console.log('Item data is up to date');
+              resolve(false);
+            }
+          })
+          .catch(reject);
+      };
+      
+      request.onerror = () => reject(request.error);
+    });
+  });
+}
+
+//item firebase main
+
+function initializeItemData() {
+  return loadItemDataFromIndexedDB()
+    .then(cachedItems => {
+      if (cachedItems.length > 0) {
+        // Use cached items
+        items = cachedItems;
+        console.log('Using cached items:', items.length);
+        
+        // Check for updates in background
+        checkForItemDataUpdates().then(hasUpdates => {
+          if (hasUpdates) {
+            console.log('Updating items from Firebase...');
+            return fetchItemDataFromFirebase()
+              .then(freshItems => {
+                items = freshItems;
+                return saveItemDataToIndexedDB(freshItems);
+              })
+              .then(() => {
+                console.log('Items updated successfully');
+                updateItemSearchDatalist(); // Refresh UI
+              });
+          }
+        }).catch(error => {
+          console.error('Error checking for updates:', error);
+        });
+        
+        return items;
+      } else {
+        // No cached items, fetch from Firebase
+        console.log('No cached items, fetching from Firebase...');
+        return fetchItemDataFromFirebase()
+          .then(freshItems => {
+            items = freshItems;
+            return saveItemDataToIndexedDB(freshItems);
+          })
+          .then(() => {
+            console.log('Items initialized from Firebase');
+            return items;
+          });
+      }
+    })
+    .catch(error => {
+      console.error('Error initializing items:', error);
+      alert('Error loading item data. Please refresh the page.');
+      return [];
+    });
+}
+
+// Initialize items when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Show loading indicator
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'itemsLoadingIndicator';
+  loadingDiv.innerHTML = `
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+      <p>Loading item data...</p>
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(loadingDiv);
+  
+  // Initialize items
+  initializeItemData()
+    .then(() => {
+      console.log('Items initialized:', items.length);
+      updateItemSearchDatalist();
+      loadingDiv.remove();
+    })
+    .catch(error => {
+      console.error('Failed to initialize items:', error);
+      loadingDiv.innerHTML = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                    background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <p style="color: red;">Error loading item data. Please refresh the page.</p>
+          <button class="btn btn-primary" onclick="location.reload()">Refresh</button>
+        </div>
+      `;
+    });
+});
 //----------------------------------------party--------------------------------
 function sortParties() {
     parties.sort((a, b) => {
@@ -2586,7 +1706,7 @@ function showOrderConfirmationModal(order, imgData) {
 
   // Play advanced confirmation sound
   playAdvancedConfirmationSound();
-  sendWebPushNotification(order.partyName);
+  //sendWebPushNotification(order.partyName);
   // Send notification to Telegram
   sendTelegramNotification(order.partyName, order.totalQuantity, order.orderNumber, imgData);
 
@@ -2967,19 +2087,7 @@ function createCategoryRadios(categories) {
       });
   }
 
-  /*function calculateTotalQuantity() {
-    return cart.reduce((total, item) => {
-      return total + Object.values(item.colors).reduce((colorTotal, sizes) => {
-        return colorTotal + Object.values(sizes).reduce((sizeTotal, qty) => sizeTotal + qty, 0);
-      }, 0);
-    }, 0);
-  }*/
-  
- 
-/*
 
-
-*/
 // Variables for modal control
 let colorDetailsTimeout;
 const colorDetailsModal = document.getElementById('colorDetailsModal');
@@ -3525,11 +2633,13 @@ function resetPdfUploadForm() {
     parsedOrderData = null;
 }
 
-// Updated function to show PDF upload button
+
+// function for order pdf upload and item data uploadation
+// Updated function to show PDF upload button and Item Data button
 function showPdfUploadButton() {
     const ordersHeader = document.querySelector('.enamor-orders-header');
     
-    // Check if the button already exists
+    // Check if the PDF upload button already exists
     if (!document.getElementById('pdfUploadBtn')) {
         const pdfUploadBtn = document.createElement('button');
         pdfUploadBtn.id = 'pdfUploadBtn';
@@ -3545,4 +2655,425 @@ function showPdfUploadButton() {
             createPdfUploadModal();
         }
     }
+    
+    // Show Item Data button only for HEMANT(ADMIN)
+    if (username === 'HEMANT(ADMIN)') {
+        showItemDataButton();
+    }
 }
+
+// Function to show Item Data button (exclusive to HEMANT)
+function showItemDataButton() {
+    const ordersHeader = document.querySelector('.enamor-orders-header');
+    
+    // Check if the button already exists
+    if (!document.getElementById('itemDataBtn')) {
+        const itemDataBtn = document.createElement('button');
+        itemDataBtn.id = 'itemDataBtn';
+        itemDataBtn.className = 'btn btn-outline-success btn-sm ms-2';
+        itemDataBtn.innerHTML = '<i class="bi bi-database"></i> Item Data';
+        itemDataBtn.setAttribute('data-bs-toggle', 'modal');
+        itemDataBtn.setAttribute('data-bs-target', '#itemDataModal');
+        
+        ordersHeader.appendChild(itemDataBtn);
+        
+        // Create the modal if it doesn't exist
+        if (!document.getElementById('itemDataModal')) {
+            createItemDataModal();
+        }
+    }
+}
+
+// Function to create Item Data modal
+function createItemDataModal() {
+    const modalHTML = `
+        <div class="modal fade" id="itemDataModal" tabindex="-1" aria-labelledby="itemDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="itemDataModalLabel">
+                            <i class="bi bi-database"></i> Item Data Management
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> Upload an Excel file (.xlsx or .xls) to update item data.
+                        </div>
+                        
+                        <!-- Last Update Info -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Last Update Information</h6>
+                                <p class="card-text mb-1">
+                                    <strong>Last Updated:</strong> 
+                                    <span id="lastUpdateDate" class="text-muted">Never updated</span>
+                                </p>
+                                <p class="card-text mb-0">
+                                    <strong>Total Items:</strong> 
+                                    <span id="totalItems" class="text-muted">0</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- File Upload Section -->
+                        <div class="mb-3">
+                            <label for="itemDataFile" class="form-label">
+                                <strong>Select Excel File</strong>
+                            </label>
+                            <input type="file" class="form-control" id="itemDataFile" 
+                                   accept=".xlsx,.xls" required>
+                            <div class="form-text">
+                                Supported formats: .xlsx, .xls
+                            </div>
+                        </div>
+                        
+                        <!-- Header Row Selection -->
+                        <div id="headerRowSection" class="mb-3 d-none">
+                            <label for="headerRowInput" class="form-label">
+                                <strong>Header Row Number</strong>
+                            </label>
+                            <input type="number" class="form-control" id="headerRowInput" 
+                                   min="1" value="1" placeholder="Enter row number (e.g., 1, 2, 3)">
+                            <div class="form-text">
+                                Specify which row contains the column headers (default is row 1)
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Section -->
+                        <div id="itemDataPreview" class="d-none">
+                            <h6>Data Preview (First 5 rows)</h6>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-bordered" id="previewTable">
+                                    <thead class="table-light"></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <p class="text-muted small">
+                                <strong>Total rows to be uploaded:</strong> <span id="totalRowCount">0</span>
+                            </p>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div id="uploadProgress" class="d-none mt-3">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" id="uploadProgressBar">0%</div>
+                            </div>
+                            <p class="text-center mt-2 mb-0" id="uploadStatus">Processing...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" id="uploadItemDataBtn" disabled>
+                            <i class="bi bi-cloud-upload"></i> Upload Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Initialize event listeners
+    initializeItemDataListeners();
+    
+    // Load last update info when modal opens
+    document.getElementById('itemDataModal').addEventListener('show.bs.modal', loadLastUpdateInfo);
+}
+
+// Initialize event listeners for item data modal
+function initializeItemDataListeners() {
+    const fileInput = document.getElementById('itemDataFile');
+    const uploadBtn = document.getElementById('uploadItemDataBtn');
+    const headerRowInput = document.getElementById('headerRowInput');
+    
+    // File selection handler
+    fileInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Show header row selection
+            document.getElementById('headerRowSection').classList.remove('d-none');
+            
+            // Store file in window for reprocessing
+            window.currentItemFile = file;
+            
+            // Initial preview with default header row
+            await previewItemData(file, 1);
+            uploadBtn.disabled = false;
+        } else {
+            uploadBtn.disabled = true;
+            document.getElementById('itemDataPreview').classList.add('d-none');
+            document.getElementById('headerRowSection').classList.add('d-none');
+            window.currentItemFile = null;
+        }
+    });
+    
+    // Header row input handler - update preview in real-time
+    headerRowInput.addEventListener('input', async function() {
+        const headerRow = parseInt(this.value);
+        if (window.currentItemFile && headerRow > 0) {
+            await previewItemData(window.currentItemFile, headerRow);
+        }
+    });
+    
+    // Upload button handler
+    uploadBtn.addEventListener('click', async function() {
+        const file = fileInput.files[0];
+        const headerRow = parseInt(headerRowInput.value) || 1;
+        if (file) {
+            await uploadItemData(file, headerRow);
+        }
+    });
+}
+
+// Function to preview Excel data
+async function previewItemData(file, headerRow = 1) {
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        
+        // Get the range of the worksheet
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        
+        // Validate header row
+        if (headerRow < 1 || headerRow > range.e.r + 1) {
+            alert(`Invalid header row. Please enter a value between 1 and ${range.e.r + 1}`);
+            return;
+        }
+        
+        // Adjust the range to start from the header row
+        const adjustedRange = {
+            s: { r: headerRow - 1, c: range.s.c },
+            e: { r: range.e.r, c: range.e.c }
+        };
+        
+        // Convert to JSON with specified header row
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            range: adjustedRange,
+            defval: '',
+            raw: false
+        });
+        
+        if (jsonData.length === 0) {
+            alert('No data found below the specified header row. Please check your Excel file.');
+            return;
+        }
+        
+        // Store the parsed data temporarily
+        window.tempItemData = jsonData;
+        window.tempHeaderRow = headerRow;
+        
+        // Display preview
+        displayPreview(jsonData, headerRow);
+        
+    } catch (error) {
+        console.error('Error previewing file:', error);
+        alert('Error reading Excel file. Please ensure it is a valid .xlsx or .xls file.');
+    }
+}
+
+// Function to display data preview
+function displayPreview(data, headerRow) {
+    const previewDiv = document.getElementById('itemDataPreview');
+    const previewTable = document.getElementById('previewTable');
+    const thead = previewTable.querySelector('thead');
+    const tbody = previewTable.querySelector('tbody');
+    
+    // Clear previous content
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) return;
+    
+    // Get headers from first object
+    const headers = Object.keys(data[0]);
+    
+    // Create header row with indicator
+    const headerRow_tr = document.createElement('tr');
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        th.className = 'bg-success text-white';
+        headerRow_tr.appendChild(th);
+    });
+    thead.appendChild(headerRow_tr);
+    
+    // Add a small info row showing which row is used as header
+    const infoRow = document.createElement('tr');
+    const infoCell = document.createElement('td');
+    infoCell.colSpan = headers.length;
+    infoCell.className = 'text-muted small text-center';
+    infoCell.innerHTML = `<i class="bi bi-info-circle"></i> Using row ${headerRow} as headers`;
+    infoRow.appendChild(infoCell);
+    thead.appendChild(infoRow);
+    
+    // Create preview rows (first 5)
+    const previewRows = data.slice(0, 5);
+    previewRows.forEach(row => {
+        const tr = document.createElement('tr');
+        headers.forEach(header => {
+            const td = document.createElement('td');
+            td.textContent = row[header] || '';
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    
+    // Update total count
+    document.getElementById('totalRowCount').textContent = data.length;
+    
+    // Show preview
+    previewDiv.classList.remove('d-none');
+}
+
+// Function to sanitize Firebase keys
+function sanitizeFirebaseKey(key) {
+    if (!key) return key;
+    // Replace invalid characters with underscores
+    return String(key)
+        .replace(/\./g, '_')
+        .replace(/#/g, '_')
+        .replace(/\$/g, '_')
+        .replace(/\//g, '_')
+        .replace(/\[/g, '_')
+        .replace(/\]/g, '_')
+        .trim();
+}
+
+// Function to sanitize object keys for Firebase
+function sanitizeObjectForFirebase(obj) {
+    if (Array.isArray(obj)) {
+        return obj.map(item => sanitizeObjectForFirebase(item));
+    } else if (obj !== null && typeof obj === 'object') {
+        const sanitized = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const sanitizedKey = sanitizeFirebaseKey(key);
+                sanitized[sanitizedKey] = sanitizeObjectForFirebase(obj[key]);
+            }
+        }
+        return sanitized;
+    }
+    return obj;
+}
+
+// Function to upload item data to Firebase
+async function uploadItemData(file, headerRow) {
+    const uploadBtn = document.getElementById('uploadItemDataBtn');
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const uploadStatus = document.getElementById('uploadStatus');
+    
+    try {
+        // Disable upload button
+        uploadBtn.disabled = true;
+        progressDiv.classList.remove('d-none');
+        progressBar.style.width = '10%';
+        progressBar.textContent = '10%';
+        uploadStatus.textContent = 'Reading file...';
+        
+        // Use the temporarily stored data
+        let jsonData = window.tempItemData;
+        
+        if (!jsonData || jsonData.length === 0) {
+            throw new Error('No data to upload');
+        }
+        
+        progressBar.style.width = '40%';
+        progressBar.textContent = '40%';
+        uploadStatus.textContent = 'Sanitizing data for Firebase...';
+        
+        // Sanitize all keys in the data to be Firebase-compatible
+        jsonData = sanitizeObjectForFirebase(jsonData);
+        
+        // Create structured data with metadata
+        const uploadData = {
+            items: jsonData,
+            metadata: {
+                uploadedBy: username,
+                uploadDate: new Date().toISOString(),
+                totalItems: jsonData.length,
+                fileName: file.name,
+                headerRow: headerRow
+            }
+        };
+        
+        progressBar.style.width = '70%';
+        progressBar.textContent = '70%';
+        uploadStatus.textContent = 'Uploading to Firebase...';
+        
+        // Upload to Firebase
+        await firebase.database().ref('itemData').set(uploadData);
+        
+        // Log activity (if logActivity function exists)
+        if (typeof logActivity === 'function') {
+            logActivity('Item data updated', `${username} uploaded ${jsonData.length} items from ${file.name} (header row: ${headerRow})`);
+        } else {
+            // Alternative logging to Firebase activities
+            firebase.database().ref('activities').push({
+                action: 'Item data updated',
+                details: `${username} uploaded ${jsonData.length} items from ${file.name} (header row: ${headerRow})`,
+                timestamp: new Date().toISOString(),
+                user: username
+            });
+        }
+        
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        uploadStatus.textContent = 'Upload complete!';
+        
+        // Show success message
+        setTimeout(() => {
+            alert(`Successfully uploaded ${jsonData.length} items!`);
+            
+            // Reset form
+            document.getElementById('itemDataFile').value = '';
+            document.getElementById('headerRowInput').value = '1';
+            document.getElementById('itemDataPreview').classList.add('d-none');
+            document.getElementById('headerRowSection').classList.add('d-none');
+            progressDiv.classList.add('d-none');
+            progressBar.style.width = '0%';
+            uploadBtn.disabled = true;
+            
+            // Reload last update info
+            loadLastUpdateInfo();
+            
+            // Clear temporary data
+            delete window.tempItemData;
+            delete window.tempHeaderRow;
+            delete window.currentItemFile;
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error uploading item data:', error);
+        alert('Error uploading data. Please try again.');
+        uploadBtn.disabled = false;
+        progressDiv.classList.add('d-none');
+    }
+}
+
+// Function to load last update information
+async function loadLastUpdateInfo() {
+    try {
+        const snapshot = await firebase.database().ref('itemData/metadata').once('value');
+        const metadata = snapshot.val();
+        
+        if (metadata) {
+            const uploadDate = new Date(metadata.uploadDate);
+            document.getElementById('lastUpdateDate').textContent = uploadDate.toLocaleString();
+            document.getElementById('totalItems').textContent = metadata.totalItems || 0;
+        } else {
+            document.getElementById('lastUpdateDate').textContent = 'Never updated';
+            document.getElementById('totalItems').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Error loading last update info:', error);
+    }
+}
+
+
+//----------------------------------------------------------
