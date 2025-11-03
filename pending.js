@@ -1872,19 +1872,21 @@ function exportMultipleOrders(orders, exportData) {
     });
     
     if (allItems.length === 0) {
-        alert('No data to export. Please check the order details.');
+        alert('No data to export. Please check the order details or ensure at least one item is selected.');
         return;
     }
     
-    // Create combined order data with modified quantities
+    // Create combined order data with ONLY the modified/selected items
     const combinedOrderData = {
         orderNumber: orderNumbers.join(','),
         partyName: partyNames.join(','),
         orderDate: [...new Set(orderDates)].join(','),
-        items: allItems
+        items: allItems  // This now contains ONLY selected items with modified quantities
     };
     
-    // Upload to Google Drive
+    console.log('Combined order data being sent:', combinedOrderData);
+    
+    // Upload to Google Drive - this now has the correct filtered data
     uploadOrderToGoogleDrive(combinedOrderData, orders.map(o => o.id));
 }
 function addExportDataRow(exportData, itemName, color, size, qty) {
