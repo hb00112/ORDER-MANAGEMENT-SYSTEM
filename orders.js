@@ -1,3 +1,4 @@
+
 let cart = [];
 
 // Predefined items
@@ -1988,18 +1989,19 @@ function saveOrderToFirebase(order) {
   }
 }
 
+// Updated function to get next order number with KT prefix instead of K
 function getNextOrderNumber(maxRetries = 3, delay = 1000) {
   return new Promise((resolve, reject) => {
     function attempt(retriesLeft) {
       firebase
         .database()
-        .ref("orderCounter")
+        .ref("KA-OMS-OLD-ON/orderCounter")
         .transaction((current) => {
           return (current || 0) + 1;
         })
         .then((result) => {
           if (result.committed) {
-            resolve(`K${result.snapshot.val()}`);
+            resolve(`KT${result.snapshot.val()}`);
           } else {
             throw new Error("Failed to commit transaction");
           }
